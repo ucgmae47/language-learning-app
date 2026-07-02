@@ -3,6 +3,44 @@ import type { Question } from "./questions";
 // ── French questions ──────────────────────────────────────────────────────────
 
 export const QUESTIONS_FR: Question[] = [
+  // A1 band
+  {
+    id: 112,
+    band: "A1",
+    prompt: 'How do you say "hello" in French?',
+    options: [
+      { label: "Au revoir", value: "A" },
+      { label: "Merci", value: "B" },
+      { label: "S'il vous plaît", value: "C" },
+      { label: "Bonjour", value: "D" },
+    ],
+    correct: "D",
+  },
+  {
+    id: 113,
+    band: "A1",
+    prompt: "Quelle est la forme correcte ? « Je ___ à Paris. »",
+    options: [
+      { label: "vivent", value: "A" },
+      { label: "vivons", value: "B" },
+      { label: "vis", value: "C" },
+      { label: "vivez", value: "D" },
+    ],
+    correct: "C",
+  },
+  {
+    id: 114,
+    band: "A1",
+    prompt: "Complète : « ___ livre est sur la table. »",
+    options: [
+      { label: "La", value: "A" },
+      { label: "Le", value: "B" },
+      { label: "Les", value: "C" },
+      { label: "Une", value: "D" },
+    ],
+    correct: "B",
+  },
+
   // A2 band
   {
     id: 101,
@@ -140,6 +178,85 @@ export const QUESTIONS_FR: Question[] = [
       { label: "Unpredictable", value: "B" },
       { label: "Unfavourable / challenging", value: "C" },
       { label: "Ordinary", value: "D" },
+    ],
+    correct: "C",
+  },
+
+  // C1 band
+  {
+    id: 115,
+    band: "C1",
+    prompt: "Complète avec le subjonctif présent : « Il a accepté à condition que nous ___ les frais. »",
+    options: [
+      { label: "payons", value: "A" },
+      { label: "payions", value: "B" },
+      { label: "avons payé", value: "C" },
+      { label: "paierions", value: "D" },
+    ],
+    correct: "B",
+  },
+  {
+    id: 116,
+    band: "C1",
+    prompt:
+      "Lisez : «La proposition fut accueillie avec réticence par les délégués.» Que signifie «réticence» ?",
+    options: [
+      { label: "Enthusiasm", value: "A" },
+      { label: "Reluctance / hesitation", value: "B" },
+      { label: "Confusion", value: "C" },
+      { label: "Approval", value: "D" },
+    ],
+    correct: "B",
+  },
+  {
+    id: 117,
+    band: "C1",
+    prompt: "Transformez en discours indirect : «'Je serai là demain', dit-elle.»",
+    options: [
+      { label: "Elle dit qu'elle sera là le lendemain.", value: "A" },
+      { label: "Elle dit qu'elle serait là le lendemain.", value: "B" },
+      { label: "Elle dit qu'elle soit là le lendemain.", value: "C" },
+      { label: "Elle dit qu'elle était là le lendemain.", value: "D" },
+    ],
+    correct: "B",
+  },
+
+  // C2 band
+  {
+    id: 118,
+    band: "C2",
+    prompt:
+      "Lisez : «Les vagues frappaient le rivage comme des mains désespérées cherchant à s'échapper.» Quel procédé stylistique est utilisé ?",
+    options: [
+      { label: "Métaphore", value: "A" },
+      { label: "Hyperbole", value: "B" },
+      { label: "Comparaison", value: "C" },
+      { label: "Personnification", value: "D" },
+    ],
+    correct: "C",
+  },
+  {
+    id: 119,
+    band: "C2",
+    prompt: "Quelle est la différence sémantique entre «tuer» et «assassiner» ?",
+    options: [
+      { label: "Ce sont des synonymes exacts.", value: "A" },
+      { label: "«Assassiner» implique la préméditation ; «tuer» est plus général.", value: "B" },
+      { label: "«Tuer» est formel ; «assassiner» est familier.", value: "C" },
+      { label: "«Assassiner» ne s'emploie qu'à l'écrit.", value: "D" },
+    ],
+    correct: "B",
+  },
+  {
+    id: 120,
+    band: "C2",
+    prompt:
+      "Dans quel registre de langue se situe : «On s'est bien marrés à la soirée de Kévin, franchement c'était ouf !» ?",
+    options: [
+      { label: "Soutenu (formal)", value: "A" },
+      { label: "Standard", value: "B" },
+      { label: "Familier (colloquial)", value: "C" },
+      { label: "Technique", value: "D" },
     ],
     correct: "C",
   },

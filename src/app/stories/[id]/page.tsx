@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import type { Story, StoryAttempt } from "@/lib/supabase/types";
+import { TranslatedStoryBody } from "@/components/stories/translated-story-body";
+import type { Story, StoryAttempt, Language } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -29,14 +30,23 @@ export default async function StoryPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const { data: story } = await supabase
-    .from("stories")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .single<Story>();
+  const [{ data: story }, { data: profile }] = await Promise.all([
+    supabase
+      .from("stories")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single<Story>(),
+    supabase
+      .from("profiles")
+      .select("language")
+      .eq("id", user.id)
+      .single<{ language: Language }>(),
+  ]);
 
   if (!story) notFound();
+
+  const language: Language = profile?.language ?? "es";
 
   const { data: attempt } = await supabase
     .from("story_attempts")
@@ -48,11 +58,6 @@ export default async function StoryPage({ params }: Props) {
   const readingMins = story.word_count
     ? Math.max(1, Math.round(story.word_count / 180))
     : null;
-
-  const paragraphs = story.body
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
 
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
@@ -93,14 +98,7 @@ export default async function StoryPage({ params }: Props) {
 
         {/* Story body */}
         <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          {paragraphs.map((para, i) => (
-            <p
-              key={i}
-              className="mt-5 text-base leading-8 text-slate-800 first:mt-0"
-            >
-              {para}
-            </p>
-          ))}
+          <TranslatedStoryBody body={story.body} language={language} />
         </article>
 
         {/* Quiz CTA */}

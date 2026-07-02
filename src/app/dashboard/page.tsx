@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { LogOut, BookText, Puzzle, MessageCircle, Plus, BookOpen, Layers } from "lucide-react";
+import Link from "next/link";
+import { LogOut, BookText, Puzzle, MessageCircle, Plus, BookOpen, Layers, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/actions/auth";
 import { logWordSeen } from "@/app/actions/word-of-the-day";
@@ -109,6 +110,14 @@ export default async function DashboardPage() {
                 {activeLangMeta.label} · {profile.cefr_level}
               </span>
             )}
+
+            <Link
+              href="/settings"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
+            >
+              <Settings className="h-4 w-4" aria-hidden="true" />
+              Settings
+            </Link>
 
             <form action={logout}>
               <button
