@@ -152,12 +152,16 @@ Making them dynamic is the single highest-leverage personalization improvement.
   real-time correction feedback
 - Idiom/expression flashcard system (flip card UI component)
 
-### Phase 4 — Personalization Engine Refinement
+### Phase 4 — Personalization Engine Refinement ✅ COMPLETE
 
-- Implement the behavioural interest graph (see above)
-- Real-time adaptation: if `session_metrics.quiz_score_avg < 0.5` for 3 days,
-  downgrade CEFR level and surface easier content
-- A/B test: does sending the WOTD email in the morning vs. evening affect DAU?
+- **Behavioural interest graph** (`genre_interests` table) — implicit genre
+  preference signals recorded from story generation (+3) and quiz completion
+  (+1, +1 bonus if score ≥ 4/5). Top genres fed back into `buildStoryPrompt`.
+  Run `supabase/phase4-migration.sql` to create the table.
+- **Adaptive CEFR banner** — dashboard checks last 7 days of `session_metrics`.
+  If ≥3 scored sessions average < 50% → suggests downgrade. Average ≥ 90% →
+  suggests upgrade. One-click apply updates both `profiles` and `language_profiles`.
+- Deferred: A/B test for WOTD email timing (low priority).
 
 ### Phase 5 — Voice Chat & Speaking Practice
 

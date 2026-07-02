@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
+import { updateGenreInterest } from "@/app/actions/interests";
 import type { GeneratedStory } from "@/lib/stories/schema";
 import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     // Body may be empty — that's fine.
   }
 
-  const [profileResult, interestsResult] = await Promise.all([
+  const [profileResult, interestsResult, genreResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("cefr_level, language")
@@ -40,14 +41,22 @@ export async function POST(request: Request) {
       .eq("user_id", user.id)
       .order("weight", { ascending: false })
       .limit(3),
+    supabase
+      .from("genre_interests")
+      .select("genre")
+      .eq("user_id", user.id)
+      .order("weight", { ascending: false })
+      .limit(2),
   ]);
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
   const language: Language = profileResult.data?.language ?? "es";
   const topics: string[] =
     interestsResult.data?.map((r: { topic: InterestTopic }) => r.topic) ?? [];
+  const topGenres: string[] =
+    (genreResult.data ?? []).map((r: { genre: string }) => r.genre);
 
-  const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined, language);
+  const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined, language, topGenres);
 
   const google = createGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY ?? "",
@@ -100,6 +109,11 @@ export async function POST(request: Request) {
       { error: "Failed to save story." },
       { status: 500 },
     );
+  }
+
+  // ── Step 2b: Record genre interest signal (+3 for explicit genre selection) ─
+  if (selectedTopic) {
+    void updateGenreInterest(selectedTopic, 3, language);
   }
 
   // ── Step 3: Pre-generate translations ──────────────────────────────────────

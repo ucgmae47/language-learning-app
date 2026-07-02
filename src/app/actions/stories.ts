@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { updateGenreInterest } from "@/app/actions/interests";
+import type { Language } from "@/lib/supabase/types";
 
 export type AttemptResult = {
   error?: string;
@@ -21,13 +23,25 @@ export async function saveStoryAttempt(
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Persist the attempt, increment stories_read on the profile, and
-  // upsert today's session metric row — all in parallel.
-  const [attemptResult] = await Promise.all([
+  // Fetch the story's topics and the user's active language in parallel with
+  // the write operations so we can update genre interests afterwards.
+  const [attemptResult, storyResult, profileResult] = await Promise.all([
     supabase.from("story_attempts").upsert(
       { user_id: user.id, story_id: storyId, score, answers },
       { onConflict: "user_id,story_id", ignoreDuplicates: false },
     ),
+
+    supabase
+      .from("stories")
+      .select("topics")
+      .eq("id", storyId)
+      .single<{ topics: string[] }>(),
+
+    supabase
+      .from("profiles")
+      .select("language")
+      .eq("id", user.id)
+      .single<{ language: Language }>(),
 
     supabase.rpc("increment_stories_read", { uid: user.id }),
 
@@ -49,6 +63,16 @@ export async function saveStoryAttempt(
 
   if (attemptResult.error) {
     return { error: attemptResult.error.message };
+  }
+
+  // ── Behavioural interest graph: record quiz-completion signal ────────────
+  // +1 for completing the quiz; +1 bonus if score ≥ 4/5.
+  const storyTopics: string[] = storyResult.data?.topics ?? [];
+  const language: Language = profileResult.data?.language ?? "es";
+  const bonusDelta = score >= 4 ? 1 : 0;
+
+  for (const genre of storyTopics) {
+    void updateGenreInterest(genre, 1 + bonusDelta, language);
   }
 
   return {};

@@ -22,15 +22,23 @@ export function buildStoryPrompt(
   userInterests: string[],
   selectedTopic?: string,
   language: Language = "es",
+  topGenres: string[] = [],
 ): string {
   const langName = LANGUAGE_NAMES[language];
+
+  // Build genre hint from behavioural interest graph (top 2 learned genres).
+  // Shown only when not overridden by an explicit topic selection.
+  const genreHint =
+    topGenres.length > 0
+      ? ` The learner has shown strong interest in ${topGenres.join(" and ")} stories.`
+      : "";
 
   // Selected genre takes priority; fall back to user interests, then defaults.
   let themeInstruction: string;
   if (selectedTopic) {
     const extras =
       userInterests.length > 0
-        ? ` Subtly incorporate the learner's interests (${userInterests.join(", ")}) where it fits naturally.`
+        ? ` Subtly incorporate the learner's onboarding interests (${userInterests.join(", ")}) where it fits naturally.`
         : "";
     themeInstruction = `Genre: **${selectedTopic}**.${extras}`;
   } else {
@@ -38,7 +46,7 @@ export function buildStoryPrompt(
       userInterests.length > 0
         ? userInterests.join(", ")
         : DEFAULT_TOPICS.join(", ");
-    themeInstruction = `Weave the following topic(s) naturally into the narrative: ${topicList}.`;
+    themeInstruction = `Weave the following topic(s) naturally into the narrative: ${topicList}.${genreHint}`;
   }
 
   const levelGuide = LEVEL_GUIDANCE[cefrLevel];

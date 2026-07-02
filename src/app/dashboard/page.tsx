@@ -4,8 +4,10 @@ import { LogOut, BookText, Puzzle, MessageCircle, Plus, BookOpen, Layers, Settin
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/actions/auth";
 import { logWordSeen } from "@/app/actions/word-of-the-day";
+import { getCefrAdaptationSuggestion } from "@/app/actions/cefr-adapt";
 import { WordOfTheDay } from "@/components/dashboard/word-of-the-day";
 import { LanguageSwitcher } from "@/components/dashboard/language-switcher";
+import { CefrAdaptBanner } from "@/components/dashboard/cefr-adapt-banner";
 import { getWordForDate } from "@/lib/word-of-the-day/bank";
 import type { Language, LanguageProfile, Profile } from "@/lib/supabase/types";
 
@@ -25,13 +27,14 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [profileResult, langProfilesResult] = await Promise.all([
+  const [profileResult, langProfilesResult, cefrSuggestion] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single<Profile>(),
     supabase
       .from("language_profiles")
       .select("*")
       .eq("user_id", user.id)
       .returns<LanguageProfile[]>(),
+    getCefrAdaptationSuggestion(),
   ]);
 
   const profile = profileResult.data;
@@ -165,6 +168,9 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Adaptive CEFR suggestion */}
+        {cefrSuggestion && <CefrAdaptBanner data={cefrSuggestion} />}
 
         {/* Word of the Day */}
         <div className="mb-8">

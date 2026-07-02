@@ -83,6 +83,16 @@ export type StoryAttempt = {
   completed_at: string;
 };
 
+export type GenreInterest = {
+  id: string;
+  user_id: string;
+  language: Language;
+  genre: string;
+  weight: number;
+  last_updated: string;
+  created_at: string;
+};
+
 export type GrammarWeakness = {
   id: string;
   user_id: string;
@@ -129,6 +139,13 @@ export type Database = {
         Insert: Omit<UserInterest, "id" | "created_at" | "updated_at"> &
           Partial<Pick<UserInterest, "id">>;
         Update: Partial<Omit<UserInterest, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      genre_interests: {
+        Row: GenreInterest;
+        Insert: Omit<GenreInterest, "id" | "created_at" | "last_updated"> &
+          Partial<Pick<GenreInterest, "id" | "last_updated">>;
+        Update: Partial<Omit<GenreInterest, "id" | "user_id" | "created_at">>;
         Relationships: Rel;
       };
       grammar_weaknesses: {
