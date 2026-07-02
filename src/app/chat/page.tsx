@@ -5,12 +5,14 @@ import { ArrowLeft, Wifi } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { generateChatStarters } from "@/lib/chat/generate-starters";
-import type { CefrLevel, InterestTopic } from "@/lib/supabase/types";
+import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
 export const metadata: Metadata = {
   title: "Chat Practice | LinguaPath",
-  description: "Practice conversational Spanish with your AI tutor Lucía.",
+  description: "Practice conversational language skills with your AI tutor.",
 };
+
+const TUTOR_NAMES: Record<Language, string> = { es: "Lucía", fr: "Sophie" };
 
 export default async function ChatPage() {
   const supabase = await createClient();
@@ -24,7 +26,7 @@ export default async function ChatPage() {
   const [profileResult, interestsResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, cefr_level")
+      .select("display_name, cefr_level, language")
       .eq("id", user.id)
       .single(),
     supabase
@@ -36,16 +38,18 @@ export default async function ChatPage() {
   ]);
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
+  const language: Language = profileResult.data?.language ?? "es";
   const displayName: string =
     profileResult.data?.display_name ??
     user.user_metadata?.display_name ??
-    "Estudiante";
+    "Learner";
   const interests: string[] =
     interestsResult.data?.map(
       (r: { topic: InterestTopic }) => r.topic,
     ) ?? [];
 
-  const starters = await generateChatStarters(displayName, cefrLevel, interests);
+  const starters = await generateChatStarters(displayName, cefrLevel, interests, language);
+  const tutorName = TUTOR_NAMES[language];
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
@@ -62,7 +66,7 @@ export default async function ChatPage() {
 
           <div className="flex flex-1 items-center justify-center gap-3">
             <div className="flex flex-col items-center">
-              <p className="text-sm font-semibold text-slate-900">Lucía</p>
+              <p className="text-sm font-semibold text-slate-900">{tutorName}</p>
               <div className="flex items-center gap-1">
                 <Wifi className="h-3 w-3 text-emerald-500" aria-hidden="true" />
                 <span className="text-xs text-emerald-600">Online</span>

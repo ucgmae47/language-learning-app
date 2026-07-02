@@ -3,7 +3,7 @@ import { streamText, createTextStreamResponse } from "ai";
 import type { ModelMessage } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { buildChatSystemPrompt } from "@/lib/chat/system-prompt";
-import type { CefrLevel, InterestTopic } from "@/lib/supabase/types";
+import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
 function getModel() {
   const github = createOpenAI({
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const [profileResult, interestsResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("display_name, cefr_level")
+      .select("display_name, cefr_level, language")
       .eq("id", user.id)
       .single(),
     supabase
@@ -46,16 +46,17 @@ export async function POST(request: Request) {
   ]);
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
+  const language: Language = profileResult.data?.language ?? "es";
   const displayName: string =
     profileResult.data?.display_name ??
     user.user_metadata?.display_name ??
-    "Estudiante";
+    "Learner";
   const interests: string[] =
     interestsResult.data?.map(
       (r: { topic: InterestTopic }) => r.topic,
     ) ?? [];
 
-  const systemPrompt = buildChatSystemPrompt(displayName, cefrLevel, interests);
+  const systemPrompt = buildChatSystemPrompt(displayName, cefrLevel, interests, language);
 
   try {
     const result = streamText({

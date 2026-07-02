@@ -1,5 +1,7 @@
 export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
+export type Language = "es" | "fr";
+
 export type InterestTopic =
   | "food"
   | "travel"
@@ -16,6 +18,7 @@ export type Profile = {
   id: string;
   display_name: string | null;
   cefr_level: CefrLevel;
+  language: Language;
   streak_count: number;
   stories_read: number;
   created_at: string;

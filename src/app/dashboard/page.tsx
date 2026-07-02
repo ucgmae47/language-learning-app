@@ -5,34 +5,12 @@ import { logout } from "@/app/actions/auth";
 import { logWordSeen } from "@/app/actions/word-of-the-day";
 import { WordOfTheDay } from "@/components/dashboard/word-of-the-day";
 import { getWordForDate } from "@/lib/word-of-the-day/bank";
-import type { Profile } from "@/lib/supabase/types";
+import type { Language, Profile } from "@/lib/supabase/types";
 
-const quickLinks = [
-  {
-    href: "/stories",
-    label: "Today's Story",
-    icon: BookText,
-    color: "bg-emerald-50 text-emerald-700",
-  },
-  {
-    href: "#",
-    label: "Daily Puzzle",
-    icon: Puzzle,
-    color: "bg-sky-50 text-sky-700",
-  },
-  {
-    href: "/chat",
-    label: "Chat Practice",
-    icon: MessageCircle,
-    color: "bg-violet-50 text-violet-700",
-  },
-  {
-    href: "/assessment",
-    label: "CEFR Assessment",
-    icon: Brain,
-    color: "bg-amber-50 text-amber-700",
-  },
-] as const;
+const LANGUAGE_LABELS: Record<Language, { flag: string; label: string }> = {
+  es: { flag: "🇪🇸", label: "Spanish" },
+  fr: { flag: "🇫🇷", label: "French" },
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -45,18 +23,49 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
-  const wordEntry = getWordForDate(today);
-
   const [profileResult] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single<Profile>(),
-    logWordSeen(wordEntry.word),
   ]);
 
   const profile = profileResult.data;
+  const language: Language = profile?.language ?? "es";
   const displayName =
     profile?.display_name ?? user.user_metadata?.display_name ?? "Learner";
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const wordEntry = getWordForDate(today, language);
+
+  await logWordSeen(wordEntry.word);
+
+  const langMeta = LANGUAGE_LABELS[language];
+
+  const quickLinks = [
+    {
+      href: "/stories",
+      label: "Today's Story",
+      icon: BookText,
+      color: "bg-emerald-50 text-emerald-700",
+    },
+    {
+      href: "/crossword",
+      label: "Daily Crossword",
+      icon: Puzzle,
+      color: "bg-sky-50 text-sky-700",
+    },
+    {
+      href: "/chat",
+      label: "Chat Practice",
+      icon: MessageCircle,
+      color: "bg-violet-50 text-violet-700",
+    },
+    {
+      href: "/assessment",
+      label: "CEFR Assessment",
+      icon: Brain,
+      color: "bg-amber-50 text-amber-700",
+    },
+  ] as const;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -66,11 +75,20 @@ export default async function DashboardPage() {
             <p className="text-sm text-slate-500">Welcome back,</p>
             <p className="font-semibold text-slate-900">{displayName}</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {profile && (
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
-                {profile.cefr_level}
-              </span>
+              <>
+                <span
+                  className="flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-700"
+                  title={`Learning ${langMeta.label}`}
+                >
+                  <span aria-hidden="true">{langMeta.flag}</span>
+                  {langMeta.label}
+                </span>
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+                  {profile.cefr_level}
+                </span>
+              </>
             )}
             <form action={logout}>
               <button

@@ -138,10 +138,10 @@ export function QuizClient() {
         </div>
 
         <button
-          onClick={() => router.push("/onboarding/interests")}
+          onClick={() => router.push("/onboarding/language")}
           className="mt-6 w-full rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
         >
-          Choose your interests →
+          Choose your language →
         </button>
       </div>
     );

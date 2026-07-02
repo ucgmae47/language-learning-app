@@ -4,7 +4,8 @@ export type WordEntry = {
   gender?: "masculine" | "feminine";
   ipa?: string;
   definition: string;
-  exampleEs: string;
+  /** Example sentence in the target language (Spanish or French). */
+  example: string;
   exampleEn: string;
 };
 
@@ -14,7 +15,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "verb",
     ipa: "/per.se.βe.ˈɾaɾ/",
     definition: "To persist in doing something despite difficulty or opposition.",
-    exampleEs: "Si quieres dominar el español, debes perseverar cada día.",
+    example: "Si quieres dominar el español, debes perseverar cada día.",
     exampleEn: "If you want to master Spanish, you must persevere every day.",
   },
   {
@@ -22,7 +23,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "The act of getting up very early in the morning.",
-    exampleEs: "Mañana tengo que dar un madrugón para coger el tren.",
+    example: "Mañana tengo que dar un madrugón para coger el tren.",
     exampleEn: "Tomorrow I have to get up very early to catch the train.",
   },
   {
@@ -30,14 +31,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "verb",
     ipa: "/a.ɲo.ˈɾaɾ/",
     definition: "To long for or miss something or someone from the past.",
-    exampleEs: "Añoro los veranos de mi infancia en el pueblo.",
+    example: "Añoro los veranos de mi infancia en el pueblo.",
     exampleEn: "I long for the summers of my childhood in the village.",
   },
   {
     word: "efímero",
     partOfSpeech: "adjective",
     definition: "Lasting for a very short time; transitory.",
-    exampleEs: "La fama es efímera, pero el carácter dura toda la vida.",
+    example: "La fama es efímera, pero el carácter dura toda la vida.",
     exampleEn: "Fame is fleeting, but character lasts a lifetime.",
   },
   {
@@ -45,14 +46,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A state of being comfortable, healthy, or happy; well-being.",
-    exampleEs: "El ejercicio diario contribuye al bienestar físico y mental.",
+    example: "El ejercicio diario contribuye al bienestar físico y mental.",
     exampleEn: "Daily exercise contributes to physical and mental well-being.",
   },
   {
     word: "imprescindible",
     partOfSpeech: "adjective",
     definition: "Absolutely necessary; indispensable.",
-    exampleEs: "Llevar agua es imprescindible cuando haces senderismo.",
+    example: "Llevar agua es imprescindible cuando haces senderismo.",
     exampleEn: "Bringing water is essential when you go hiking.",
   },
   {
@@ -60,7 +61,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A strong desire or longing for something.",
-    exampleEs: "Tenía un profundo anhelo de volver a su país natal.",
+    example: "Tenía un profundo anhelo de volver a su país natal.",
     exampleEn: "She had a deep longing to return to her home country.",
   },
   {
@@ -68,14 +69,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "The early hours of the morning, between midnight and dawn.",
-    exampleEs: "Llegaron a casa a las tres de la madrugada.",
+    example: "Llegaron a casa a las tres de la madrugada.",
     exampleEn: "They arrived home at three in the early hours.",
   },
   {
     word: "superar",
     partOfSpeech: "verb",
     definition: "To overcome, exceed, or surpass someone or something.",
-    exampleEs: "Con esfuerzo, logró superar todos sus miedos.",
+    example: "Con esfuerzo, logró superar todos sus miedos.",
     exampleEn: "With effort, she managed to overcome all her fears.",
   },
   {
@@ -83,7 +84,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Stubbornness; the quality of being obstinate.",
-    exampleEs: "Su terquedad le impidió pedir ayuda cuando la necesitaba.",
+    example: "Su terquedad le impidió pedir ayuda cuando la necesitaba.",
     exampleEn: "His stubbornness prevented him from asking for help when he needed it.",
   },
   {
@@ -91,14 +92,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "The quality of being ordinary or everyday; daily routine.",
-    exampleEs: "Encontrar belleza en la cotidianidad es un arte.",
+    example: "Encontrar belleza en la cotidianidad es un arte.",
     exampleEn: "Finding beauty in the everyday is an art.",
   },
   {
     word: "impulsivo",
     partOfSpeech: "adjective",
     definition: "Acting suddenly without thinking through the consequences.",
-    exampleEs: "Tomó una decisión impulsiva de la que luego se arrepintió.",
+    example: "Tomó una decisión impulsiva de la que luego se arrepintió.",
     exampleEn: "He made an impulsive decision he later regretted.",
   },
   {
@@ -106,14 +107,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "An intention or aim; the reason for which something is done.",
-    exampleEs: "Empezó el año con el propósito de aprender un nuevo idioma.",
+    example: "Empezó el año con el propósito de aprender un nuevo idioma.",
     exampleEn: "She started the year with the intention of learning a new language.",
   },
   {
     word: "agotador",
     partOfSpeech: "adjective",
     definition: "Exhausting; causing extreme tiredness.",
-    exampleEs: "Fue un día agotador, pero muy productivo.",
+    example: "Fue un día agotador, pero muy productivo.",
     exampleEn: "It was an exhausting day, but very productive.",
   },
   {
@@ -121,14 +122,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Living together in harmony; coexistence.",
-    exampleEs: "La convivencia en comunidad requiere respeto mutuo.",
+    example: "La convivencia en comunidad requiere respeto mutuo.",
     exampleEn: "Living together in a community requires mutual respect.",
   },
   {
     word: "reanudar",
     partOfSpeech: "verb",
     definition: "To resume or restart an activity after a pause.",
-    exampleEs: "Después del descanso, reanudaron la reunión.",
+    example: "Después del descanso, reanudaron la reunión.",
     exampleEn: "After the break, they resumed the meeting.",
   },
   {
@@ -136,7 +137,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Wisdom; the quality of having experience and good judgment.",
-    exampleEs: "La sabiduría no llega sólo con los años, sino con la reflexión.",
+    example: "La sabiduría no llega sólo con los años, sino con la reflexión.",
     exampleEn: "Wisdom doesn't come with age alone, but with reflection.",
   },
   {
@@ -144,21 +145,21 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "A place where one feels safe and from which one's strength is drawn; a sense of home.",
-    exampleEs: "Mi querencia es la cocina de mi abuela, donde todo huele a canela.",
+    example: "Mi querencia es la cocina de mi abuela, donde todo huele a canela.",
     exampleEn: "My place of belonging is my grandmother's kitchen, where everything smells of cinnamon.",
   },
   {
     word: "abrumador",
     partOfSpeech: "adjective",
     definition: "Overwhelming; causing someone to feel burdened or overpowered.",
-    exampleEs: "La cantidad de información fue abrumadora al principio.",
+    example: "La cantidad de información fue abrumadora al principio.",
     exampleEn: "The amount of information was overwhelming at first.",
   },
   {
     word: "comprometerse",
     partOfSpeech: "verb",
     definition: "To commit oneself to a course of action or to someone.",
-    exampleEs: "Se comprometió a terminar el proyecto antes del viernes.",
+    example: "Se comprometió a terminar el proyecto antes del viernes.",
     exampleEn: "He committed to finishing the project before Friday.",
   },
   {
@@ -166,14 +167,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "A heroic deed or great achievement.",
-    exampleEs: "Escalar ese pico fue toda una hazaña.",
+    example: "Escalar ese pico fue toda una hazaña.",
     exampleEn: "Climbing that peak was quite an achievement.",
   },
   {
     word: "vertiginoso",
     partOfSpeech: "adjective",
     definition: "Extremely rapid; causing or feeling dizziness.",
-    exampleEs: "El crecimiento vertiginoso de la tecnología cambia nuestras vidas.",
+    example: "El crecimiento vertiginoso de la tecnología cambia nuestras vidas.",
     exampleEn: "The dizzying pace of technological growth changes our lives.",
   },
   {
@@ -181,7 +182,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A challenge or something that tests abilities.",
-    exampleEs: "Hablar en público es un desafío para muchas personas.",
+    example: "Hablar en público es un desafío para muchas personas.",
     exampleEn: "Public speaking is a challenge for many people.",
   },
   {
@@ -189,7 +190,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Inner strength, resilience; also a fortress.",
-    exampleEs: "Afrontó la enfermedad con una fortaleza admirable.",
+    example: "Afrontó la enfermedad con una fortaleza admirable.",
     exampleEn: "She faced the illness with admirable strength.",
   },
   {
@@ -197,7 +198,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "The state of being uncertain; doubt about the future.",
-    exampleEs: "La incertidumbre económica preocupa a muchas familias.",
+    example: "La incertidumbre económica preocupa a muchas familias.",
     exampleEn: "Economic uncertainty worries many families.",
   },
   {
@@ -205,7 +206,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Skill or dexterity in a particular activity.",
-    exampleEs: "Tocaba la guitarra con una destreza sorprendente.",
+    example: "Tocaba la guitarra con una destreza sorprendente.",
     exampleEn: "She played the guitar with surprising skill.",
   },
   {
@@ -213,14 +214,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Tranquillity, calm, or peace of mind.",
-    exampleEs: "Necesitaba un momento de sosiego tras una semana caótica.",
+    example: "Necesitaba un momento de sosiego tras una semana caótica.",
     exampleEn: "He needed a moment of peace after a chaotic week.",
   },
   {
     word: "aprovechar",
     partOfSpeech: "verb",
     definition: "To make good use of; to take advantage of an opportunity.",
-    exampleEs: "Hay que aprovechar cada oportunidad para practicar el idioma.",
+    example: "Hay que aprovechar cada oportunidad para practicar el idioma.",
     exampleEn: "You must make the most of every opportunity to practise the language.",
   },
   {
@@ -228,7 +229,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "A crossroads; a point at which a decision must be made.",
-    exampleEs: "Estaba en una encrucijada: quedarse o emigrar.",
+    example: "Estaba en una encrucijada: quedarse o emigrar.",
     exampleEn: "She was at a crossroads: stay or emigrate.",
   },
   {
@@ -236,14 +237,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Determination and effort put into achieving something.",
-    exampleEs: "Gracias a su empeño, consiguió la beca.",
+    example: "Gracias a su empeño, consiguió la beca.",
     exampleEn: "Thanks to his determination, he got the scholarship.",
   },
   {
     word: "fomentar",
     partOfSpeech: "verb",
     definition: "To promote, encourage, or foster something.",
-    exampleEs: "El gobierno quiere fomentar el uso del transporte público.",
+    example: "El gobierno quiere fomentar el uso del transporte público.",
     exampleEn: "The government wants to promote the use of public transport.",
   },
   {
@@ -251,14 +252,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Simplicity; the quality of being uncomplicated and modest.",
-    exampleEs: "Lo que más admiro de ella es su sencillez.",
+    example: "Lo que más admiro de ella es su sencillez.",
     exampleEn: "What I admire most about her is her simplicity.",
   },
   {
     word: "afligir",
     partOfSpeech: "verb",
     definition: "To cause someone pain or distress; to afflict.",
-    exampleEs: "La noticia le afligió profundamente.",
+    example: "La noticia le afligió profundamente.",
     exampleEn: "The news deeply distressed him.",
   },
   {
@@ -266,7 +267,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Chance, luck, or an uncertain risk.",
-    exampleEs: "Dejó el resultado al albur del destino.",
+    example: "Dejó el resultado al albur del destino.",
     exampleEn: "She left the outcome to the whims of fate.",
   },
   {
@@ -274,7 +275,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Extreme care with money; also deliberate slowness or unhurriedness.",
-    exampleEs: "Explicó el plan con parsimonia, paso a paso.",
+    example: "Explicó el plan con parsimonia, paso a paso.",
     exampleEn: "He explained the plan unhurriedly, step by step.",
   },
   {
@@ -282,7 +283,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Hustle and bustle; hectic activity.",
-    exampleEs: "El ajetreo de la ciudad me agota, prefiero el campo.",
+    example: "El ajetreo de la ciudad me agota, prefiero el campo.",
     exampleEn: "The hustle and bustle of the city exhausts me; I prefer the countryside.",
   },
   {
@@ -290,14 +291,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "The outcome or conclusion, especially of a story.",
-    exampleEs: "El desenlace de la novela fue completamente inesperado.",
+    example: "El desenlace de la novela fue completamente inesperado.",
     exampleEn: "The ending of the novel was completely unexpected.",
   },
   {
     word: "acaparar",
     partOfSpeech: "verb",
     definition: "To monopolise or hoard; to grab all attention or resources.",
-    exampleEs: "Su talento acaparó toda la atención del jurado.",
+    example: "Su talento acaparó toda la atención del jurado.",
     exampleEn: "Her talent captured all of the jury's attention.",
   },
   {
@@ -305,14 +306,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Remoteness; the quality of being far away.",
-    exampleEs: "Desde la lejanía, el pueblo parecía un cuadro.",
+    example: "Desde la lejanía, el pueblo parecía un cuadro.",
     exampleEn: "From afar, the village looked like a painting.",
   },
   {
     word: "sobrellevar",
     partOfSpeech: "verb",
     definition: "To cope with or endure something difficult.",
-    exampleEs: "Aprendió a sobrellevar la distancia con llamadas diarias.",
+    example: "Aprendió a sobrellevar la distancia con llamadas diarias.",
     exampleEn: "She learned to cope with the distance through daily calls.",
   },
   {
@@ -320,7 +321,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Sanity; soundness of mind; good sense.",
-    exampleEs: "En medio del caos, él mantuvo la cordura.",
+    example: "En medio del caos, él mantuvo la cordura.",
     exampleEn: "In the midst of chaos, he kept his sanity.",
   },
   {
@@ -328,14 +329,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Mistrust or suspicion; wariness.",
-    exampleEs: "Aceptó la propuesta con cierto recelo.",
+    example: "Aceptó la propuesta con cierto recelo.",
     exampleEn: "She accepted the proposal with some wariness.",
   },
   {
     word: "afrontar",
     partOfSpeech: "verb",
     definition: "To face up to and deal with a difficult situation.",
-    exampleEs: "Hay que afrontar los problemas en lugar de evitarlos.",
+    example: "Hay que afrontar los problemas en lugar de evitarlos.",
     exampleEn: "You have to face problems instead of avoiding them.",
   },
   {
@@ -343,7 +344,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "A sentimental longing for the past.",
-    exampleEs: "Escuchar esa canción le llenó de nostalgia.",
+    example: "Escuchar esa canción le llenó de nostalgia.",
     exampleEn: "Listening to that song filled him with nostalgia.",
   },
   {
@@ -351,7 +352,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A subtle difference in meaning, expression, or sound; a nuance.",
-    exampleEs: "Hay un matiz importante entre 'ser' y 'estar' en español.",
+    example: "Hay un matiz importante entre 'ser' y 'estar' en español.",
     exampleEn: "There is an important nuance between 'ser' and 'estar' in Spanish.",
   },
   {
@@ -359,7 +360,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A small gap or opening; figuratively, a small opportunity or chance.",
-    exampleEs: "Había un resquicio de esperanza en la situación más oscura.",
+    example: "Había un resquicio de esperanza en la situación más oscura.",
     exampleEn: "There was a glimmer of hope in the darkest situation.",
   },
   {
@@ -367,7 +368,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A framework or network; an intricate structure.",
-    exampleEs: "La novela presenta un complejo entramado de personajes.",
+    example: "La novela presenta un complejo entramado de personajes.",
     exampleEn: "The novel presents a complex network of characters.",
   },
   {
@@ -375,7 +376,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Liveliness, sharpness of mind, or vividness.",
-    exampleEs: "Respondía con una viveza que sorprendía a todos.",
+    example: "Respondía con una viveza que sorprendía a todos.",
     exampleEn: "She responded with a sharpness that surprised everyone.",
   },
   {
@@ -383,14 +384,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Deep roots in a place or culture; a strong sense of belonging.",
-    exampleEs: "Su arraigo a la tierra natal era inquebrantable.",
+    example: "Su arraigo a la tierra natal era inquebrantable.",
     exampleEn: "His roots in his homeland were unshakeable.",
   },
   {
     word: "transcurrir",
     partOfSpeech: "verb",
     definition: "To pass (of time); to go by or elapse.",
-    exampleEs: "El tiempo transcurre más rápido cuando estás ocupado.",
+    example: "El tiempo transcurre más rápido cuando estás ocupado.",
     exampleEn: "Time passes more quickly when you are busy.",
   },
   {
@@ -398,7 +399,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A strong, persistent longing or yearning.",
-    exampleEs: "Su anhelo de justicia le impulsó a estudiar derecho.",
+    example: "Su anhelo de justicia le impulsó a estudiar derecho.",
     exampleEn: "Her longing for justice drove her to study law.",
   },
   {
@@ -406,14 +407,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Shrewdness; the ability to notice and understand things quickly.",
-    exampleEs: "Su perspicacia le permitió detectar el problema de inmediato.",
+    example: "Su perspicacia le permitió detectar el problema de inmediato.",
     exampleEn: "Her shrewdness allowed her to spot the problem immediately.",
   },
   {
     word: "desprenderse",
     partOfSpeech: "verb",
     definition: "To detach or let go of something; to give up a possession.",
-    exampleEs: "Se desprendió de todos sus libros antes de emigrar.",
+    example: "Se desprendió de todos sus libros antes de emigrar.",
     exampleEn: "He let go of all his books before emigrating.",
   },
   {
@@ -421,7 +422,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A bond or link between people or things.",
-    exampleEs: "El idioma es un vínculo poderoso entre culturas.",
+    example: "El idioma es un vínculo poderoso entre culturas.",
     exampleEn: "Language is a powerful bond between cultures.",
   },
   {
@@ -429,14 +430,14 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Brazenness; shameless boldness.",
-    exampleEs: "Llegó tarde y, con todo el descaro, pidió más tiempo.",
+    example: "Llegó tarde y, con todo el descaro, pidió más tiempo.",
     exampleEn: "He arrived late and, with complete brazenness, asked for more time.",
   },
   {
     word: "evocar",
     partOfSpeech: "verb",
     definition: "To bring a feeling, memory, or image to mind.",
-    exampleEs: "Ese aroma evoca recuerdos de la infancia.",
+    example: "Ese aroma evoca recuerdos de la infancia.",
     exampleEn: "That scent evokes memories of childhood.",
   },
   {
@@ -444,7 +445,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "Gentleness, meekness, or tameness of spirit.",
-    exampleEs: "Respondió a las críticas con una mansedumbre desarmante.",
+    example: "Respondió a las críticas con una mansedumbre desarmante.",
     exampleEn: "She responded to the criticism with a disarming gentleness.",
   },
   {
@@ -452,7 +453,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "A sudden outburst of emotion or passion.",
-    exampleEs: "En un arrebato de ira, tiró los papeles al suelo.",
+    example: "En un arrebato de ira, tiró los papeles al suelo.",
     exampleEn: "In a fit of rage, he threw the papers to the floor.",
   },
   {
@@ -460,7 +461,7 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "masculine",
     definition: "Boldness, fearless courage, and determined effort.",
-    exampleEs: "Defendió sus ideas con denuedo ante el tribunal.",
+    example: "Defendió sus ideas con denuedo ante el tribunal.",
     exampleEn: "He defended his ideas with great courage before the tribunal.",
   },
   {
@@ -468,18 +469,27 @@ export const WORD_BANK: WordEntry[] = [
     partOfSpeech: "noun",
     gender: "feminine",
     definition: "An impossible dream or wild fancy; a chimera.",
-    exampleEs: "Para muchos, vivir sin trabajar es una quimera.",
+    example: "Para muchos, vivir sin trabajar es una quimera.",
     exampleEn: "For many people, living without working is a pipe dream.",
   },
 ];
 
 /**
  * Returns the word for a given date deterministically.
+ * Accepts an optional language to select the appropriate bank.
  * Uses epoch days modulo the bank length so the sequence cycles
- * without repeating for ~60 days.
+ * without repeating for the duration of the bank.
  */
-export function getWordForDate(date: Date = new Date()): WordEntry {
+export function getWordForDate(
+  date: Date = new Date(),
+  language: "es" | "fr" = "es",
+): WordEntry {
+  // Lazy-import so the Spanish-only path never loads the French bank.
+  const bank =
+    language === "fr"
+      ? (require("./bank-fr") as { WORD_BANK_FR: WordEntry[] }).WORD_BANK_FR
+      : WORD_BANK;
   const epochDays = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
-  const index = epochDays % WORD_BANK.length;
-  return WORD_BANK[index]!;
+  const index = epochDays % bank.length;
+  return bank[index]!;
 }

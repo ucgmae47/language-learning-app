@@ -66,7 +66,7 @@ export function buildWotdEmailHtml(entry: WordEntry, date: string): string {
                 <tr>
                   <td>
                     <p style="margin:0;font-size:14px;font-weight:600;color:#0f172a;line-height:1.6">
-                      &ldquo;${entry.exampleEs}&rdquo;
+                      &ldquo;${entry.example}&rdquo;
                     </p>
                     <p style="margin:6px 0 0;font-size:13px;color:#64748b;font-style:italic;line-height:1.5">
                       ${entry.exampleEn}
@@ -118,7 +118,7 @@ export function buildWotdEmailText(entry: WordEntry, date: string): string {
     "",
     entry.definition,
     "",
-    `"${entry.exampleEs}"`,
+    `"${entry.example}"`,
     entry.exampleEn,
     "",
     "Continue learning: " +

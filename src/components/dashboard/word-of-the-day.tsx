@@ -62,7 +62,7 @@ export function WordOfTheDay({ entry, date }: Props) {
 
       <blockquote className="mt-4 rounded-xl bg-white/80 p-4 text-sm leading-6">
         <p className="font-medium text-slate-800">
-          &ldquo;{entry.exampleEs}&rdquo;
+          &ldquo;{entry.example}&rdquo;
         </p>
         <p className="mt-1 text-slate-500 italic">{entry.exampleEn}</p>
       </blockquote>

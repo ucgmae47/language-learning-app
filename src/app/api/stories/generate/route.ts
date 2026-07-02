@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
 import type { GeneratedStory } from "@/lib/stories/schema";
-import type { CefrLevel, InterestTopic } from "@/lib/supabase/types";
+import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const [profileResult, interestsResult] = await Promise.all([
     supabase
       .from("profiles")
-      .select("cefr_level")
+      .select("cefr_level, language")
       .eq("id", user.id)
       .single(),
     supabase
@@ -42,10 +42,11 @@ export async function POST(request: Request) {
   ]);
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
+  const language: Language = profileResult.data?.language ?? "es";
   const topics: string[] =
     interestsResult.data?.map((r: { topic: InterestTopic }) => r.topic) ?? [];
 
-  const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined);
+  const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined, language);
 
   let object: GeneratedStory;
 
