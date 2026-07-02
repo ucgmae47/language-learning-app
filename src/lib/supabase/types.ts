@@ -83,6 +83,33 @@ export type StoryAttempt = {
   completed_at: string;
 };
 
+export type CorrectionType = "spelling" | "conjugation" | "word_choice" | "grammar" | "accent";
+
+export type JournalCorrection = {
+  original: string;
+  corrected: string;
+  type: CorrectionType;
+  explanation: string;
+};
+
+export type JournalFeedback = {
+  corrections: JournalCorrection[];
+  overall_score: number;
+  summary: string;
+  strength: string;
+  focus_area: string;
+};
+
+export type JournalEntry = {
+  id: string;
+  user_id: string;
+  language: Language;
+  content: string;
+  feedback: JournalFeedback | null;
+  score: number | null;
+  created_at: string;
+};
+
 export type ChatRoomMessage = {
   id: string;
   user_id: string;
@@ -149,6 +176,12 @@ export type Database = {
         Insert: Omit<UserInterest, "id" | "created_at" | "updated_at"> &
           Partial<Pick<UserInterest, "id">>;
         Update: Partial<Omit<UserInterest, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      journal_entries: {
+        Row: JournalEntry;
+        Insert: Omit<JournalEntry, "id" | "created_at"> & Partial<Pick<JournalEntry, "id">>;
+        Update: Partial<Omit<JournalEntry, "id" | "user_id" | "created_at">>;
         Relationships: Rel;
       };
       chat_room_messages: {

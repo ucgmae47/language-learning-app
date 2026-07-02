@@ -76,6 +76,26 @@ const FEATURES: Feature[] = [
     glowColor: "rgba(217,70,239,0.55)",
     textAccent: "text-fuchsia-300",
   },
+  {
+    id: "journal",
+    label: "Journal",
+    emoji: "📓",
+    description: "Write in your target language — AI marks every error inline",
+    href: "/journal",
+    gradient: "from-indigo-500 via-blue-500 to-sky-600",
+    glowColor: "rgba(99,102,241,0.55)",
+    textAccent: "text-indigo-300",
+  },
+  {
+    id: "news",
+    label: "News",
+    emoji: "🌍",
+    description: "Browse real headlines rewritten at your CEFR level",
+    href: "/news",
+    gradient: "from-slate-500 via-zinc-500 to-gray-600",
+    glowColor: "rgba(100,116,139,0.55)",
+    textAccent: "text-slate-300",
+  },
 ];
 
 const N = FEATURES.length;
