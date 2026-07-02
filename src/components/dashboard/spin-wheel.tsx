@@ -57,6 +57,16 @@ const FEATURES: Feature[] = [
     textAccent: "text-rose-300",
   },
   {
+    id: "chat-room",
+    label: "Chat Room",
+    emoji: "👥",
+    description: "Live chat with other learners in your active language",
+    href: "/chat-room",
+    gradient: "from-green-500 via-emerald-500 to-teal-600",
+    glowColor: "rgba(16,185,129,0.55)",
+    textAccent: "text-emerald-300",
+  },
+  {
     id: "flashcards",
     label: "Flashcards",
     emoji: "✨",

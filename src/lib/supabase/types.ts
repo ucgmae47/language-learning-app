@@ -83,6 +83,16 @@ export type StoryAttempt = {
   completed_at: string;
 };
 
+export type ChatRoomMessage = {
+  id: string;
+  user_id: string;
+  language: Language;
+  display_name: string;
+  cefr_level: string;
+  content: string;
+  created_at: string;
+};
+
 export type GenreInterest = {
   id: string;
   user_id: string;
@@ -139,6 +149,13 @@ export type Database = {
         Insert: Omit<UserInterest, "id" | "created_at" | "updated_at"> &
           Partial<Pick<UserInterest, "id">>;
         Update: Partial<Omit<UserInterest, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      chat_room_messages: {
+        Row: ChatRoomMessage;
+        Insert: Omit<ChatRoomMessage, "id" | "created_at"> &
+          Partial<Pick<ChatRoomMessage, "id">>;
+        Update: never;
         Relationships: Rel;
       };
       genre_interests: {
