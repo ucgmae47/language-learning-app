@@ -8,8 +8,10 @@ export type Question = {
   correct: string;
 };
 
-export const QUESTIONS: Question[] = [
-  // ── A2 band ──────────────────────────────────────────────
+// ── Spanish questions ─────────────────────────────────────────────────────────
+
+export const QUESTIONS_ES: Question[] = [
+  // A2 band
   {
     id: 1,
     band: "A2",
@@ -47,12 +49,11 @@ export const QUESTIONS: Question[] = [
     correct: "C",
   },
 
-  // ── B1 band ──────────────────────────────────────────────
+  // B1 band
   {
     id: 4,
     band: "B1",
-    prompt:
-      "Completa la frase: «Si tuviera más tiempo, ___ más libros.» (condicional)",
+    prompt: "Completa la frase: «Si tuviera más tiempo, ___ más libros.» (condicional)",
     options: [
       { label: "leería", value: "A" },
       { label: "leeré", value: "B" },
@@ -76,8 +77,7 @@ export const QUESTIONS: Question[] = [
   {
     id: 6,
     band: "B1",
-    prompt:
-      "¿Cuál es el significado de «sin embargo» en un texto argumentativo?",
+    prompt: "¿Cuál es el significado de «sin embargo» en un texto argumentativo?",
     options: [
       { label: "Por lo tanto / therefore", value: "A" },
       { label: "Además / in addition", value: "B" },
@@ -100,12 +100,11 @@ export const QUESTIONS: Question[] = [
     correct: "C",
   },
 
-  // ── B2 band ──────────────────────────────────────────────
+  // B2 band
   {
     id: 8,
     band: "B2",
-    prompt:
-      "¿Cuál es la voz pasiva correcta de «El chef preparó la cena»?",
+    prompt: "¿Cuál es la voz pasiva correcta de «El chef preparó la cena»?",
     options: [
       { label: "La cena fue preparada por el chef.", value: "A" },
       { label: "La cena se preparó por el chef.", value: "B" },
@@ -143,19 +142,6 @@ export const QUESTIONS: Question[] = [
     id: 11,
     band: "B2",
     prompt:
-      "Elige la opción que completa correctamente: «Me alegra ___ que hayas llegado.»",
-    options: [
-      { label: "mucho", value: "A" },
-      { label: "que", value: "B" },
-      { label: "a mí", value: "C" },
-      { label: "tanto", value: "D" },
-    ],
-    correct: "A",
-  },
-  {
-    id: 12,
-    band: "B2",
-    prompt:
       "Read the excerpt: «Aunque las circunstancias eran adversas, el equipo perseveró con admirable determinación.» What does «adversas» mean?",
     options: [
       { label: "Favourable", value: "A" },
@@ -167,15 +153,20 @@ export const QUESTIONS: Question[] = [
   },
 ];
 
+/**
+ * Calculate CEFR level from a set of answered questions.
+ * Works for any question bank that uses the A2/B1/B2 band structure.
+ */
 export function calculateCefrLevel(
   answers: Record<number, string>,
+  questions: Question[] = QUESTIONS_ES,
 ): CefrLevel {
   let correct = 0;
   let a2Correct = 0;
   let b1Correct = 0;
   let b2Correct = 0;
 
-  for (const q of QUESTIONS) {
+  for (const q of questions) {
     const given = answers[q.id];
     if (given === q.correct) {
       correct++;
@@ -185,20 +176,18 @@ export function calculateCefrLevel(
     }
   }
 
-  const a2Total = QUESTIONS.filter((q) => q.band === "A2").length;
-  const b1Total = QUESTIONS.filter((q) => q.band === "B1").length;
-  const b2Total = QUESTIONS.filter((q) => q.band === "B2").length;
+  const a2Total = questions.filter((q) => q.band === "A2").length;
+  const b1Total = questions.filter((q) => q.band === "B1").length;
+  const b2Total = questions.filter((q) => q.band === "B2").length;
 
-  const a2Pct = a2Correct / a2Total;
-  const b1Pct = b1Correct / b1Total;
-  const b2Pct = b2Correct / b2Total;
-  const overall = correct / QUESTIONS.length;
+  const a2Pct = a2Total > 0 ? a2Correct / a2Total : 0;
+  const b1Pct = b1Total > 0 ? b1Correct / b1Total : 0;
+  const b2Pct = b2Total > 0 ? b2Correct / b2Total : 0;
+  const overall = questions.length > 0 ? correct / questions.length : 0;
 
   if (b2Pct >= 0.75 && overall >= 0.75) return "B2";
   if (b1Pct >= 0.6 && b2Pct >= 0.4 && overall >= 0.58) return "B1";
   if (a2Pct >= 0.67 && overall >= 0.4) return "A2";
-  if (overall >= 0.2) return "A1";
-
   return "A1";
 }
 

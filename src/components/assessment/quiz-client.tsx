@@ -3,9 +3,10 @@
 import { useReducer, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle, ChevronRight, Loader2 } from "lucide-react";
-import { QUESTIONS, calculateCefrLevel, LEVEL_DESCRIPTIONS } from "@/lib/assessment/questions";
-import { saveCefrLevel } from "@/app/actions/assessment";
-import type { CefrLevel } from "@/lib/supabase/types";
+import { calculateCefrLevel, LEVEL_DESCRIPTIONS } from "@/lib/assessment/questions";
+import type { Question } from "@/lib/assessment/questions";
+import { saveAssessmentResult } from "@/app/actions/assessment";
+import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 type QuizState = {
   currentIndex: number;
@@ -33,10 +34,7 @@ const initialState: QuizState = {
 function quizReducer(state: QuizState, action: QuizAction): QuizState {
   switch (action.type) {
     case "ANSWER":
-      return {
-        ...state,
-        answers: { ...state.answers, [action.questionId]: action.value },
-      };
+      return { ...state, answers: { ...state.answers, [action.questionId]: action.value } };
     case "NEXT":
       return { ...state, currentIndex: state.currentIndex + 1 };
     case "SUBMIT_START":
@@ -65,15 +63,20 @@ const RESULT_COLORS: Record<CefrLevel, string> = {
   C2: "from-rose-500 to-rose-700",
 };
 
-export function QuizClient() {
+type Props = {
+  questions: Question[];
+  language: Language;
+};
+
+export function QuizClient({ questions, language }: Props) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const [, startTransition] = useTransition();
   const router = useRouter();
 
-  const question = QUESTIONS[state.currentIndex];
-  const isLast = state.currentIndex === QUESTIONS.length - 1;
+  const question = questions[state.currentIndex];
+  const isLast = state.currentIndex === questions.length - 1;
   const selectedAnswer = question ? state.answers[question.id] : undefined;
-  const progress = ((state.currentIndex) / QUESTIONS.length) * 100;
+  const progress = (state.currentIndex / questions.length) * 100;
 
   function handleSelect(value: string) {
     if (!question || state.phase !== "quiz") return;
@@ -90,14 +93,18 @@ export function QuizClient() {
   }
 
   function handleSubmit() {
-    const level = calculateCefrLevel(state.answers);
+    const level = calculateCefrLevel(state.answers, questions);
     dispatch({ type: "SUBMIT_START" });
     startTransition(async () => {
-      const { error } = await saveCefrLevel(level);
+      const { error, hasInterests } = await saveAssessmentResult(language, level);
       if (error) {
         dispatch({ type: "ERROR", message: error });
       } else {
         dispatch({ type: "SUBMIT_DONE", result: level });
+        // Redirect after a short display delay so the user sees their result.
+        setTimeout(() => {
+          router.push(hasInterests ? "/dashboard" : "/onboarding/interests");
+        }, 3500);
       }
     });
   }
@@ -113,6 +120,8 @@ export function QuizClient() {
 
   if (state.phase === "done" && state.result) {
     const level = state.result;
+    const langFlag = language === "fr" ? "🇫🇷" : "🇪🇸";
+    const langName = language === "fr" ? "French" : "Spanish";
     return (
       <div className="mx-auto max-w-md text-center">
         <div
@@ -122,35 +131,29 @@ export function QuizClient() {
         </div>
 
         <h2 className="text-2xl font-bold text-slate-900">
-          Your level: {level}
+          Your {langFlag} {langName} level: {level}
         </h2>
         <p className="mt-2 text-slate-600">{LEVEL_DESCRIPTIONS[level]}</p>
 
         <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-left">
-          <p className="text-sm font-medium text-emerald-800">
-            What happens next?
-          </p>
+          <p className="text-sm font-medium text-emerald-800">What happens next?</p>
           <p className="mt-1 text-sm text-emerald-700">
             Stories, quizzes, and chatbot prompts will now be tailored to your{" "}
-            <strong>{level}</strong> level. You can retake the assessment at any
-            time from your dashboard.
+            <strong>{level}</strong> {langName} level. Redirecting you now…
           </p>
         </div>
 
-        <button
-          onClick={() => router.push("/onboarding/language")}
-          className="mt-6 w-full rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-        >
-          Choose your language →
-        </button>
+        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          Taking you to the next step…
+        </div>
       </div>
     );
   }
 
   if (!question) return null;
 
-  const currentBand = question.band;
-  const bandLabel = BAND_LABELS[currentBand] ?? currentBand;
+  const bandLabel = BAND_LABELS[question.band] ?? question.band;
 
   return (
     <div className="mx-auto max-w-xl">
@@ -158,7 +161,7 @@ export function QuizClient() {
       <div className="mb-6">
         <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
           <span>
-            Question {state.currentIndex + 1} of {QUESTIONS.length}
+            Question {state.currentIndex + 1} of {questions.length}
           </span>
           <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 font-medium">
             {bandLabel}

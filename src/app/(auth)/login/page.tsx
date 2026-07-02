@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   title: "Sign in | LinguaPath",
 };
 
-export default function LoginPage() {
-  return <AuthForm mode="login" action={login} />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+  return <AuthForm mode="login" action={login} next={next} />;
 }

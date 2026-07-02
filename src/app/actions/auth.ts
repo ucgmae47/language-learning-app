@@ -8,6 +8,15 @@ export type AuthFormState = {
   success?: string;
 } | null;
 
+/** Only allow redirects to internal paths to prevent open-redirect attacks. */
+function safeNext(raw: string | null | undefined): string {
+  if (!raw) return "/dashboard";
+  const decoded = decodeURIComponent(raw);
+  // Must start with / and not be a protocol-relative URL.
+  if (decoded.startsWith("/") && !decoded.startsWith("//")) return decoded;
+  return "/dashboard";
+}
+
 export async function signup(
   _prev: AuthFormState,
   formData: FormData,
@@ -15,6 +24,7 @@ export async function signup(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const displayName = formData.get("display_name") as string;
+  const next = safeNext(formData.get("next") as string | null);
 
   if (!email || !password || !displayName) {
     return { error: "All fields are required." };
@@ -38,7 +48,7 @@ export async function signup(
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect(next);
 }
 
 export async function login(
@@ -47,6 +57,7 @@ export async function login(
 ): Promise<AuthFormState> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const next = safeNext(formData.get("next") as string | null);
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -60,7 +71,7 @@ export async function login(
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect(next);
 }
 
 export async function logout(): Promise<void> {

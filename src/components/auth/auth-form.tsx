@@ -7,9 +7,11 @@ import type { AuthFormState } from "@/app/actions/auth";
 type AuthFormProps = {
   mode: "login" | "signup";
   action: (prev: AuthFormState, formData: FormData) => Promise<AuthFormState>;
+  /** If set, the user will be sent here after a successful auth. */
+  next?: string;
 };
 
-export function AuthForm({ mode, action }: AuthFormProps) {
+export function AuthForm({ mode, action, next }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, null);
   const isSignup = mode === "signup";
 
@@ -26,6 +28,7 @@ export function AuthForm({ mode, action }: AuthFormProps) {
         </p>
 
         <form action={formAction} className="mt-6 flex flex-col gap-4">
+          {next && <input type="hidden" name="next" value={next} />}
           {isSignup && (
             <div className="flex flex-col gap-1.5">
               <label
@@ -108,7 +111,7 @@ export function AuthForm({ mode, action }: AuthFormProps) {
           <>
             Already have an account?{" "}
             <Link
-              href="/login"
+              href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
               className="font-medium text-emerald-700 hover:underline"
             >
               Sign in
@@ -118,7 +121,7 @@ export function AuthForm({ mode, action }: AuthFormProps) {
           <>
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
               className="font-medium text-emerald-700 hover:underline"
             >
               Create one

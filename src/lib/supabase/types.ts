@@ -14,6 +14,15 @@ export type InterestTopic =
   | "business"
   | "history";
 
+export type LanguageProfile = {
+  id: string;
+  user_id: string;
+  language: Language;
+  cefr_level: CefrLevel;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -90,6 +99,13 @@ export type Database = {
         Row: Profile;
         Insert: Partial<Profile> & { id: string };
         Update: Partial<Omit<Profile, "id" | "created_at">>;
+        Relationships: Rel;
+      };
+      language_profiles: {
+        Row: LanguageProfile;
+        Insert: Omit<LanguageProfile, "id" | "created_at" | "updated_at"> &
+          Partial<Pick<LanguageProfile, "id">>;
+        Update: Partial<Omit<LanguageProfile, "id" | "user_id" | "created_at">>;
         Relationships: Rel;
       };
       user_interests: {
