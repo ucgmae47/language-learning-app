@@ -1,219 +1,135 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Loader2, Languages } from "lucide-react";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Split a paragraph into sentences, preserving trailing punctuation. */
-function splitSentences(paragraph: string): string[] {
-  // Split after . ! ? when followed by a space and an uppercase / accented letter,
-  // or at the very end. Imperfect but works well for AI-generated prose.
-  const raw = paragraph.split(/(?<=[.!?])\s+(?=\S)/u);
-  return raw.map((s) => s.trim()).filter(Boolean);
-}
-
-/** Strip leading/trailing punctuation from a word for lookup purposes. */
-function cleanWord(word: string): string {
-  return word.replace(/^[¡¿«"'([\s]+|[!?.,:;»"')[\]\s]+$/gu, "").toLowerCase();
-}
-
-/** Split a sentence into display tokens (preserving spaces and punctuation). */
-function tokenise(sentence: string): string[] {
-  // Split on whitespace, keep each token.
-  return sentence.split(/(\s+)/).filter(Boolean);
-}
+import { useState, useEffect } from "react";
+import { splitSentences, cleanWord } from "@/lib/stories/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type CacheKey = string;
+type Translations = {
+  sentences: string[];              // ordered; index maps to sentence order in body
+  words: Record<string, string>;   // cleaned word → English meaning
+};
 
-type TooltipState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "ready"; translation: string };
+// ─── WordSpan ────────────────────────────────────────────────────────────────
+// Renders one whitespace-delimited token. Translatable words change color on
+// hover and show a popover above when clicked.
 
-// ─── Word chip (inside the sentence tooltip) ─────────────────────────────────
-
-function WordChip({
-  token,
-  language,
-  cache,
-}: {
+type WordSpanProps = {
   token: string;
-  language: "es" | "fr";
-  cache: React.MutableRefObject<Map<CacheKey, string>>;
-}) {
-  const isSpace = /^\s+$/.test(token);
-  const [tip, setTip] = useState<TooltipState>({ status: "idle" });
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  wordKey: string;
+  meaning: string | undefined;
+  activeKey: string | null;
+  onActivate: (key: string | null) => void;
+};
 
-  if (isSpace) return <span>{token}</span>;
+function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanProps) {
+  // Whitespace tokens are rendered as-is.
+  if (/^\s+$/.test(token)) return <>{token}</>;
 
-  const clean = cleanWord(token);
-  if (!clean) return <span>{token}</span>;
+  const isActive = activeKey === wordKey;
+  const hasTranslation = !!meaning;
 
-  async function fetchWord() {
-    const key = `word:${language}:${clean}`;
-    if (cache.current.has(key)) {
-      setTip({ status: "ready", translation: cache.current.get(key)! });
-      return;
-    }
-    setTip({ status: "loading" });
-    try {
-      const res = await fetch("/api/stories/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: clean, type: "word", language }),
-      });
-      const data = (await res.json()) as { translation?: string };
-      const t = data.translation ?? "";
-      cache.current.set(key, t);
-      setTip({ status: "ready", translation: t });
-    } catch {
-      setTip({ status: "idle" });
-    }
-  }
-
-  function handleEnter() {
-    timeoutRef.current = setTimeout(fetchWord, 300);
-  }
-
-  function handleLeave() {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setTip({ status: "idle" });
+  function handleClick(e: React.MouseEvent) {
+    if (!hasTranslation) return;
+    e.stopPropagation(); // prevent document click from immediately closing it
+    onActivate(isActive ? null : wordKey);
   }
 
   return (
-    <span className="relative inline-block">
+    <span
+      className="relative inline"
+      data-word-span="true"
+      onClick={handleClick}
+    >
       <span
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
-        className="cursor-help rounded px-0.5 transition-colors hover:bg-yellow-200"
+        className={`rounded-sm transition-colors duration-75 ${
+          hasTranslation
+            ? isActive
+              ? "bg-amber-200 cursor-pointer"
+              : "hover:bg-amber-200 cursor-pointer"
+            : ""
+        }`}
       >
         {token}
       </span>
-      {tip.status !== "idle" && (
-        <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-lg whitespace-nowrap">
-          {tip.status === "loading" ? (
-            <Loader2 className="h-3 w-3 animate-spin text-slate-400" />
-          ) : (
-            tip.translation || "—"
-          )}
+
+      {/* Popover above the word */}
+      {isActive && meaning && (
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-200 bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
+          role="tooltip"
+        >
+          {meaning}
+          {/* Caret */}
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
         </span>
       )}
     </span>
   );
 }
 
-// ─── Sentence span ────────────────────────────────────────────────────────────
+// ─── SentenceSpan ────────────────────────────────────────────────────────────
+// Wraps one sentence. Hover highlights the sentence and reveals the English
+// translation in a card below. Word spans inside remain individually clickable.
+
+type SentenceSpanProps = {
+  sentence: string;
+  sentenceTranslation: string | undefined;
+  sentenceKey: string;
+  wordTranslations: Record<string, string>;
+  activeKey: string | null;
+  onActivate: (key: string | null) => void;
+};
 
 function SentenceSpan({
   sentence,
-  language,
-  cache,
-}: {
-  sentence: string;
-  language: "es" | "fr";
-  cache: React.MutableRefObject<Map<CacheKey, string>>;
-}) {
-  const [hover, setHover] = useState(false);
-  const [tip, setTip] = useState<TooltipState>({ status: "idle" });
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchedRef = useRef(false);
+  sentenceTranslation,
+  sentenceKey,
+  wordTranslations,
+  activeKey,
+  onActivate,
+}: SentenceSpanProps) {
+  const [isHovered, setIsHovered] = useState(false);
 
-  const fetchTranslation = useCallback(async () => {
-    if (fetchedRef.current && tip.status === "ready") return;
-    const key = `sentence:${language}:${sentence}`;
-    if (cache.current.has(key)) {
-      setTip({ status: "ready", translation: cache.current.get(key)! });
-      fetchedRef.current = true;
-      return;
-    }
-    setTip({ status: "loading" });
-    try {
-      const res = await fetch("/api/stories/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: sentence, type: "sentence", language }),
-      });
-      const data = (await res.json()) as { translation?: string };
-      const t = data.translation ?? "";
-      cache.current.set(key, t);
-      setTip({ status: "ready", translation: t });
-      fetchedRef.current = true;
-    } catch {
-      setTip({ status: "idle" });
-    }
-  }, [sentence, language, cache, tip.status]);
-
-  function handleEnter() {
-    setHover(true);
-    timeoutRef.current = setTimeout(fetchTranslation, 350);
-  }
-
-  function handleLeave() {
-    setHover(false);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    // Keep tip visible briefly so users can read it.
-    setTimeout(() => setHover(false), 0);
-  }
-
-  const tokens = tokenise(sentence);
+  // Split sentence into display tokens (words + spaces).
+  const tokens = sentence.split(/(\s+)/);
 
   return (
     <span className="relative">
-      {/* Sentence text */}
+      {/* Sentence highlight container */}
       <span
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
-        className={`cursor-default rounded transition-colors duration-150 ${
-          hover ? "bg-yellow-100" : "hover:bg-yellow-50"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`rounded transition-colors duration-100 ${
+          isHovered ? "bg-yellow-100" : ""
         }`}
       >
-        {sentence}
+        {tokens.map((token, ti) => {
+          const clean = cleanWord(token);
+          const wordKey = `${sentenceKey}-${ti}`;
+          return (
+            <WordSpan
+              key={ti}
+              token={token}
+              wordKey={wordKey}
+              meaning={clean.length >= 2 ? wordTranslations[clean] : undefined}
+              activeKey={activeKey}
+              onActivate={onActivate}
+            />
+          );
+        })}
       </span>
 
-      {/* Sentence tooltip (with word chips) */}
-      {hover && tip.status !== "idle" && (
+      {/* Sentence translation card — appears below, stays open while hovering it */}
+      {isHovered && sentenceTranslation && (
         <span
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-          className="absolute left-0 top-full z-20 mt-1 w-max max-w-sm rounded-xl border border-slate-200 bg-white p-3 shadow-xl"
-          style={{ minWidth: "220px" }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="absolute left-0 top-full z-20 mt-1.5 block max-w-sm rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm leading-snug text-slate-700 shadow-lg"
+          style={{ minWidth: "180px" }}
+          role="tooltip"
         >
-          {tip.status === "loading" ? (
-            <span className="flex items-center gap-2 text-xs text-slate-400">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Translating…
-            </span>
-          ) : (
-            <span className="block space-y-2.5">
-              {/* English translation */}
-              <span className="flex items-start gap-1.5">
-                <Languages className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-400" />
-                <span className="text-xs leading-snug text-slate-700">
-                  {tip.translation}
-                </span>
-              </span>
-              {/* Divider */}
-              <span className="block border-t border-slate-100" />
-              {/* Word chips */}
-              <span className="block text-[11px] text-slate-400 mb-1">
-                Hover a word for its meaning
-              </span>
-              <span className="flex flex-wrap gap-0.5 text-xs text-slate-700 leading-relaxed font-mono">
-                {tokens.map((token, idx) => (
-                  <WordChip
-                    key={idx}
-                    token={token}
-                    language={language}
-                    cache={cache}
-                  />
-                ))}
-              </span>
-            </span>
-          )}
+          {sentenceTranslation}
         </span>
       )}
     </span>
@@ -224,36 +140,72 @@ function SentenceSpan({
 
 type Props = {
   body: string;
-  language: "es" | "fr";
+  translations: Translations | null;
 };
 
-export function TranslatedStoryBody({ body, language }: Props) {
-  // Shared translation cache across all sentences and words on the page.
-  const cache = useRef<Map<string, string>>(new Map());
+export function TranslatedStoryBody({ body, translations }: Props) {
+  const [activeWordKey, setActiveWordKey] = useState<string | null>(null);
+
+  // Close any open word popover when clicking outside a word span.
+  useEffect(() => {
+    function handleMouseDown(e: MouseEvent) {
+      if (!(e.target as Element).closest("[data-word-span]")) {
+        setActiveWordKey(null);
+      }
+    }
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, []);
 
   const paragraphs = body
     .split(/\n{2,}/)
     .map((p) => p.trim())
     .filter(Boolean);
 
+  // No translations available (e.g. story generated before this feature) —
+  // fall back to plain readable text.
+  if (!translations) {
+    return (
+      <>
+        {paragraphs.map((para, pi) => (
+          <p key={pi} className="mt-5 text-base leading-8 text-slate-800 first:mt-0">
+            {para}
+          </p>
+        ))}
+      </>
+    );
+  }
+
+  // Build the interactive story with pre-loaded sentence and word translations.
+  // sentenceIdx tracks position in the flat sentence_translations array.
+  let sentenceIdx = 0;
+
   return (
     <>
-      <p className="mb-4 flex items-center gap-1.5 text-xs text-slate-400">
-        <Languages className="h-3.5 w-3.5" />
-        Hover any sentence to see its translation, then hover individual words for definitions.
+      {/* Instruction hint */}
+      <p className="mb-5 text-xs text-slate-400">
+        Hover a sentence for its translation · click any word for its meaning
       </p>
+
       {paragraphs.map((para, pi) => {
         const sentences = splitSentences(para);
         return (
           <p key={pi} className="mt-5 text-base leading-8 text-slate-800 first:mt-0">
-            {sentences.map((sent, si) => (
-              <SentenceSpan
-                key={si}
-                sentence={sent}
-                language={language}
-                cache={cache}
-              />
-            ))}
+            {sentences.map((sent, si) => {
+              const translation = translations.sentences[sentenceIdx];
+              sentenceIdx++;
+              return (
+                <SentenceSpan
+                  key={`${pi}-${si}`}
+                  sentence={sent}
+                  sentenceTranslation={translation}
+                  sentenceKey={`${pi}-${si}`}
+                  wordTranslations={translations.words}
+                  activeKey={activeWordKey}
+                  onActivate={setActiveWordKey}
+                />
+              );
+            })}
           </p>
         );
       })}

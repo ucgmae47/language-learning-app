@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { generateObject, generateText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
+import { allSentences, extractContentWords } from "@/lib/stories/utils";
 import type { GeneratedStory } from "@/lib/stories/schema";
 import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
@@ -48,23 +49,24 @@ export async function POST(request: Request) {
 
   const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined, language);
 
+  const google = createGoogleGenerativeAI({
+    apiKey: process.env.GEMINI_API_KEY ?? "",
+  });
+
+  // ── Step 1: Generate the story ──────────────────────────────────────────────
+
   let object: GeneratedStory;
 
   try {
-    const google = createGoogleGenerativeAI({
-      apiKey: process.env.GEMINI_API_KEY ?? "",
-    });
-
     const result = await generateObject({
       model: google("gemini-2.5-flash-lite"),
       schema: GeneratedStorySchema,
       prompt,
     });
-
     object = result.object;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error("[stories/generate] AI call failed:", message);
+    console.error("[stories/generate] Story generation failed:", message);
     return NextResponse.json(
       { error: `Story generation failed: ${message}` },
       { status: 500 },
@@ -72,6 +74,8 @@ export async function POST(request: Request) {
   }
 
   const wordCount = object.body.trim().split(/\s+/).length;
+
+  // ── Step 2: Save the story ──────────────────────────────────────────────────
 
   const { data: story, error: insertError } = await supabase
     .from("stories")
@@ -83,6 +87,9 @@ export async function POST(request: Request) {
       topics,
       word_count: wordCount,
       quiz: object.quiz,
+      // Translations are populated below after the batch Gemini call.
+      sentence_translations: null,
+      word_translations: null,
     })
     .select("id")
     .single();
@@ -93,6 +100,77 @@ export async function POST(request: Request) {
       { error: "Failed to save story." },
       { status: 500 },
     );
+  }
+
+  // ── Step 3: Pre-generate translations ──────────────────────────────────────
+  // One Gemini call translates all sentences (as an ordered array) and all
+  // content words. Stored on the story so the reader is instant — no hover lag.
+
+  try {
+    const sentences = allSentences(object.body);
+    const words = extractContentWords(object.body);
+    const langName = language === "es" ? "Spanish" : "French";
+
+    const translationPrompt = `You are a professional ${langName}-to-English translator.
+
+Return ONLY a valid JSON object — no markdown fences, no extra text, nothing else.
+
+The JSON must have exactly this structure:
+{
+  "sentences": ["English translation of sentence 1", "English translation of sentence 2", ...],
+  "words": {
+    "word1": "1-3 word meaning",
+    "word2": "1-3 word meaning",
+    ...
+  }
+}
+
+Rules:
+- "sentences" must be an array with EXACTLY ${sentences.length} items, one per sentence, in the same order.
+- "words" keys must be lowercase with no punctuation.
+- Word meanings must be 1-3 words, lowercase.
+
+Sentences to translate (in order):
+${sentences.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+Words to translate:
+${words.join(", ")}`;
+
+    const { text: raw } = await generateText({
+      model: google("gemini-2.5-flash-lite"),
+      prompt: translationPrompt,
+      maxOutputTokens: 8192,
+    });
+
+    // Strip any accidental markdown code fences.
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+
+    const parsed = JSON.parse(cleaned) as {
+      sentences: string[];
+      words: Record<string, string>;
+    };
+
+    // Validate the sentence array length matches.
+    const sentenceTranslations =
+      Array.isArray(parsed.sentences) && parsed.sentences.length === sentences.length
+        ? parsed.sentences
+        : null;
+
+    await supabase
+      .from("stories")
+      .update({
+        sentence_translations: sentenceTranslations,
+        word_translations:
+          parsed.words && typeof parsed.words === "object" ? parsed.words : null,
+      })
+      .eq("id", story.id);
+  } catch (err) {
+    // Non-fatal: story is saved and readable; translations just won't be interactive.
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[stories/generate] Translation batch failed:", message);
   }
 
   return NextResponse.json({ storyId: story.id });

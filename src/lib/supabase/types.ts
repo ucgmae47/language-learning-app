@@ -66,6 +66,11 @@ export type Story = {
   topics: string[];
   word_count: number | null;
   quiz: StoryQuizQuestion[];
+  /** Ordered array of English sentence translations — one per sentence,
+   *  in the same order produced by splitSentences() over the body. */
+  sentence_translations: string[] | null;
+  /** Map of content word (lowercase, no punctuation) → concise English meaning. */
+  word_translations: Record<string, string> | null;
   created_at: string;
 };
 

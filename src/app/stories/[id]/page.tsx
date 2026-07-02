@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Clock, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { TranslatedStoryBody } from "@/components/stories/translated-story-body";
-import type { Story, StoryAttempt, Language } from "@/lib/supabase/types";
+import type { Story, StoryAttempt } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -30,23 +30,14 @@ export default async function StoryPage({ params }: Props) {
 
   if (!user) redirect("/login");
 
-  const [{ data: story }, { data: profile }] = await Promise.all([
-    supabase
-      .from("stories")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", user.id)
-      .single<Story>(),
-    supabase
-      .from("profiles")
-      .select("language")
-      .eq("id", user.id)
-      .single<{ language: Language }>(),
-  ]);
+  const { data: story } = await supabase
+    .from("stories")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single<Story>();
 
   if (!story) notFound();
-
-  const language: Language = profile?.language ?? "es";
 
   const { data: attempt } = await supabase
     .from("story_attempts")
@@ -98,7 +89,17 @@ export default async function StoryPage({ params }: Props) {
 
         {/* Story body */}
         <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <TranslatedStoryBody body={story.body} language={language} />
+          <TranslatedStoryBody
+            body={story.body}
+            translations={
+              story.sentence_translations && story.word_translations
+                ? {
+                    sentences: story.sentence_translations,
+                    words: story.word_translations,
+                  }
+                : null
+            }
+          />
         </article>
 
         {/* Quiz CTA */}
