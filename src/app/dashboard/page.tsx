@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { LogOut, BookText, Puzzle, MessageCircle, Plus } from "lucide-react";
+import { LogOut, BookText, Puzzle, MessageCircle, Plus, BookOpen, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/actions/auth";
 import { logWordSeen } from "@/app/actions/word-of-the-day";
@@ -69,6 +69,18 @@ export default async function DashboardPage() {
       label: "Chat Practice",
       icon: MessageCircle,
       color: "bg-violet-50 text-violet-700",
+    },
+    {
+      href: "/drills",
+      label: "Grammar Drills",
+      icon: BookOpen,
+      color: "bg-indigo-50 text-indigo-700",
+    },
+    {
+      href: "/flashcards",
+      label: "Idiom Flashcards",
+      icon: Layers,
+      color: "bg-pink-50 text-pink-700",
     },
   ] as const;
 
@@ -155,7 +167,7 @@ export default async function DashboardPage() {
           What would you like to do?
         </h2>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {quickLinks.map((link) => {
             const Icon = link.icon;
             return (

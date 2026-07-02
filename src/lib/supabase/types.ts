@@ -78,6 +78,17 @@ export type StoryAttempt = {
   completed_at: string;
 };
 
+export type GrammarWeakness = {
+  id: string;
+  user_id: string;
+  language: Language;
+  concept: string;
+  error_count: number;
+  attempt_count: number;
+  last_seen: string;
+  created_at: string;
+};
+
 export type SessionMetric = {
   id: string;
   user_id: string;
@@ -113,6 +124,13 @@ export type Database = {
         Insert: Omit<UserInterest, "id" | "created_at" | "updated_at"> &
           Partial<Pick<UserInterest, "id">>;
         Update: Partial<Omit<UserInterest, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      grammar_weaknesses: {
+        Row: GrammarWeakness;
+        Insert: Omit<GrammarWeakness, "id" | "created_at"> &
+          Partial<Pick<GrammarWeakness, "id">>;
+        Update: Partial<Omit<GrammarWeakness, "id" | "user_id" | "created_at">>;
         Relationships: Rel;
       };
       session_metrics: {
