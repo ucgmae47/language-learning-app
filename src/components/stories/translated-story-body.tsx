@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { splitSentences, cleanWord } from "@/lib/stories/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Translations = {
-  sentences: string[];              // ordered; index maps to sentence order in body
-  words: Record<string, string>;   // cleaned word → English meaning
+  sentences: string[];
+  words: Record<string, string>;
 };
 
 // ─── WordSpan ────────────────────────────────────────────────────────────────
-// Renders one whitespace-delimited token. Translatable words change color on
-// hover and show a popover above when clicked.
 
 type WordSpanProps = {
   token: string;
@@ -23,7 +21,6 @@ type WordSpanProps = {
 };
 
 function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanProps) {
-  // Whitespace tokens are rendered as-is.
   if (/^\s+$/.test(token)) return <>{token}</>;
 
   const isActive = activeKey === wordKey;
@@ -31,7 +28,7 @@ function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanPr
 
   function handleClick(e: React.MouseEvent) {
     if (!hasTranslation) return;
-    e.stopPropagation(); // prevent document click from immediately closing it
+    e.stopPropagation();
     onActivate(isActive ? null : wordKey);
   }
 
@@ -42,26 +39,24 @@ function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanPr
       onClick={handleClick}
     >
       <span
-        className={`rounded-sm transition-colors duration-75 ${
+        className={
           hasTranslation
             ? isActive
-              ? "bg-amber-200 cursor-pointer"
-              : "hover:bg-amber-200 cursor-pointer"
-            : ""
-        }`}
+              ? "cursor-pointer rounded-sm bg-amber-200"
+              : "cursor-pointer rounded-sm hover:bg-amber-200"
+            : undefined
+        }
       >
         {token}
       </span>
 
-      {/* Popover above the word */}
       {isActive && meaning && (
         <span
-          className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-200 bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg"
+          className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl"
           role="tooltip"
         >
           {meaning}
-          {/* Caret */}
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0 w-0 border-4 border-transparent border-t-slate-900" />
         </span>
       )}
     </span>
@@ -69,8 +64,9 @@ function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanPr
 }
 
 // ─── SentenceSpan ────────────────────────────────────────────────────────────
-// Wraps one sentence. Hover highlights the sentence and reveals the English
-// translation in a card below. Word spans inside remain individually clickable.
+// The tooltip is pointer-events-none so it never intercepts mouse events.
+// A short leave-delay (150 ms) prevents the tooltip from blinking when the
+// mouse briefly crosses the gap between the sentence text and the tooltip card.
 
 type SentenceSpanProps = {
   sentence: string;
@@ -90,28 +86,42 @@ function SentenceSpan({
   onActivate,
 }: SentenceSpanProps) {
   const [isHovered, setIsHovered] = useState(false);
-
-  // Split sentence into display tokens (words + spaces).
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tokens = sentence.split(/(\s+)/);
 
+  function handleEnter() {
+    if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    setIsHovered(true);
+  }
+
+  function handleLeave() {
+    // Short delay so the cursor can cross the gap between sentence and tooltip
+    // without the tooltip blinking away.
+    leaveTimer.current = setTimeout(() => setIsHovered(false), 150);
+  }
+
   return (
-    <span className="relative">
-      {/* Sentence highlight container */}
+    // Outermost wrapper carries the hover handlers so that moving the mouse
+    // between the sentence text and the (absolutely positioned) tooltip card
+    // doesn't fire a premature leave event.
+    <span
+      className="relative"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      {/* Sentence highlight */}
       <span
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className={`rounded transition-colors duration-100 ${
           isHovered ? "bg-yellow-100" : ""
         }`}
       >
         {tokens.map((token, ti) => {
           const clean = cleanWord(token);
-          const wordKey = `${sentenceKey}-${ti}`;
           return (
             <WordSpan
               key={ti}
               token={token}
-              wordKey={wordKey}
+              wordKey={`${sentenceKey}-${ti}`}
               meaning={clean.length >= 2 ? wordTranslations[clean] : undefined}
               activeKey={activeKey}
               onActivate={onActivate}
@@ -120,12 +130,10 @@ function SentenceSpan({
         })}
       </span>
 
-      {/* Sentence translation card — appears below, stays open while hovering it */}
+      {/* Translation tooltip — pointer-events-none so it never swallows mouse events */}
       {isHovered && sentenceTranslation && (
         <span
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="absolute left-0 top-full z-20 mt-1.5 block max-w-sm rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm leading-snug text-slate-700 shadow-lg"
+          className="pointer-events-none absolute left-0 top-full z-20 mt-1 block max-w-sm rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm leading-snug text-slate-700 shadow-lg"
           style={{ minWidth: "180px" }}
           role="tooltip"
         >
@@ -146,7 +154,6 @@ type Props = {
 export function TranslatedStoryBody({ body, translations }: Props) {
   const [activeWordKey, setActiveWordKey] = useState<string | null>(null);
 
-  // Close any open word popover when clicking outside a word span.
   useEffect(() => {
     function handleMouseDown(e: MouseEvent) {
       if (!(e.target as Element).closest("[data-word-span]")) {
@@ -162,8 +169,6 @@ export function TranslatedStoryBody({ body, translations }: Props) {
     .map((p) => p.trim())
     .filter(Boolean);
 
-  // No translations available (e.g. story generated before this feature) —
-  // fall back to plain readable text.
   if (!translations) {
     return (
       <>
@@ -172,17 +177,17 @@ export function TranslatedStoryBody({ body, translations }: Props) {
             {para}
           </p>
         ))}
+        <p className="mt-6 text-center text-xs text-slate-400">
+          Generate a new story to get interactive hover translations.
+        </p>
       </>
     );
   }
 
-  // Build the interactive story with pre-loaded sentence and word translations.
-  // sentenceIdx tracks position in the flat sentence_translations array.
   let sentenceIdx = 0;
 
   return (
     <>
-      {/* Instruction hint */}
       <p className="mb-5 text-xs text-slate-400">
         Hover a sentence for its translation · click any word for its meaning
       </p>
