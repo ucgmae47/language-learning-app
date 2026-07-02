@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { BookOpen, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { DrillSession } from "@/components/drills/drill-session";
+import { DrillSessionClient } from "@/components/drills/drill-session-client";
 import { QUESTIONS_ES } from "@/lib/drills/questions-es";
 import { QUESTIONS_FR } from "@/lib/drills/questions-fr";
 import type { Language, GrammarWeakness } from "@/lib/supabase/types";
@@ -82,7 +82,7 @@ export default async function DrillsPage() {
         )}
 
         {/* Drill engine */}
-        <DrillSession
+        <DrillSessionClient
           language={language}
           questions={questions}
           weaknesses={weaknesses}

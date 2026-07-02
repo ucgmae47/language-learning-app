@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { FlashcardDeck } from "@/components/flashcards/flashcard-deck";
+import { FlashcardDeckClient } from "@/components/flashcards/flashcard-deck-client";
 import { IDIOMS_ES } from "@/lib/flashcards/idioms-es";
 import { IDIOMS_FR } from "@/lib/flashcards/idioms-fr";
 import type { Language } from "@/lib/supabase/types";
@@ -53,7 +53,7 @@ export default async function FlashcardsPage() {
         </div>
 
         {/* Deck */}
-        <FlashcardDeck idioms={idioms} language={language} />
+        <FlashcardDeckClient idioms={idioms} language={language} />
       </div>
     </main>
   );
