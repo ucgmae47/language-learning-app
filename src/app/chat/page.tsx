@@ -89,7 +89,13 @@ export default async function ChatPage() {
 
       {/* Chat fills remaining height */}
       <div className="flex-1 overflow-hidden">
-        <ChatInterface displayName={displayName} cefrLevel={cefrLevel} starters={starters} />
+        <ChatInterface
+          displayName={displayName}
+          tutorName={tutorName}
+          cefrLevel={cefrLevel}
+          language={language}
+          starters={starters}
+        />
       </div>
     </div>
   );
