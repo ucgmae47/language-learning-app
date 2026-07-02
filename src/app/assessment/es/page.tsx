@@ -20,25 +20,25 @@ export default async function SpanishAssessmentPage() {
   if (!user) redirect("/login?next=/assessment/es");
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
+    <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-xl">
         <Link
           href="/dashboard"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-slate-800"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to dashboard
         </Link>
 
         <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2">
-            <span className="text-2xl" aria-hidden="true">🇪🇸</span>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Spanish Proficiency Assessment
+          <div className="mb-3 flex items-center gap-3">
+            <span className="text-4xl" aria-hidden="true">🇪🇸</span>
+            <h1 className="text-3xl font-black text-white">
+              Spanish Assessment
             </h1>
           </div>
-          <p className="text-sm text-slate-600">
-            {QUESTIONS_ES.length} questions · A2 to B2 · takes about 5 minutes.
+          <p className="text-sm text-slate-400">
+            {QUESTIONS_ES.length} questions · A1 to C2 · takes about 5 minutes.
             Answer honestly — there are no penalties for guessing.
           </p>
         </div>

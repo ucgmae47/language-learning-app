@@ -153,11 +153,11 @@ export function ChatInterface({
   return (
     <div className="flex h-full flex-col">
       {/* ── Messages ──────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+      <div className="flex-1 overflow-y-auto bg-[#07070f] px-4 py-6 sm:px-6">
         {showSuggestions ? (
           <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100">
-              <Bot className="h-8 w-8 text-emerald-700" aria-hidden="true" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/30">
+              <Bot className="h-8 w-8 text-white" aria-hidden="true" />
             </div>
             <div>
               <p className="text-lg font-semibold text-slate-900">
@@ -196,7 +196,7 @@ export function ChatInterface({
                   className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}
                 >
                   <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${isUser ? "bg-emerald-600" : "bg-slate-700"}`}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${isUser ? "bg-gradient-to-br from-emerald-500 to-teal-600" : "bg-gradient-to-br from-cyan-600 to-blue-700"}`}
                   >
                     {isUser ? (
                       <User className="h-4 w-4" aria-hidden="true" />
@@ -209,8 +209,8 @@ export function ChatInterface({
                     <div
                       className={`rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
                         isUser
-                          ? "rounded-br-sm bg-emerald-600 text-white"
-                          : "rounded-bl-sm border border-slate-200 bg-white text-slate-800"
+                          ? "rounded-br-sm bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
+                          : "rounded-bl-sm border border-white/10 bg-white/8 text-slate-200"
                       }`}
                     >
                       {msg.content || (
@@ -245,7 +245,7 @@ export function ChatInterface({
 
       {/* ── Listening overlay ─────────────────────────────────────────────── */}
       {isListening && (
-        <div className="border-t border-red-100 bg-red-50 px-4 py-3 sm:px-6">
+        <div className="border-t border-red-500/20 bg-red-500/10 px-4 py-3 sm:px-6">
           <div className="mx-auto flex max-w-2xl items-center gap-3">
             {/* Animated pulse dots */}
             <span className="flex shrink-0 gap-1" aria-hidden="true">
@@ -254,7 +254,7 @@ export function ChatInterface({
               <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:300ms]" />
             </span>
             <p
-              className={`flex-1 text-sm ${interimText ? "text-red-800" : "italic text-red-400"}`}
+              className={`flex-1 text-sm ${interimText ? "text-red-300" : "italic text-red-400"}`}
             >
               {interimText || "Listening…"}
             </p>
@@ -266,7 +266,7 @@ export function ChatInterface({
       )}
 
       {/* ── Input bar ─────────────────────────────────────────────────────── */}
-      <div className="border-t border-slate-200 bg-white px-4 py-4 sm:px-6">
+      <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4 sm:px-6">
         <form
           onSubmit={handleSubmit}
           className="mx-auto flex max-w-2xl items-end gap-2"
@@ -285,7 +285,7 @@ export function ChatInterface({
                   : "Escribe un mensaje…"
             }
             disabled={isLoading || isListening}
-            className="flex-1 resize-none rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:bg-white/8 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
             style={{ maxHeight: "120px" }}
           />
 

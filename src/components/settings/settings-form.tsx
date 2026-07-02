@@ -38,17 +38,13 @@ export function SettingsForm({
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Profile */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-5 text-base font-semibold text-slate-800">Profile</h2>
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <h2 className="mb-5 text-base font-bold text-white">Profile</h2>
         <form action={action} className="space-y-5">
-          {/* Display name */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="display_name"
-              className="block text-sm font-medium text-slate-700"
-            >
+          <div className="space-y-2">
+            <label htmlFor="display_name" className="block text-sm font-semibold text-slate-300">
               Display name
             </label>
             <input
@@ -58,59 +54,51 @@ export function SettingsForm({
               defaultValue={displayName}
               maxLength={60}
               required
-              className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
-          {/* Email (read-only) */}
-          <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-slate-300">
               Email address
             </label>
             <input
               type="email"
               value={email}
               readOnly
-              className="w-full cursor-not-allowed rounded-lg border border-slate-100 bg-slate-50 px-4 py-2.5 text-slate-400"
+              className="w-full cursor-not-allowed rounded-xl border border-white/5 bg-white/3 px-4 py-2.5 text-slate-500"
             />
-            <p className="text-xs text-slate-400">
-              Email cannot be changed here. Contact support if needed.
+            <p className="text-xs text-slate-600">
+              Email cannot be changed here.
             </p>
           </div>
 
-          {/* WOTD email toggle */}
-          <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
-            <div className="relative mt-0.5 flex-shrink-0">
-              <input
-                id="email_notifications"
-                name="email_notifications"
-                type="checkbox"
-                defaultChecked={wotdEmails}
-                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-            </div>
+          <div className="flex items-start gap-3 rounded-2xl border border-white/8 bg-white/3 p-4">
+            <input
+              id="email_notifications"
+              name="email_notifications"
+              type="checkbox"
+              defaultChecked={wotdEmails}
+              className="mt-0.5 h-4 w-4 cursor-pointer rounded border-white/20 bg-white/10 text-emerald-500 focus:ring-emerald-500"
+            />
             <div>
-              <label
-                htmlFor="email_notifications"
-                className="text-sm font-medium text-slate-700 cursor-pointer"
-              >
+              <label htmlFor="email_notifications" className="cursor-pointer text-sm font-semibold text-slate-300">
                 Word of the Day emails
               </label>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="mt-0.5 text-xs text-slate-500">
                 Receive a daily vocabulary word in your inbox each morning.
               </p>
             </div>
           </div>
 
-          {/* Feedback */}
           {state.error && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
               <AlertCircle className="h-4 w-4 shrink-0" />
               {state.error}
             </div>
           )}
           {state.success && (
-            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
               <CheckCircle className="h-4 w-4 shrink-0" />
               Settings saved!
             </div>
@@ -119,7 +107,7 @@ export function SettingsForm({
           <button
             type="submit"
             disabled={isPending}
-            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50"
           >
             {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {isPending ? "Saving…" : "Save changes"}
@@ -128,10 +116,10 @@ export function SettingsForm({
       </section>
 
       {/* Languages */}
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-1 text-base font-semibold text-slate-800">Languages</h2>
-        <p className="mb-5 text-sm text-slate-500">
-          Your CEFR level is determined by the assessment. Retake it anytime to update your score.
+      <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+        <h2 className="mb-1 text-base font-bold text-white">Languages</h2>
+        <p className="mb-5 text-sm text-slate-400">
+          Your CEFR level is set by the assessment. Retake it anytime.
         </p>
 
         <div className="space-y-3">
@@ -141,24 +129,24 @@ export function SettingsForm({
             return (
               <div
                 key={lang}
-                className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
+                className={`flex items-center justify-between rounded-2xl border px-4 py-3 ${
                   isActive
-                    ? "border-indigo-200 bg-indigo-50"
-                    : "border-slate-200 bg-white"
+                    ? "border-emerald-500/25 bg-emerald-500/10"
+                    : "border-white/8 bg-white/3"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{meta.flag}</span>
                   <div>
-                    <p className="text-sm font-medium text-slate-800">{meta.label}</p>
+                    <p className="text-sm font-semibold text-white">{meta.label}</p>
                     {isActive && (
-                      <p className="text-xs text-indigo-600">Active language</p>
+                      <p className="text-xs text-emerald-400">Active language</p>
                     )}
                   </div>
                 </div>
                 <a
                   href={meta.href}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:border-white/20 hover:text-white"
                 >
                   Retake assessment
                 </a>
@@ -166,21 +154,20 @@ export function SettingsForm({
             );
           })}
 
-          {/* Unaccessed languages */}
           {unaccessedLanguages.map((lang) => {
             const meta = LANG_META[lang];
             return (
               <div
                 key={lang}
-                className="flex items-center justify-between rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3"
+                className="flex items-center justify-between rounded-2xl border border-dashed border-white/8 bg-white/3 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-xl opacity-40">{meta.flag}</span>
-                  <p className="text-sm text-slate-400">{meta.label} — not started</p>
+                  <p className="text-sm text-slate-500">{meta.label} — not started</p>
                 </div>
                 <a
                   href={meta.href}
-                  className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+                  className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1.5 text-xs font-bold text-white transition hover:from-emerald-400 hover:to-teal-400"
                 >
                   Take assessment
                 </a>
@@ -190,16 +177,16 @@ export function SettingsForm({
         </div>
       </section>
 
-      {/* Danger zone */}
-      <section className="rounded-2xl border border-red-100 bg-white p-6 shadow-sm">
-        <h2 className="mb-1 text-base font-semibold text-slate-800">Account</h2>
-        <p className="mb-4 text-sm text-slate-500">
+      {/* Account */}
+      <section className="rounded-3xl border border-red-500/15 bg-red-500/5 p-6">
+        <h2 className="mb-1 text-base font-bold text-white">Account</h2>
+        <p className="mb-4 text-sm text-slate-400">
           Signing out will end your current session on this device.
         </p>
         <form action={logout}>
           <button
             type="submit"
-            className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="rounded-2xl border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 transition hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-300"
           >
             Sign out
           </button>

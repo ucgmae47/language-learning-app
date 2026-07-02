@@ -1,110 +1,133 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, BookOpen, MessageCircle, Puzzle } from "lucide-react";
+import { ArrowRight, Sparkles, Zap } from "lucide-react";
 
 const LANGUAGES = [
   {
     flag: "🇪🇸",
     name: "Spanish",
-    tagline: "The world's second most-spoken native language",
-    tutor: "Practice with Lucía, your conversational AI tutor",
+    tutor: "Lucía",
+    tagline: "500M+ native speakers worldwide",
     href: "/assessment/es",
-    accent: "border-orange-200 hover:border-orange-400",
-    badge: "bg-orange-50 text-orange-700",
-    cta: "bg-orange-500 hover:bg-orange-600",
+    gradient: "from-orange-500 via-red-500 to-rose-600",
+    glow: "shadow-orange-500/40",
+    hoverGlow: "hover:shadow-orange-400/60",
+    badge: "🔥 Most popular",
   },
   {
     flag: "🇫🇷",
     name: "French",
-    tagline: "Spoken across 5 continents in 29 countries",
-    tutor: "Practice with Sophie, your conversational AI tutor",
+    tutor: "Sophie",
+    tagline: "Spoken across 5 continents, 29 countries",
     href: "/assessment/fr",
-    accent: "border-blue-200 hover:border-blue-400",
-    badge: "bg-blue-50 text-blue-700",
-    cta: "bg-blue-600 hover:bg-blue-700",
+    gradient: "from-blue-500 via-indigo-500 to-violet-600",
+    glow: "shadow-blue-500/40",
+    hoverGlow: "hover:shadow-blue-400/60",
+    badge: "✨ Now available",
   },
 ] as const;
 
-const FEATURES = [
-  { icon: BookOpen, text: "AI-generated stories tailored to your level" },
-  { icon: MessageCircle, text: "Conversational practice with your personal tutor" },
-  { icon: Puzzle, text: "Daily crosswords and vocabulary exercises" },
+const STATS = [
+  { value: "A1–C2", label: "All CEFR levels" },
+  { value: "2", label: "Languages" },
+  { value: "5+", label: "Learning modes" },
+  { value: "AI", label: "Powered tutors" },
 ];
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-      {/* Background gradients */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.15),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(14,165,233,0.10),_transparent_40%)]" />
+    <section
+      id="languages"
+      className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-20 lg:px-8"
+    >
+      {/* Background orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute -right-40 top-20 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full bg-cyan-500/8 blur-3xl" />
+      </div>
 
       <div className="relative mx-auto max-w-5xl">
         {/* Badge */}
-        <div className="mb-6 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+        <div className="mb-8 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-400">
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            Adaptive · Personalised · Free
+            Adaptive · AI-Powered · Gamified
           </span>
         </div>
 
         {/* Headline */}
-        <h1 className="mx-auto max-w-3xl text-center text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-          Learn a language through stories, conversation, and daily habits.
+        <h1 className="mx-auto max-w-4xl text-center text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
+          Level up your{" "}
+          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            language skills
+          </span>
         </h1>
-        <p className="mx-auto mt-5 max-w-xl text-center text-lg leading-8 text-slate-600">
-          Take a 5-minute CEFR assessment and get a fully personalised experience
-          — AI stories, a chatbot tutor, crosswords, and a daily word that adapts
-          to your level and interests.
+        <p className="mx-auto mt-6 max-w-xl text-center text-lg leading-8 text-slate-400">
+          Take a 5-minute CEFR assessment and unlock a fully personalized
+          learning experience — stories, AI tutors, drills, and daily
+          challenges that adapt to you.
         </p>
 
-        {/* Feature bullets */}
-        <div className="mx-auto mt-6 flex max-w-lg flex-wrap justify-center gap-4">
-          {FEATURES.map(({ icon: Icon, text }) => (
-            <span key={text} className="flex items-center gap-1.5 text-sm text-slate-500">
-              <Icon className="h-4 w-4 text-emerald-500 shrink-0" aria-hidden="true" />
-              {text}
-            </span>
-          ))}
-        </div>
-
-        {/* ── Language selection cards ────────────────────────────── */}
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          {LANGUAGES.map((lang) => (
-            <div
-              key={lang.name}
-              className={`group relative flex flex-col rounded-3xl border-2 bg-white p-8 shadow-sm transition duration-200 hover:shadow-lg ${lang.accent}`}
-            >
-              {/* Flag + badge */}
-              <div className="mb-4 flex items-start justify-between">
-                <span className="text-5xl" aria-hidden="true">{lang.flag}</span>
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${lang.badge}`}>
-                  Available now
-                </span>
-              </div>
-
-              {/* Language name */}
-              <h2 className="text-2xl font-bold text-slate-900">{lang.name}</h2>
-              <p className="mt-1 text-sm text-slate-500">{lang.tagline}</p>
-
-              {/* Tutor note */}
-              <p className="mt-3 text-sm text-slate-600">{lang.tutor}</p>
-
-              {/* CTA */}
-              <Link
-                href={lang.href}
-                className={`mt-6 flex items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white shadow-sm transition ${lang.cta}`}
-              >
-                Start {lang.name} assessment
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
+        {/* Stats strip */}
+        <div className="mx-auto mt-10 flex max-w-2xl flex-wrap justify-center gap-6 sm:gap-10">
+          {STATS.map((stat) => (
+            <div key={stat.label} className="flex flex-col items-center gap-0.5">
+              <span className="text-2xl font-black text-white">{stat.value}</span>
+              <span className="text-xs font-medium text-slate-500">{stat.label}</span>
             </div>
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        {/* Language cards */}
+        <div className="mt-14 grid gap-6 sm:grid-cols-2">
+          {LANGUAGES.map((lang) => (
+            <Link
+              key={lang.name}
+              href={lang.href}
+              className={`group relative flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl ${lang.glow} ${lang.hoverGlow} backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-2xl`}
+            >
+              {/* Gradient top bar */}
+              <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${lang.gradient}`} />
+
+              {/* Badge */}
+              <span className="mb-6 w-fit rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/80">
+                {lang.badge}
+              </span>
+
+              {/* Flag + name */}
+              <div className="flex items-center gap-4">
+                <span className="text-6xl drop-shadow-lg" aria-hidden="true">
+                  {lang.flag}
+                </span>
+                <div>
+                  <h2 className="text-3xl font-black text-white">{lang.name}</h2>
+                  <p className="text-sm text-slate-400">{lang.tagline}</p>
+                </div>
+              </div>
+
+              {/* Tutor */}
+              <p className="mt-5 text-sm text-slate-400">
+                Practice with{" "}
+                <span className="font-semibold text-white">{lang.tutor}</span>,
+                your AI conversation partner
+              </p>
+
+              {/* CTA */}
+              <div
+                className={`mt-6 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r ${lang.gradient} py-3.5 text-sm font-bold text-white shadow-lg transition-all group-hover:gap-3`}
+              >
+                Start {lang.name} assessment
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-slate-500">
           Already have an account?{" "}
-          <Link href="/login" className="text-emerald-700 hover:underline">
-            Sign in
-          </Link>{" "}
-          to continue where you left off.
+          <Link href="/login" className="font-semibold text-emerald-400 hover:text-emerald-300 hover:underline">
+            Sign in →
+          </Link>
         </p>
       </div>
     </section>

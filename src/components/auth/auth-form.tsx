@@ -7,7 +7,6 @@ import type { AuthFormState } from "@/app/actions/auth";
 type AuthFormProps = {
   mode: "login" | "signup";
   action: (prev: AuthFormState, formData: FormData) => Promise<AuthFormState>;
-  /** If set, the user will be sent here after a successful auth. */
   next?: string;
 };
 
@@ -16,25 +15,23 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
   const isSignup = mode === "signup";
 
   return (
-    <div className="w-full max-w-sm">
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-900">
+    <div className="w-full">
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-md">
+        <h1 className="text-2xl font-black text-white">
           {isSignup ? "Create your account" : "Welcome back"}
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-400">
           {isSignup
-            ? "Start your Spanish learning journey."
+            ? "Start your language learning journey."
             : "Sign in to continue learning."}
         </p>
 
-        <form action={formAction} className="mt-6 flex flex-col gap-4">
+        <form action={formAction} className="mt-7 flex flex-col gap-4">
           {next && <input type="hidden" name="next" value={next} />}
+
           {isSignup && (
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="display_name"
-                className="text-sm font-medium text-slate-700"
-              >
+            <div className="flex flex-col gap-2">
+              <label htmlFor="display_name" className="text-sm font-semibold text-slate-300">
                 Display name
               </label>
               <input
@@ -44,16 +41,13 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
                 autoComplete="name"
                 required
                 placeholder="e.g. María"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                className="rounded-xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-slate-700"
-            >
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="text-sm font-semibold text-slate-300">
               Email
             </label>
             <input
@@ -63,15 +57,12 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
               autoComplete="email"
               required
               placeholder="you@example.com"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="rounded-xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-slate-700"
-            >
+          <div className="flex flex-col gap-2">
+            <label htmlFor="password" className="text-sm font-semibold text-slate-300">
               Password
             </label>
             <input
@@ -82,12 +73,12 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
               required
               minLength={8}
               placeholder={isSignup ? "At least 8 characters" : "••••••••"}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+              className="rounded-xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           {state?.error && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
               {state.error}
             </p>
           )}
@@ -95,24 +86,24 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
           <button
             type="submit"
             disabled={pending}
-            className="mt-1 rounded-full bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-60"
+            className="mt-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-400 hover:to-emerald-500 hover:shadow-emerald-400/40 disabled:opacity-50"
           >
             {pending
               ? "Please wait…"
               : isSignup
-                ? "Create account"
-                : "Sign in"}
+                ? "Create account →"
+                : "Sign in →"}
           </button>
         </form>
       </div>
 
-      <p className="mt-4 text-center text-sm text-slate-500">
+      <p className="mt-5 text-center text-sm text-slate-500">
         {isSignup ? (
           <>
             Already have an account?{" "}
             <Link
               href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
-              className="font-medium text-emerald-700 hover:underline"
+              className="font-semibold text-emerald-400 hover:text-emerald-300 hover:underline"
             >
               Sign in
             </Link>
@@ -122,7 +113,7 @@ export function AuthForm({ mode, action, next }: AuthFormProps) {
             Don&apos;t have an account?{" "}
             <Link
               href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
-              className="font-medium text-emerald-700 hover:underline"
+              className="font-semibold text-emerald-400 hover:text-emerald-300 hover:underline"
             >
               Create one
             </Link>

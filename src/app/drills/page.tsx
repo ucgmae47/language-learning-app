@@ -43,18 +43,18 @@ export default async function DrillsPage() {
     .slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-[#07070f]">
       <div className="mx-auto max-w-2xl px-4 py-10">
         {/* Header */}
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
-            <BookOpen className="h-5 w-5" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 shadow-lg shadow-rose-500/30">
+            <BookOpen className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Grammar Drills
+            <h1 className="text-3xl font-black text-white">
+              ⚡ Grammar Drills
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               {flag} {langName} · powered by Groq AI
             </p>
           </div>
@@ -62,16 +62,16 @@ export default async function DrillsPage() {
 
         {/* Weak areas banner */}
         {topWeak.length > 0 && (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-4 w-4 text-amber-600" />
-              <p className="text-sm font-semibold text-amber-800">Focus areas for you</p>
+          <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-400" />
+              <p className="text-sm font-bold text-amber-300">Focus areas for you</p>
             </div>
             <div className="flex flex-wrap gap-2">
               {topWeak.map((w) => (
                 <span
                   key={w.concept}
-                  className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                  className="rounded-xl bg-amber-500/20 px-2.5 py-0.5 text-xs font-semibold text-amber-300"
                 >
                   {w.concept.split("-").slice(1).join(" ")} ·{" "}
                   {Math.round((w.error_count / w.attempt_count) * 100)}% error rate

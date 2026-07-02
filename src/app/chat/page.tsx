@@ -52,13 +52,13 @@ export default async function ChatPage() {
   const tutorName = TUTOR_NAMES[language];
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
+    <div className="flex h-screen flex-col bg-[#07070f]">
       {/* Header */}
-      <header className="flex-none border-b border-slate-200 bg-white">
+      <header className="flex-none border-b border-white/8 bg-[#07070f]/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-4xl items-center gap-4 px-4 sm:px-6">
           <Link
             href="/dashboard"
-            className="flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-slate-800"
+            className="flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Dashboard
@@ -66,20 +66,20 @@ export default async function ChatPage() {
 
           <div className="flex flex-1 items-center justify-center gap-3">
             <div className="flex flex-col items-center">
-              <p className="text-sm font-semibold text-slate-900">{tutorName}</p>
+              <p className="text-sm font-bold text-white">{tutorName}</p>
               <div className="flex items-center gap-1">
-                <Wifi className="h-3 w-3 text-emerald-500" aria-hidden="true" />
-                <span className="text-xs text-emerald-600">Online</span>
+                <Wifi className="h-3 w-3 text-emerald-400" aria-hidden="true" />
+                <span className="text-xs text-emerald-400">Online</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
+            <span className="rounded-xl bg-cyan-500/20 px-2.5 py-0.5 text-xs font-bold text-cyan-300">
               {cefrLevel}
             </span>
             {interests.length > 0 && (
-              <span className="hidden text-xs text-slate-400 sm:block">
+              <span className="hidden text-xs text-slate-500 sm:block">
                 {interests.slice(0, 2).join(", ")}
               </span>
             )}

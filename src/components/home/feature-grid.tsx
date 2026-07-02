@@ -1,85 +1,85 @@
-import {
-  BookText,
-  Brain,
-  MessageCircle,
-  Puzzle,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
-type Feature = {
-  id: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-};
-
-const features: Feature[] = [
+const FEATURES = [
   {
-    id: "stories",
+    emoji: "📖",
     title: "Adaptive Stories",
-    description:
-      "Read short Spanish narratives tailored to your level, with interactive quizzes after each passage.",
-    icon: BookText,
+    description: "AI-crafted narratives at your exact CEFR level. Hover any sentence for instant translation.",
+    gradient: "from-violet-500/20 to-purple-500/5",
+    border: "border-violet-500/20",
+    glow: "text-violet-400",
   },
   {
-    id: "daily",
-    title: "Daily Engagement",
-    description:
-      "Build momentum with word-of-the-day prompts, crossword puzzles, and streak-friendly micro-lessons.",
-    icon: Puzzle,
+    emoji: "⚡",
+    title: "Grammar Drills",
+    description: "AI-powered drills that prioritize your weakest concepts. Groq gives instant feedback.",
+    gradient: "from-rose-500/20 to-red-500/5",
+    border: "border-rose-500/20",
+    glow: "text-rose-400",
   },
   {
-    id: "chat",
-    title: "Conversation Practice",
-    description:
-      "Practice real dialogue with a supportive chatbot that remembers your interests and learning goals.",
-    icon: MessageCircle,
+    emoji: "💬",
+    title: "Voice Chat Tutor",
+    description: "Speak out loud — Lucía or Sophie respond in your target language with real-time TTS.",
+    gradient: "from-cyan-500/20 to-blue-500/5",
+    border: "border-cyan-500/20",
+    glow: "text-cyan-400",
   },
   {
-    id: "assessment",
-    title: "CEFR Assessment",
-    description:
-      "Start with a proficiency baseline so every story, drill, and recommendation matches your B1–B2 journey.",
-    icon: Brain,
+    emoji: "🎯",
+    title: "Daily Crossword",
+    description: "Vocabulary-focused puzzles that refresh every day to keep your streak alive.",
+    gradient: "from-amber-500/20 to-orange-500/5",
+    border: "border-amber-500/20",
+    glow: "text-amber-400",
+  },
+  {
+    emoji: "✨",
+    title: "Idiom Flashcards",
+    description: "Flip-card decks of native idioms with spaced-repetition style known/review tracking.",
+    gradient: "from-fuchsia-500/20 to-pink-500/5",
+    border: "border-fuchsia-500/20",
+    glow: "text-fuchsia-400",
+  },
+  {
+    emoji: "🧠",
+    title: "Personalization Engine",
+    description: "Your interests and genres shape every story. Adaptive CEFR auto-adjusts your level.",
+    gradient: "from-emerald-500/20 to-teal-500/5",
+    border: "border-emerald-500/20",
+    glow: "text-emerald-400",
   },
 ];
 
 export function FeatureGrid() {
   return (
-    <section id="features" className="px-4 py-16 sm:px-6 lg:px-8">
+    <section id="features" className="px-4 py-20 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-            Everything you need for Phase 1
+        <div className="mb-12 text-center">
+          <h2 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+            Everything you need to{" "}
+            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              actually improve
+            </span>
           </h2>
-          <p className="mt-3 text-lg text-slate-600">
-            The Spanish MVP brings reading, daily practice, and conversational
-            support into one cohesive learning experience.
+          <p className="mx-auto mt-4 max-w-xl text-lg text-slate-400">
+            Six learning modes, all powered by AI, all synced to your CEFR level.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-
-            return (
-              <article
-                key={feature.id}
-                id={feature.id}
-                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <h3 className="mt-4 text-xl font-semibold text-slate-900">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {feature.description}
-                </p>
-              </article>
-            );
-          })}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <article
+              key={feature.title}
+              className={`rounded-3xl border bg-gradient-to-br p-6 ${feature.gradient} ${feature.border} transition-all duration-300 hover:-translate-y-1 hover:border-white/20`}
+            >
+              <div className="mb-4 text-4xl">{feature.emoji}</div>
+              <h3 className={`text-lg font-bold ${feature.glow}`}>
+                {feature.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                {feature.description}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
