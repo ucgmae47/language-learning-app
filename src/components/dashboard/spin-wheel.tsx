@@ -96,6 +96,16 @@ const FEATURES: Feature[] = [
     glowColor: "rgba(100,116,139,0.55)",
     textAccent: "text-slate-300",
   },
+  {
+    id: "gameroom",
+    label: "Game Room",
+    emoji: "🕹️",
+    description: "Wordle, Cannon, Hangman, Pictionary and more",
+    href: "/gameroom",
+    gradient: "from-rose-500 via-pink-500 to-fuchsia-600",
+    glowColor: "rgba(244,63,94,0.55)",
+    textAccent: "text-rose-300",
+  },
 ];
 
 const N = FEATURES.length;
