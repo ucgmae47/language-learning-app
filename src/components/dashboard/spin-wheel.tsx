@@ -126,6 +126,16 @@ const FEATURES: Feature[] = [
     glowColor: "rgba(236,72,153,0.55)",
     textAccent: "text-pink-300",
   },
+  {
+    id: "explore",
+    label: "Explore",
+    emoji: "🌍",
+    description: "Interactive world map — click any country to discover culture and facts",
+    href: "/explore",
+    gradient: "from-amber-500 via-orange-500 to-yellow-600",
+    glowColor: "rgba(245,158,11,0.55)",
+    textAccent: "text-amber-300",
+  },
 ];
 
 const N = FEATURES.length;
