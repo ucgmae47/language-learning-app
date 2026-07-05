@@ -25,7 +25,11 @@ export function GenerateButton() {
       }
 
       if (!res.ok || !body.storyId) {
-        setError(body.error ?? "Something went wrong. Please try again.");
+        setError(
+          res.status === 429
+            ? "AI rate limit reached — wait ~60 seconds and try again."
+            : (body.error ?? "Something went wrong. Please try again."),
+        );
         return;
       }
 

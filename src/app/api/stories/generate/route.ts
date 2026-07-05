@@ -62,23 +62,54 @@ export async function POST(request: Request) {
     apiKey: process.env.GEMINI_API_KEY ?? "",
   });
 
-  // ── Step 1: Generate the story ──────────────────────────────────────────────
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
-  let object: GeneratedStory;
+  function isRateLimitError(err: unknown): boolean {
+    const msg = err instanceof Error ? err.message : String(err);
+    return /quota|rate.?limit|resource.?exhausted|429/i.test(msg);
+  }
 
-  try {
-    const result = await generateObject({
-      model: google("gemini-2.5-flash-lite"),
-      schema: GeneratedStorySchema,
-      prompt,
-    });
-    object = result.object;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+  function delay(ms: number) {
+    return new Promise<void>((r) => setTimeout(r, ms));
+  }
+
+  // ── Step 1: Generate the story (up to 2 attempts, 5 s gap on rate limit) ───
+
+  let object: GeneratedStory | null = null;
+  let storyError: { message: string; isRateLimit: boolean } | null = null;
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const result = await generateObject({
+        model: google("gemini-2.5-flash-lite"),
+        schema: GeneratedStorySchema,
+        prompt,
+        maxRetries: 0, // we handle retries ourselves
+      });
+      object = result.object;
+      break;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const isRateLimit = isRateLimitError(err);
+      storyError = { message, isRateLimit };
+      if (isRateLimit && attempt === 0) {
+        await delay(5000); // wait 5 s before the second attempt
+        continue;
+      }
+      break;
+    }
+  }
+
+  if (!object) {
+    const { isRateLimit, message } = storyError ?? { isRateLimit: false, message: "Unknown error" };
     console.error("[stories/generate] Story generation failed:", message);
     return NextResponse.json(
-      { error: `Story generation failed: ${message}` },
-      { status: 500 },
+      {
+        error: isRateLimit
+          ? "AI rate limit reached. Please wait about a minute and try again."
+          : "Story generation failed. Please try again.",
+      },
+      { status: isRateLimit ? 429 : 500 },
     );
   }
 
