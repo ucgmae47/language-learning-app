@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { StoryGenerator } from "@/components/stories/story-generator";
 import type { Story } from "@/lib/supabase/types";
 
+type QueuedStory = Pick<Story, "id" | "title" | "topics">;
+
 export const metadata: Metadata = {
   title: "Stories | LinguaPath",
 };
@@ -19,15 +21,32 @@ export default async function StoriesPage() {
 
   if (!user) redirect("/login");
 
-  const { data: stories } = await supabase
-    .from("stories")
-    .select("id, title, cefr_level, topics, word_count, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20)
-    .returns<
-      Pick<Story, "id" | "title" | "cefr_level" | "topics" | "word_count" | "created_at">[]
-    >();
+  // Fetch the queued story (if any) and the published story list separately.
+  // Queued stories are excluded from the list until they're consumed.
+  const [{ data: stories }, { data: queuedStory }] = await Promise.all([
+    supabase
+      .from("stories")
+      .select("id, title, cefr_level, topics, word_count, created_at")
+      .eq("user_id", user.id)
+      .eq("is_queued", false)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<
+        Pick<
+          Story,
+          "id" | "title" | "cefr_level" | "topics" | "word_count" | "created_at"
+        >[]
+      >(),
+
+    supabase
+      .from("stories")
+      .select("id, title, topics")
+      .eq("user_id", user.id)
+      .eq("is_queued", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<QueuedStory>(),
+  ]);
 
   return (
     <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
@@ -45,7 +64,7 @@ export default async function StoriesPage() {
           <p className="mb-6 mt-1 text-sm text-slate-400">
             AI-generated reading passages personalised to your level and interests.
           </p>
-          <StoryGenerator />
+          <StoryGenerator queuedStory={queuedStory ?? null} />
         </div>
 
         {!stories || stories.length === 0 ? (

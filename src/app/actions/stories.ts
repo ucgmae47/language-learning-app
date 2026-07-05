@@ -1,8 +1,11 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { updateGenreInterest } from "@/app/actions/interests";
-import type { Language } from "@/lib/supabase/types";
+import { generateQueuedStory } from "@/lib/stories/queue";
+import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 export type AttemptResult = {
   error?: string;
@@ -76,5 +79,41 @@ export async function saveStoryAttempt(
   }
 
   return {};
+}
+
+/**
+ * Marks a pre-queued story as consumed and schedules generation of the next
+ * queued story in the background (after the action response is sent).
+ *
+ * Called from the StoryGenerator "Your story is ready!" card.
+ */
+export async function consumeQueuedStory(storyId: string): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return;
+
+  await supabase
+    .from("stories")
+    .update({ is_queued: false })
+    .eq("id", storyId)
+    .eq("user_id", user.id);
+
+  // Kick off the next pre-generation after this action completes.
+  after(async () => {
+    const service = createServiceClient();
+    const { data: profile } = await service
+      .from("profiles")
+      .select("language, cefr_level")
+      .eq("id", user.id)
+      .single<{ language: Language; cefr_level: CefrLevel }>();
+
+    if (profile) {
+      await generateQueuedStory(user.id, profile.language, profile.cefr_level);
+    }
+  });
 }
 

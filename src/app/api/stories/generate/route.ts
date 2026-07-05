@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject, generateText } from "ai";
@@ -6,6 +7,7 @@ import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
 import { updateGenreInterest } from "@/app/actions/interests";
+import { generateQueuedStory } from "@/lib/stories/queue";
 import type { GeneratedStory } from "@/lib/stories/schema";
 import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
 
@@ -53,10 +55,47 @@ export async function POST(request: Request) {
   const language: Language = profileResult.data?.language ?? "es";
   const topics: string[] =
     interestsResult.data?.map((r: { topic: InterestTopic }) => r.topic) ?? [];
-  const topGenres: string[] =
-    (genreResult.data ?? []).map((r: { genre: string }) => r.genre);
+  const topGenres: string[] = (genreResult.data ?? []).map(
+    (r: { genre: string }) => r.genre,
+  );
 
-  const prompt = buildStoryPrompt(cefrLevel, topics, selectedTopic ?? undefined, language, topGenres);
+  // ── Fast-path: serve a pre-queued story when no explicit topic is chosen ──
+  // The queued story was silently pre-generated and personalised by the
+  // recommendation engine.  Serving it is instant — no AI call needed.
+  if (!selectedTopic) {
+    const { data: queued } = await supabase
+      .from("stories")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("is_queued", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (queued) {
+      // Mark as consumed so it appears in the story list.
+      await supabase
+        .from("stories")
+        .update({ is_queued: false })
+        .eq("id", queued.id);
+
+      // After the response is sent, silently generate the next queued story.
+      after(async () => {
+        await generateQueuedStory(user.id, language, cefrLevel);
+      });
+
+      return NextResponse.json({ storyId: queued.id, fromQueue: true });
+    }
+  }
+
+  // ── No queued story (or explicit topic requested) — generate now ───────────
+  const prompt = buildStoryPrompt(
+    cefrLevel,
+    topics,
+    selectedTopic ?? undefined,
+    language,
+    topGenres,
+  );
 
   const google = createGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY ?? "",
@@ -101,7 +140,10 @@ export async function POST(request: Request) {
   }
 
   if (!object) {
-    const { isRateLimit, message } = storyError ?? { isRateLimit: false, message: "Unknown error" };
+    const { isRateLimit, message } = storyError ?? {
+      isRateLimit: false,
+      message: "Unknown error",
+    };
     console.error("[stories/generate] Story generation failed:", message);
     return NextResponse.json(
       {
@@ -127,9 +169,9 @@ export async function POST(request: Request) {
       topics,
       word_count: wordCount,
       quiz: object.quiz,
-      // Translations are populated below after the batch Gemini call.
       sentence_translations: null,
       word_translations: null,
+      is_queued: false,
     })
     .select("id")
     .single();
@@ -200,7 +242,8 @@ ${words.join(", ")}`;
 
     // Validate the sentence array length matches.
     const sentenceTranslations =
-      Array.isArray(parsed.sentences) && parsed.sentences.length === sentences.length
+      Array.isArray(parsed.sentences) &&
+      parsed.sentences.length === sentences.length
         ? parsed.sentences
         : null;
 
@@ -209,7 +252,9 @@ ${words.join(", ")}`;
       .update({
         sentence_translations: sentenceTranslations,
         word_translations:
-          parsed.words && typeof parsed.words === "object" ? parsed.words : null,
+          parsed.words && typeof parsed.words === "object"
+            ? parsed.words
+            : null,
       })
       .eq("id", story.id);
   } catch (err) {
@@ -217,6 +262,12 @@ ${words.join(", ")}`;
     const message = err instanceof Error ? err.message : String(err);
     console.error("[stories/generate] Translation batch failed:", message);
   }
+
+  // ── Step 4: Silently pre-generate the next queued story ─────────────────────
+  // Runs AFTER the response is sent — zero impact on this request's latency.
+  after(async () => {
+    await generateQueuedStory(user.id, language, cefrLevel);
+  });
 
   return NextResponse.json({ storyId: story.id });
 }
