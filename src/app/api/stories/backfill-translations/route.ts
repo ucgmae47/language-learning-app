@@ -10,6 +10,15 @@ type StoryRow = {
   body: string;
 };
 
+// Matches Gemini per-minute rate limit AND daily quota exhaustion errors.
+function classifyError(err: unknown): "rate_limit" | "quota" | "other" {
+  const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  if (/resource.?exhausted|daily.*quota|per.?day|quota.*exceeded/i.test(msg))
+    return "quota";
+  if (/quota|rate.?limit|429/i.test(msg)) return "rate_limit";
+  return "other";
+}
+
 function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
@@ -17,11 +26,12 @@ function delay(ms: number) {
 /**
  * POST /api/stories/backfill-translations
  *
- * Fetches up to 10 of the authenticated user's stories that are missing
+ * Fetches up to 5 of the authenticated user's stories that are missing
  * translations and generates them via Gemini, one story at a time with a
- * 3-second gap between calls to stay inside the free-tier rate limit.
+ * 4-second gap between calls to stay inside the free-tier rate limit.
  *
- * Returns { processed, skipped, errors } so the client can show progress.
+ * Returns { processed, errors, total, errorKind, firstErrorMsg } so the
+ * client can show the actual failure reason.
  */
 export async function POST() {
   const supabase = await createClient();
@@ -45,14 +55,15 @@ export async function POST() {
   const langName = language === "es" ? "Spanish" : "French";
 
   // Grab stories that are missing translations (not queued).
+  // Reduced batch to 5 to lower the chance of hitting the per-minute limit.
   const { data: stories, error: fetchError } = await supabase
     .from("stories")
-    .select("id, body, cefr_level")
+    .select("id, body")
     .eq("user_id", user.id)
     .eq("is_queued", false)
     .is("sentence_translations", null)
     .order("created_at", { ascending: false })
-    .limit(10)
+    .limit(5)
     .returns<StoryRow[]>();
 
   if (fetchError) {
@@ -60,7 +71,12 @@ export async function POST() {
   }
 
   if (!stories || stories.length === 0) {
-    return NextResponse.json({ processed: 0, skipped: 0, errors: 0, message: "All stories already have translations." });
+    return NextResponse.json({
+      processed: 0,
+      errors: 0,
+      total: 0,
+      message: "All stories already have translations.",
+    });
   }
 
   const google = createGoogleGenerativeAI({
@@ -69,12 +85,14 @@ export async function POST() {
 
   let processed = 0;
   let errors = 0;
+  let errorKind: "rate_limit" | "quota" | "other" | null = null;
+  let firstErrorMsg: string | null = null;
 
   for (let i = 0; i < stories.length; i++) {
     const story = stories[i]!;
 
-    // Pause between calls (skip the delay on the very first story).
-    if (i > 0) await delay(3500);
+    // 4-second gap between calls (skip the very first call).
+    if (i > 0) await delay(4000);
 
     try {
       const sentences = allSentences(story.body);
@@ -139,17 +157,37 @@ ${words.join(", ")}`;
         .eq("id", story.id);
 
       if (updateError) {
-        console.error(`[backfill] Update failed for story ${story.id}:`, updateError.message);
+        console.error(
+          `[backfill] DB update failed for ${story.id}:`,
+          updateError.message,
+        );
         errors++;
+        if (!firstErrorMsg) {
+          errorKind = "other";
+          firstErrorMsg = `DB error: ${updateError.message}`;
+        }
       } else {
         processed++;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[backfill] Translation failed for story ${story.id}:`, msg);
+      console.error(`[backfill] Translation failed for ${story.id}:`, msg);
       errors++;
+      if (!firstErrorMsg) {
+        errorKind = classifyError(err);
+        // Surface the first ~120 chars of the real error to the client.
+        firstErrorMsg = msg.slice(0, 120);
+      }
+      // Stop immediately on quota exhaustion — retrying won't help today.
+      if (errorKind === "quota") break;
     }
   }
 
-  return NextResponse.json({ processed, skipped: 0, errors, total: stories.length });
+  return NextResponse.json({
+    processed,
+    errors,
+    total: stories.length,
+    errorKind,
+    firstErrorMsg,
+  });
 }
