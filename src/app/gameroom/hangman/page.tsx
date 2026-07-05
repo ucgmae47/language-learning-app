@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { HangmanGame } from "@/components/games/hangman/hangman-game";
-import { getRandomHangmanWordEs } from "@/lib/games/hangman-words-es";
-import { getRandomHangmanWordFr } from "@/lib/games/hangman-words-fr";
+import { HANGMAN_WORDS_ES, getRandomHangmanWordEs } from "@/lib/games/hangman-words-es";
+import { HANGMAN_WORDS_FR, getRandomHangmanWordFr } from "@/lib/games/hangman-words-fr";
 import type { Language, Profile } from "@/lib/supabase/types";
 
 export default async function HangmanPage() {
@@ -17,7 +17,8 @@ export default async function HangmanPage() {
     .single<Profile>();
 
   const language: Language = profile?.language ?? "es";
-  const getWord = language === "fr" ? getRandomHangmanWordFr : getRandomHangmanWordEs;
+  const initialWord = language === "fr" ? getRandomHangmanWordFr() : getRandomHangmanWordEs();
+  const wordList: string[] = language === "fr" ? [...HANGMAN_WORDS_FR] : [...HANGMAN_WORDS_ES];
 
-  return <HangmanGame getWord={getWord} language={language} />;
+  return <HangmanGame initialWord={initialWord} wordList={wordList} language={language} />;
 }

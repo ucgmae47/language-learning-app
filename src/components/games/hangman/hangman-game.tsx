@@ -49,14 +49,15 @@ function HangmanSVG({ wrong }: { wrong: number }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 type Props = {
-  getWord: () => string;
+  initialWord: string;
+  wordList: string[];
   language: Language;
 };
 
-export function HangmanGame({ getWord, language }: Props) {
+export function HangmanGame({ initialWord, wordList, language }: Props) {
   const meta = LANG_META[language];
 
-  const [target, setTarget] = useState<string>(() => getWord());
+  const [target, setTarget] = useState<string>(initialWord);
   const [guessed, setGuessed] = useState<Set<string>>(new Set());
 
   const wrong = [...guessed].filter((l) => !target.includes(l)).length;
@@ -73,9 +74,10 @@ export function HangmanGame({ getWord, language }: Props) {
   );
 
   const reset = useCallback(() => {
-    setTarget(getWord());
+    const next = wordList[Math.floor(Math.random() * wordList.length)] ?? initialWord;
+    setTarget(next);
     setGuessed(new Set());
-  }, [getWord]);
+  }, [wordList, initialWord]);
 
   // Keyboard support
   useState(() => {
