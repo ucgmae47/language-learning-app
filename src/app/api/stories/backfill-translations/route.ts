@@ -3,13 +3,11 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
-import type { CefrLevel, Language } from "@/lib/supabase/types";
+import type { Language } from "@/lib/supabase/types";
 
 type StoryRow = {
   id: string;
   body: string;
-  cefr_level: CefrLevel;
-  language: Language;
 };
 
 function delay(ms: number) {
@@ -49,7 +47,7 @@ export async function POST() {
   // Grab stories that are missing translations (not queued).
   const { data: stories, error: fetchError } = await supabase
     .from("stories")
-    .select("id, body, cefr_level, language")
+    .select("id, body, cefr_level")
     .eq("user_id", user.id)
     .eq("is_queued", false)
     .is("sentence_translations", null)
