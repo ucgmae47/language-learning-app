@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createProxyClient } from "@/lib/supabase/proxy-client";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/assessment", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore"];
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/assessment", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore", "/vocabulary", "/progress", "/phrasebook", "/recipes", "/pronunciation", "/calendar", "/analyzer", "/achievements", "/leaderboard", "/planner"];
 const AUTH_ROUTES = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {

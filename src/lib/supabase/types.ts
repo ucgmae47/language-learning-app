@@ -173,6 +173,28 @@ export type ChatRoomMessage = {
   created_at: string;
 };
 
+export type VocabularyCard = {
+  id: string;
+  user_id: string;
+  language: Language;
+  word: string;
+  translation: string;
+  context: string | null;
+  source: string;
+  ease_factor: number;
+  interval_days: number;
+  repetitions: number;
+  due_date: string;
+  created_at: string;
+};
+
+export type UserAchievement = {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  unlocked_at: string;
+};
+
 export type MusicLike = {
   id: string;
   user_id: string;
@@ -259,6 +281,18 @@ export type Database = {
         Row: ChatRoomMessage;
         Insert: Omit<ChatRoomMessage, "id" | "created_at"> &
           Partial<Pick<ChatRoomMessage, "id">>;
+        Update: never;
+        Relationships: Rel;
+      };
+      vocabulary_cards: {
+        Row: VocabularyCard;
+        Insert: Omit<VocabularyCard, "id" | "created_at"> & Partial<Pick<VocabularyCard, "id">>;
+        Update: Partial<Omit<VocabularyCard, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      user_achievements: {
+        Row: UserAchievement;
+        Insert: Omit<UserAchievement, "id" | "unlocked_at"> & Partial<Pick<UserAchievement, "id">>;
         Update: never;
         Relationships: Rel;
       };
