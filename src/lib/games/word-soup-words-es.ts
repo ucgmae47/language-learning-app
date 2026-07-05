@@ -1,0 +1,75 @@
+/** Common Spanish words (3-7 letters, lowercase, no accents) for Word Soup validation */
+const RAW_ES = [
+  // 3-letter
+  "sol","mar","rio","paz","luz","gas","pan","sal","mes","ola","eco","ser","dar",
+  "ver","ojo","ala","osa","pez","voz","tos","ron","ajo","era","oro","una","uno",
+  "dos","las","los","del","que","muy","sin","por","con","mas","hay","van","vas",
+  "dan","ven","son","son","pez","tel","red","ley","rey","pie","faz","veo","leo",
+  // 4-letter
+  "amor","agua","alma","arte","auto","casa","cama","cara","caro","capa","cola",
+  "copa","cosa","dato","dedo","dios","duda","duro","fama","flor","foto","gato",
+  "gota","gran","guia","hora","isla","lago","lana","lava","leer","lema","lena",
+  "leña","leve","loca","loco","loma","lona","luna","mano","mapa","maro","masa",
+  "mesa","meta","miel","mimo","modo","mole","mono","mora","moto","nada","nave",
+  "nena","niña","niño","nube","obra","onda","oreo","orna","oros","palo","para",
+  "pata","pelo","pena","pica","pila","plan","plaz","poco","polo","poma","poro",
+  "posa","rasa","rata","raza","roca","ropa","rosa","rota","roto","ruda","ruta",
+  "sala","salo","sano","seda","sele","sena","sera","sero","seta","sial","soga",
+  "sola","solo","soma","sopa","sota","sumo","taco","tapa","tasa","tela","tema",
+  "tino","tipa","tipo","tiro","toca","tola","toma","tona","topo","tora","toro",
+  "tosa","tota","tuna","vana","vano","vela","vena","vera","vida","vino","visa",
+  // 5-letter
+  "campo","verde","nuevo","bueno","calle","madre","padre","playa","banco","barco",
+  "banco","bello","cerca","cielo","clase","claro","climb","comba","comer","corte",
+  "corto","costa","crema","cruel","cueva","culpa","curva","delta","dense","derby",
+  "desca","dique","disco","dolor","donar","dorso","droga","duelo","dulce","danza",
+  "ellas","ellos","email","enero","enojo","entre","error","escot","escudo","estado",
+  "fondo","forma","forte","fosil","freno","fresa","frito","fruta","fuego","fuerza",
+  "gente","globo","golpe","grasa","grave","gripe","grupo","gusto","hielo","hiero",
+  "hinco","horno","hotel","hueso","humano","ideal","igual","impor","indio","ingles",
+  "joven","juego","justo","labor","lapiz","largo","lejos","libro","listo","llano",
+  "llena","lleno","lloro","lodos","logro","lucha","lugar","marca","marco","marte",
+  "masca","mejor","melon","menor","menta","metro","milla","minos","mismo","misto",
+  "mundo","nacer","negro","nivel","norte","nublo","nueve","nunca","ocaso","oeste",
+  "opera","oruga","oveja","padre","palco","palma","papel","pared","parte","pasar",
+  "patio","pelma","perro","piano","pinta","pisar","plata","plaza","plomo","pluma",
+  "polvo","pompa","poner","porta","poste","prima","primo","prisa","proba","probar",
+  "puedo","punto","queso","radio","rango","rasca","razón","recta","repas","resta",
+  "reuma","ripio","rival","rodeo","rubio","rueda","ruido","rumbo","sabor","salsa",
+  "salto","salud","santo","senda","senso","siglo","signo","simio","sobre","solar",
+  "sompa","sordo","subir","sucio","suelo","suena","suero","sufre","sumar","super",
+  "tabla","tango","tarde","techo","temor","tener","tenga","tigre","tinte","tiros",
+  "tomar","tonto","torre","total","traje","trato","trote","truco","tumor","turno",
+  "ultra","unido","unión","vacío","valor","vapor","vasto","vejez","venta","venus",
+  "veraz","verga","verso","vigor","viaje","vicio","virgo","vista","vivir","vocal",
+  // 6-letter
+  "abuelo","agente","amigos","amores","camino","ciudad","dinero","doctor","empleo",
+  "estado","fiesta","flores","fresco","fuerte","ganado","gratis","griego","grueso",
+  "guerra","humano","imagen","inicio","jardín","jornada","ladron","ligero","llegue",
+  "maceta","madera","manana","manana","marina","merced","mirada","modulo","moneda",
+  "montón","motivo","muchos","musica","nación","naranja","numero","objeto","oferta",
+  "origen","oscuro","ovillo","pasaje","pasion","pensar","perder","perfil","pesado",
+  "pintor","pitido","planta","plasma","platón","poblar","polaco","pololo","portal",
+  "precio","prenda","pueblo","puente","rancho","rapido","raptor","receta","refugio",
+  "reglas","relato","remoto","rencor","rendir","reposo","resort","retiro","rigido",
+  "robado","romano","rosado","rosario","rugoso","ruleta","rumano","sabana","sacrif",
+  "salida","sangre","seguro","semana","señora","sereno","severo","situar","sobrar",
+  "soltar","sonrisa","sovero","tacaño","talento","tesoro","timbre","tirano","titulo",
+  "trafico","tropico","ultimo","unidad","unirse","verano","verdad","violin","visita",
+  // 7-letter
+  "abogado","capitan","comedor","cuerpos","ejemplo","elegante","familia","herrero",
+  "historia","infante","invierno","maestro","mecánico","miembro","monstro","noticia",
+  "oficina","pascual","pescado","pintora","planeta","proceso","programa","rebelde",
+  "relieve","rescate","reunión","romano","sagrado","sistema","soldado","tambor",
+  "trabajo","velador","ventana","versión","viajero","viernes","visible","volumen",
+];
+
+export const WORD_SOUP_ES: Set<string> = new Set(RAW_ES.map((w) => w.toLowerCase()));
+
+/** Weighted Spanish letters for grid generation */
+export const ES_LETTER_WEIGHTS: [string, number][] = [
+  ["A",12],["E",14],["O",9],["S",8],["R",7],["N",7],
+  ["I",6],["L",5],["T",4],["D",4],["C",4],["U",4],
+  ["P",3],["M",3],["B",2],["G",2],["V",2],["H",2],
+  ["F",1],["Y",1],["J",1],["Z",1],
+];

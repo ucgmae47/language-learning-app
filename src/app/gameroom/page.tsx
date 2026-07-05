@@ -48,7 +48,7 @@ const GAMES: Game[] = [
     difficulty: "Medium",
     href: "/gameroom/cannon",
     gradient: "from-rose-500 to-red-600",
-    available: false,
+    available: true,
   },
   {
     id: "word-soup",
@@ -59,7 +59,7 @@ const GAMES: Game[] = [
     difficulty: "Medium",
     href: "/gameroom/word-soup",
     gradient: "from-violet-500 to-purple-600",
-    available: false,
+    available: true,
   },
   {
     id: "twenty-questions",
@@ -81,7 +81,7 @@ const GAMES: Game[] = [
     difficulty: "Hard",
     href: "/gameroom/verb-race",
     gradient: "from-yellow-500 to-amber-600",
-    available: false,
+    available: true,
   },
   {
     id: "pictionary",
