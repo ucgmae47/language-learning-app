@@ -116,6 +116,16 @@ const FEATURES: Feature[] = [
     glowColor: "rgba(139,92,246,0.55)",
     textAccent: "text-violet-300",
   },
+  {
+    id: "music",
+    label: "Music",
+    emoji: "🎵",
+    description: "AI-recommended songs in your target language with lyrics and fun facts",
+    href: "/music",
+    gradient: "from-pink-500 via-rose-500 to-red-600",
+    glowColor: "rgba(236,72,153,0.55)",
+    textAccent: "text-pink-300",
+  },
 ];
 
 const N = FEATURES.length;

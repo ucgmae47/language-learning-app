@@ -173,6 +173,18 @@ export type ChatRoomMessage = {
   created_at: string;
 };
 
+export type MusicLike = {
+  id: string;
+  user_id: string;
+  language: Language;
+  song_title: string;
+  artist: string;
+  genre: string | null;
+  youtube_id: string | null;
+  liked: boolean;
+  created_at: string;
+};
+
 export type GenreInterest = {
   id: string;
   user_id: string;
@@ -247,6 +259,12 @@ export type Database = {
         Row: ChatRoomMessage;
         Insert: Omit<ChatRoomMessage, "id" | "created_at"> &
           Partial<Pick<ChatRoomMessage, "id">>;
+        Update: never;
+        Relationships: Rel;
+      };
+      music_likes: {
+        Row: MusicLike;
+        Insert: Omit<MusicLike, "id" | "created_at"> & Partial<Pick<MusicLike, "id">>;
         Update: never;
         Relationships: Rel;
       };
