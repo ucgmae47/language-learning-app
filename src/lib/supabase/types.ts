@@ -2,6 +2,33 @@ export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export type Language = "es" | "fr";
 
+export type PictionaryRoomStatus = "lobby" | "playing" | "game_over";
+
+export type PictionaryRoom = {
+  code: string;
+  host_id: string;
+  language: Language;
+  status: PictionaryRoomStatus;
+  players: { userId: string; displayName: string; cefrLevel: string }[];
+  round: number;
+  total_rounds: number;
+  current_drawer_id: string | null;
+  word_hint: string | null;
+  word_length: number | null;
+  word_blanks: string | null;
+  round_ends_at: string | null;
+  scores: Record<string, number>;
+  drawer_queue: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type PictionarySecret = {
+  room_code: string;
+  word: string;
+  updated_at: string;
+};
+
 export type InterestTopic =
   | "food"
   | "travel"
@@ -232,6 +259,19 @@ export type Database = {
         Insert: Omit<StoryAttempt, "id" | "completed_at"> &
           Partial<Pick<StoryAttempt, "id">>;
         Update: never;
+        Relationships: Rel;
+      };
+      pictionary_rooms: {
+        Row: PictionaryRoom;
+        Insert: Pick<PictionaryRoom, "code" | "host_id" | "language"> &
+          Partial<Omit<PictionaryRoom, "code" | "host_id" | "language" | "created_at" | "updated_at">>;
+        Update: Partial<Omit<PictionaryRoom, "code" | "host_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      pictionary_secrets: {
+        Row: PictionarySecret;
+        Insert: PictionarySecret;
+        Update: Partial<PictionarySecret>;
         Relationships: Rel;
       };
     };

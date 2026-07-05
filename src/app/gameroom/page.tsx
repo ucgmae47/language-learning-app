@@ -92,7 +92,7 @@ const GAMES: Game[] = [
     difficulty: "Easy",
     href: "/gameroom/pictionary",
     gradient: "from-fuchsia-500 to-pink-600",
-    available: false,
+    available: true,
   },
 ];
 
