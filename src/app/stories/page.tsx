@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, BookOpen, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { StoryGenerator } from "@/components/stories/story-generator";
+import { BackfillButton } from "@/components/stories/backfill-button";
 import type { Story } from "@/lib/supabase/types";
 
 type QueuedStory = Pick<Story, "id" | "title" | "topics">;
@@ -21,32 +22,45 @@ export default async function StoriesPage() {
 
   if (!user) redirect("/login");
 
-  // Fetch the queued story (if any) and the published story list separately.
-  // Queued stories are excluded from the list until they're consumed.
-  const [{ data: stories }, { data: queuedStory }] = await Promise.all([
-    supabase
-      .from("stories")
-      .select("id, title, cefr_level, topics, word_count, created_at")
-      .eq("user_id", user.id)
-      .eq("is_queued", false)
-      .order("created_at", { ascending: false })
-      .limit(20)
-      .returns<
-        Pick<
-          Story,
-          "id" | "title" | "cefr_level" | "topics" | "word_count" | "created_at"
-        >[]
-      >(),
+  // Fetch the queued story (if any), the published story list, and a count of
+  // stories that are missing translations (for the backfill banner).
+  const [{ data: stories }, { data: queuedStory }, { count: missingCount }] =
+    await Promise.all([
+      supabase
+        .from("stories")
+        .select("id, title, cefr_level, topics, word_count, created_at")
+        .eq("user_id", user.id)
+        .eq("is_queued", false)
+        .order("created_at", { ascending: false })
+        .limit(20)
+        .returns<
+          Pick<
+            Story,
+            | "id"
+            | "title"
+            | "cefr_level"
+            | "topics"
+            | "word_count"
+            | "created_at"
+          >[]
+        >(),
 
-    supabase
-      .from("stories")
-      .select("id, title, topics")
-      .eq("user_id", user.id)
-      .eq("is_queued", true)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<QueuedStory>(),
-  ]);
+      supabase
+        .from("stories")
+        .select("id, title, topics")
+        .eq("user_id", user.id)
+        .eq("is_queued", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<QueuedStory>(),
+
+      supabase
+        .from("stories")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_queued", false)
+        .is("sentence_translations", null),
+    ]);
 
   return (
     <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
@@ -66,6 +80,11 @@ export default async function StoriesPage() {
           </p>
           <StoryGenerator queuedStory={queuedStory ?? null} />
         </div>
+
+        {/* Banner only shown when stories are missing hover translations */}
+        {(missingCount ?? 0) > 0 && (
+          <BackfillButton count={missingCount ?? 0} />
+        )}
 
         {!stories || stories.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
