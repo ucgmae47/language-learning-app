@@ -104,6 +104,32 @@ export type TutorMessage = {
   created_at: string;
 };
 
+/** A single raw behavioral event written by any app feature. */
+export type UserEvent = {
+  id: string;
+  user_id: string;
+  language: Language;
+  source: string;
+  event_type: string;
+  topic: string;
+  raw_topic: string | null;
+  weight: number;
+  duration_s: number | null;
+  session_key: string | null;
+  created_at: string;
+};
+
+/** Aggregated confidence score per canonical topic per user+language. */
+export type TopicScore = {
+  user_id: string;
+  language: Language;
+  topic: string;
+  score: number;
+  event_count: number;
+  distinct_days: number;
+  last_event_at: string;
+};
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -439,6 +465,18 @@ export type Database = {
         Row: TutorMessage;
         Insert: Omit<TutorMessage, "id" | "created_at"> & Partial<Pick<TutorMessage, "id">>;
         Update: never;
+        Relationships: Rel;
+      };
+      user_events: {
+        Row: UserEvent;
+        Insert: Omit<UserEvent, "id" | "created_at"> & Partial<Pick<UserEvent, "id">>;
+        Update: never;
+        Relationships: Rel;
+      };
+      topic_scores: {
+        Row: TopicScore;
+        Insert: TopicScore;
+        Update: Partial<Omit<TopicScore, "user_id" | "language" | "topic">>;
         Relationships: Rel;
       };
     };

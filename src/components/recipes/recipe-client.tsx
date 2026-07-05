@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChefHat } from "lucide-react";
+import { logEvent } from "@/app/actions/events";
+import { cuisineToCanonical, WEIGHTS } from "@/lib/events/taxonomy";
 import type { Language } from "@/lib/supabase/types";
 
 type Recipe = {
@@ -93,6 +95,16 @@ export function RecipeClient({ language, cefrLevel }: Props) {
       if (!res.ok) throw new Error("Failed to generate recipe");
       const data = (await res.json()) as Recipe;
       setRecipe(data);
+
+      // Log behavioral event — cuisine selection is a strong food signal
+      void logEvent({
+        language,
+        source: "recipe",
+        event_type: "recipe_generated",
+        topic: cuisineToCanonical(),
+        raw_topic: cuisine,
+        weight: WEIGHTS.RECIPE_GENERATED,
+      });
     } catch {
       setError("Couldn't generate recipe. Please try again.");
     } finally {

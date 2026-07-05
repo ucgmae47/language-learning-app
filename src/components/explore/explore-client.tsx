@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { CountryPanel } from "@/components/explore/country-panel";
 import { getCountriesForLanguage, LANGUAGE_META } from "@/lib/explore/country-data";
+import { logEvent } from "@/app/actions/events";
+import { countryToCanonical, WEIGHTS } from "@/lib/events/taxonomy";
 import type { CountryEntry } from "@/lib/explore/country-data";
 import type { CountryInfoResponse } from "@/app/api/explore/country/route";
 import type { Language } from "@/lib/supabase/types";
@@ -39,6 +41,37 @@ export function ExploreClient({ language }: Props) {
   const [isLoadingInfo, setIsLoadingInfo] = useState(false);
   const [infoError, setInfoError] = useState<string | null>(null);
 
+  // ── Country dwell tracking ─────────────────────────────────────────────────
+  const panelOpenTimeRef = useRef<number | null>(null);
+  const dwellBonusLoggedRef = useRef(false);
+
+  useEffect(() => {
+    if (!selectedEntry) {
+      panelOpenTimeRef.current = null;
+      dwellBonusLoggedRef.current = false;
+      return;
+    }
+
+    panelOpenTimeRef.current = Date.now();
+    dwellBonusLoggedRef.current = false;
+
+    // Log bonus after 60 seconds of dwell
+    const timer = setTimeout(() => {
+      dwellBonusLoggedRef.current = true;
+      void logEvent({
+        language,
+        source: "explore",
+        event_type: "country_dwell_60s",
+        topic: countryToCanonical(),
+        raw_topic: selectedEntry.name,
+        weight: WEIGHTS.EXPLORE_DWELL_PER_60S,
+        duration_s: 60,
+      });
+    }, 60_000);
+
+    return () => clearTimeout(timer);
+  }, [selectedEntry, language]);
+
   const handleCountryClick = useCallback(
     async (id: string, entry: CountryEntry) => {
       // If same country is clicked, deselect
@@ -54,6 +87,16 @@ export function ExploreClient({ language }: Props) {
       setCountryInfo(null);
       setIsLoadingInfo(true);
       setInfoError(null);
+
+      // Log the click event immediately
+      void logEvent({
+        language,
+        source: "explore",
+        event_type: "country_clicked",
+        topic: countryToCanonical(),
+        raw_topic: entry.name,
+        weight: WEIGHTS.EXPLORE_COUNTRY_CLICKED,
+      });
 
       try {
         const res = await fetch(

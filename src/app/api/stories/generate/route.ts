@@ -6,8 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
-import { updateGenreInterest } from "@/app/actions/interests";
 import { generateQueuedStory } from "@/lib/stories/queue";
+import { insertEvent } from "@/lib/events/log-event";
+import { normalizeStoryGenre, WEIGHTS } from "@/lib/events/taxonomy";
+import { aggregateTopicScores } from "@/lib/events/aggregate";
 import { getUserContext } from "@/lib/user-context";
 import type { GeneratedStory } from "@/lib/stories/schema";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
@@ -184,10 +186,26 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── Step 2b: Record genre interest signal (+3 for explicit genre selection) ─
-  if (selectedTopic) {
-    void updateGenreInterest(selectedTopic, 3, language);
+  // ── Step 2b: Log story_open event via behavioral engine ─────────────────────
+  // Log one event per topic in the story. For an explicit genre selection the
+  // weight is bumped to STORY_OPENED × 2 (strong explicit signal).
+  const storyTopicsForLog = topics;
+  for (const genre of storyTopicsForLog) {
+    const canonical = normalizeStoryGenre(genre);
+    if (!canonical) continue;
+    const w = selectedTopic ? WEIGHTS.STORY_OPENED * 2 : WEIGHTS.STORY_OPENED;
+    void insertEvent(supabase, user.id, {
+      language,
+      source: "story",
+      event_type: "story_open",
+      topic: canonical,
+      raw_topic: genre,
+      weight: w,
+    });
   }
+  after(async () => {
+    await aggregateTopicScores(user.id, language);
+  });
 
   // ── Step 3: Pre-generate translations ──────────────────────────────────────
   // One Gemini call translates all sentences (as an ordered array) and all

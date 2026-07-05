@@ -106,7 +106,7 @@ export default async function NewsPage() {
         {articles.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {articles.map((article, i) => (
-              <NewsCard key={i} article={article} />
+              <NewsCard key={i} article={article} language={language} />
             ))}
           </div>
         ) : !error ? (

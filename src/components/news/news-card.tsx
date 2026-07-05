@@ -1,6 +1,12 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { ExternalLink, Clock } from "lucide-react";
+import { logEvent } from "@/app/actions/events";
+import { normalizeNewsCategory, WEIGHTS } from "@/lib/events/taxonomy";
 import type { SummarizedArticle } from "@/app/actions/news";
+import type { Language } from "@/lib/supabase/types";
 
 const CATEGORY_STYLES: Record<string, string> = {
   World:          "bg-blue-500/20 text-blue-300",
@@ -20,11 +26,53 @@ function relativeTime(iso: string): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-type Props = { article: SummarizedArticle };
+type Props = { article: SummarizedArticle; language: Language };
 
-export function NewsCard({ article }: Props) {
+export function NewsCard({ article, language }: Props) {
   const categoryStyle =
     CATEGORY_STYLES[article.category] ?? "bg-slate-500/20 text-slate-300";
+
+  // ── Dwell tracking ──────────────────────────────────────────────────────────
+  // Log once after 30 s of the card being mounted, and log duration on unmount.
+  const mountTimeRef = useRef(Date.now());
+  const loggedRef = useRef(false);
+
+  useEffect(() => {
+    const topic = normalizeNewsCategory(article.category);
+
+    // Fire after 30 seconds of continuous view (base dwell event)
+    const timer = setTimeout(() => {
+      loggedRef.current = true;
+      void logEvent({
+        language,
+        source: "news",
+        event_type: "article_dwell_30s",
+        topic,
+        raw_topic: article.category,
+        weight: WEIGHTS.NEWS_DWELL_PER_30S,
+        duration_s: 30,
+      });
+    }, 30_000);
+
+    // On unmount: log article_read with total duration if they stayed < 30 s
+    return () => {
+      clearTimeout(timer);
+      const durationS = Math.floor((Date.now() - mountTimeRef.current) / 1000);
+      if (!loggedRef.current && durationS >= 5) {
+        // They engaged at least 5 s — log a lightweight open event
+        void logEvent({
+          language,
+          source: "news",
+          event_type: "article_read",
+          topic,
+          raw_topic: article.category,
+          weight: WEIGHTS.NEWS_ARTICLE_OPEN,
+          duration_s: durationS,
+        });
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:border-white/20 hover:bg-white/8">

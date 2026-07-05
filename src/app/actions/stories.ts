@@ -3,8 +3,10 @@
 import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
-import { updateGenreInterest } from "@/app/actions/interests";
 import { generateQueuedStory } from "@/lib/stories/queue";
+import { insertEvent } from "@/lib/events/log-event";
+import { normalizeStoryGenre, WEIGHTS } from "@/lib/events/taxonomy";
+import { aggregateTopicScores } from "@/lib/events/aggregate";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 export type AttemptResult = {
@@ -68,15 +70,28 @@ export async function saveStoryAttempt(
     return { error: attemptResult.error.message };
   }
 
-  // ── Behavioural interest graph: record quiz-completion signal ────────────
-  // +1 for completing the quiz; +1 bonus if score ≥ 4/5.
+  // ── Behavioural interest engine: record quiz-completion signal ───────────
   const storyTopics: string[] = storyResult.data?.topics ?? [];
   const language: Language = profileResult.data?.language ?? "es";
-  const bonusDelta = score >= 4 ? 1 : 0;
 
   for (const genre of storyTopics) {
-    void updateGenreInterest(genre, 1 + bonusDelta, language);
+    const canonical = normalizeStoryGenre(genre);
+    if (!canonical) continue;
+
+    const bonusPoints = score >= 4 ? WEIGHTS.STORY_QUIZ_BONUS * (score - 2) : 0;
+    void insertEvent(supabase, user.id, {
+      language,
+      source: "story",
+      event_type: "quiz_completed",
+      topic: canonical,
+      raw_topic: genre,
+      weight: WEIGHTS.STORY_QUIZ_COMPLETED + bonusPoints,
+    });
   }
+
+  after(async () => {
+    await aggregateTopicScores(user.id, language);
+  });
 
   return {};
 }

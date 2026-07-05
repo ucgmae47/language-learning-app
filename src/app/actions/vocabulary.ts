@@ -1,7 +1,11 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { applySM2 } from "@/lib/srs";
+import { insertEvent } from "@/lib/events/log-event";
+import { WEIGHTS } from "@/lib/events/taxonomy";
+import { aggregateTopicScores } from "@/lib/events/aggregate";
 import type { SrsGrade } from "@/lib/srs";
 import type { Language } from "@/lib/supabase/types";
 
@@ -73,6 +77,22 @@ export async function saveWord(
   );
 
   if (error) return { error: error.message };
+
+  // Log vocabulary save as a language_education signal
+  void insertEvent(supabase, user.id, {
+    language,
+    source: "vocabulary",
+    event_type: "word_saved",
+    topic: "language_education",
+    raw_topic: source,
+    weight: WEIGHTS.VOCAB_WORD_SAVED,
+  });
+
+  const userId = user.id;
+  after(async () => {
+    await aggregateTopicScores(userId, language);
+  });
+
   return {};
 }
 

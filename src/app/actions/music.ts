@@ -1,7 +1,10 @@
 "use server";
 
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { updateGenreInterest } from "@/app/actions/interests";
+import { insertEvent } from "@/lib/events/log-event";
+import { musicGenreToCanonical, WEIGHTS } from "@/lib/events/taxonomy";
+import { aggregateTopicScores } from "@/lib/events/aggregate";
 import type { Language, MusicLike } from "@/lib/supabase/types";
 
 export async function saveMusicLike(
@@ -37,14 +40,23 @@ export async function saveMusicLike(
 
   if (error) return { error: error.message };
 
-  // ── Propagate signal into the shared behavioural interest graph ────────────
-  // Music genre preference feeds the same genre_interests table used by the
-  // story recommendation engine and the AI context builder, so a user who
-  // loves reggaeton will start seeing more music-culture stories and the
-  // chatbot will reference those artists naturally.
-  if (genre) {
-    void updateGenreInterest(genre, liked ? 2 : -1, language);
-  }
+  // ── Propagate signal into the behavioural interest engine ─────────────────
+  // Music likes/dislikes go through the event log so anti-binge rules apply
+  // and the topic only promotes to genre_interests once a pattern is confirmed.
+  const canonical = musicGenreToCanonical();
+  void insertEvent(supabase, user.id, {
+    language,
+    source: "music",
+    event_type: liked ? "song_liked" : "song_disliked",
+    topic: canonical,
+    raw_topic: genre ?? "music",
+    weight: liked ? WEIGHTS.MUSIC_SONG_LIKED : WEIGHTS.MUSIC_SONG_DISLIKED,
+  });
+
+  const userId = user.id;
+  after(async () => {
+    await aggregateTopicScores(userId, language);
+  });
 
   return {};
 }
