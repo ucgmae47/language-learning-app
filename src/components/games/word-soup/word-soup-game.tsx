@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { ArrowLeft, RefreshCw, Shuffle } from "lucide-react";
+import { ArrowLeft, Shuffle } from "lucide-react";
 import Link from "next/link";
 import type { Language } from "@/lib/supabase/types";
 
@@ -22,7 +22,7 @@ function isAdjacent([r1, c1]: Cell, [r2, c2]: Cell) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
-function pathKey(path: Cell[]) { return path.map(([r, c]) => `${r},${c}`).join("|"); }
+// `pathKey` was unused after refactor — removed to reduce lint noise.
 
 function generateGrid(weights: [string, number][]): string[][] {
   const pool: string[] = [];
@@ -84,7 +84,7 @@ export function WordSoupGame({ language, letterWeights, wordSet }: Props) {
   const submitPath = useCallback(() => {
     if (path.length < 3) { setPath([]); return; }
     const word = normalizeWord(path.map(([r, c]) => grid[r]![c]!).join(""));
-    const key = pathKey(path);
+    // const key = pathKey(path); // removed unused local
     if (found.has(word)) {
       setFeedback({ text: "Already found!", ok: false });
       clearFeedback(); setPath([]); return;
@@ -188,7 +188,7 @@ export function WordSoupGame({ language, letterWeights, wordSet }: Props) {
       {status === "over" && (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8 text-center">
           <span className="text-5xl">⏰</span>
-          <h2 className="text-3xl font-extrabold text-white">Time's up!</h2>
+          <h2 className="text-3xl font-extrabold text-white">Time&apos;s up!</h2>
           <p className="text-xl text-amber-400">{score} pts · {found.size} words</p>
           {found.size > 0 && (
             <div className="flex flex-wrap justify-center gap-2 max-w-xs">

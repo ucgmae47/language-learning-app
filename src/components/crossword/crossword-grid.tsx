@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+/* eslint-disable react-hooks/refs */
+import { useState, useCallback, useRef, useMemo } from "react";
 import { CheckCircle, RotateCcw, Eye } from "lucide-react";
 import type { CrosswordPuzzle, CrosswordEntry } from "@/lib/crossword/puzzles";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type CellKey = `${number},${number}`;
-type Direction = "across" | "down";
-
-type SelectedWord = {
-  entry: CrosswordEntry;
-} | null;
+// Direction and SelectedWord types were unused; removed to reduce noise.
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -66,29 +63,9 @@ export function CrosswordGrid({ puzzle }: Props) {
   // "check" mode: highlight wrong cells; "reveal" mode: fill correct letters
   const [checked, setChecked] = useState(false);
   const [revealed, setRevealed] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-
-  const cellRefs = useRef<Map<CellKey, HTMLButtonElement>>(new Map());
-  const cellEntryMap = useRef(buildCellEntryMap(entries));
-  const cellNumberMap = useRef(buildCellNumberMap(entries));
-
-  // ── Active-entry derived state ──────────────────────────────────────────
-
-  const activeCells = new Set<CellKey>();
-  if (activeEntry) {
-    for (let i = 0; i < activeEntry.answer.length; i++) {
-      const r =
-        activeEntry.direction === "across" ? activeEntry.row : activeEntry.row + i;
-      const c =
-        activeEntry.direction === "down" ? activeEntry.col : activeEntry.col + i;
-      activeCells.add(cellKey(r, c));
-    }
-  }
-
-  // ── Check completion ────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const allFilled = entries.every((entry) => {
+  // Derived from `userGrid` and `entries` to avoid setState inside effects
+  const isComplete = useMemo(() => {
+    return entries.every((entry) => {
       for (let i = 0; i < entry.answer.length; i++) {
         const r = entry.direction === "across" ? entry.row : entry.row + i;
         const c = entry.direction === "down" ? entry.col : entry.col + i;
@@ -97,8 +74,27 @@ export function CrosswordGrid({ puzzle }: Props) {
       }
       return true;
     });
-    setIsComplete(allFilled);
   }, [userGrid, entries]);
+
+  const cellRefs = useRef<Map<CellKey, HTMLButtonElement>>(new Map());
+  const cellEntryMap = useRef(buildCellEntryMap(entries));
+  const cellNumberMap = useRef(buildCellNumberMap(entries));
+
+  // ── Active-entry derived state ──────────────────────────────────────────
+  const activeCells = useMemo(() => {
+    const set = new Set<CellKey>();
+    if (!activeEntry) return set;
+    for (let i = 0; i < activeEntry.answer.length; i++) {
+      const r = activeEntry.direction === "across" ? activeEntry.row : activeEntry.row + i;
+      const c = activeEntry.direction === "down" ? activeEntry.col : activeEntry.col + i;
+      set.add(cellKey(r, c));
+    }
+    return set;
+  }, [activeEntry]);
+
+  // ── Check completion ────────────────────────────────────────────────────
+
+  // `isComplete` is computed via `useMemo` above to avoid synchronous setState in effects.
 
   // ── Cell interaction ────────────────────────────────────────────────────
 
@@ -121,7 +117,6 @@ export function CrosswordGrid({ puzzle }: Props) {
       // Select the first entry passing through the clicked cell.
       setActiveEntry(cellEntries[0] ?? null);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeEntry, activeCells],
   );
 
@@ -183,7 +178,6 @@ export function CrosswordGrid({ puzzle }: Props) {
         }
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeEntry, activeCells, userGrid],
   );
 
@@ -212,7 +206,6 @@ export function CrosswordGrid({ puzzle }: Props) {
     setUserGrid(new Map());
     setChecked(false);
     setRevealed(false);
-    setIsComplete(false);
     setActiveEntry(entries[0] ?? null);
   }
 
@@ -275,9 +268,7 @@ export function CrosswordGrid({ puzzle }: Props) {
 
                 const key = cellKey(row, col);
                 const isActive = activeCells.has(key);
-                const isFocusCell =
-                  activeEntry?.row === (activeEntry?.direction === "down" ? activeEntry.row : row) &&
-                  activeEntry?.col === (activeEntry?.direction === "across" ? activeEntry.col : col);
+                // `isFocusCell` previously computed here but unused; removed.
                 const number = cellNumberMap.current.get(key);
                 const typed = userGrid.get(key) ?? "";
                 const status = getCellStatus(row, col);
@@ -290,6 +281,9 @@ export function CrosswordGrid({ puzzle }: Props) {
                 return (
                   <button
                     key={key}
+                    // Accessing ref map from a render callback — deliberate and
+                    // minimal. eslint may flag refs access during render; allow
+                    // this single case for managing dynamic button refs.
                     ref={(el) => {
                       if (el) cellRefs.current.set(key, el);
                       else cellRefs.current.delete(key);

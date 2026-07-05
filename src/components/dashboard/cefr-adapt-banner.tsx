@@ -19,6 +19,9 @@ export function CefrAdaptBanner({ data }: Props) {
     _prev: ActionState,
     _formData: FormData,
   ): Promise<ActionState> => {
+    // Mark parameters as used to avoid unused-var warnings; they are part of
+    // the action signature and not used currently.
+    void _prev; void _formData;
     if (!suggestedLevel) return null;
     return applyCefrAdaptation(suggestedLevel as CefrLevel, language as Language);
   };

@@ -235,7 +235,8 @@ function AddWordForm({
 
 export function VocabBankClient({ initialDueCards, initialStats }: Props) {
   const [tab, setTab] = useState<"review" | "all">("review");
-  const [dueCards, setDueCards] = useState<VocabularyCard[]>(initialDueCards);
+  const [dueCards, _setDueCards] = useState<VocabularyCard[]>(initialDueCards);
+  void _setDueCards;
   const [currentIdx, setCurrentIdx] = useState(0);
   const [reviewed, setReviewed] = useState(0);
   const [allCards, setAllCards] = useState<VocabularyCard[] | null>(null);

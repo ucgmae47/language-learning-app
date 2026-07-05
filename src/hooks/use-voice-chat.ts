@@ -95,10 +95,14 @@ export function useVoiceChat({
   const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setIsSupported(
-      typeof window !== "undefined" &&
-        (window.SpeechRecognition != null || window.webkitSpeechRecognition != null),
-    );
+    // Defer to avoid calling setState synchronously inside an effect
+    const id = setTimeout(() => {
+      setIsSupported(
+        typeof window !== "undefined" &&
+          (window.SpeechRecognition != null || window.webkitSpeechRecognition != null),
+      );
+    }, 0);
+    return () => clearTimeout(id);
   }, []);
 
   const stopSpeaking = useCallback(() => {

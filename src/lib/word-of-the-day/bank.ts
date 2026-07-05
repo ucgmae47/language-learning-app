@@ -485,10 +485,13 @@ export function getWordForDate(
   language: "es" | "fr" = "es",
 ): WordEntry {
   // Lazy-import so the Spanish-only path never loads the French bank.
-  const bank =
-    language === "fr"
-      ? (require("./bank-fr") as { WORD_BANK_FR: WordEntry[] }).WORD_BANK_FR
-      : WORD_BANK;
+  let bank: WordEntry[];
+  if (language === "fr") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    bank = (require("./bank-fr") as { WORD_BANK_FR: WordEntry[] }).WORD_BANK_FR;
+  } else {
+    bank = WORD_BANK;
+  }
   const epochDays = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
   const index = epochDays % bank.length;
   return bank[index]!;

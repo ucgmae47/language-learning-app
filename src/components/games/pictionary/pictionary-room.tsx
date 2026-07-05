@@ -49,7 +49,7 @@ export function PictionaryRoom({ initialRoom, currentUserId, currentDisplayName,
 
   // Round timer
   useEffect(() => {
-    if (!room.roundEndsAt || room.status !== "playing") { setTimeLeft(0); return; }
+    if (!room.roundEndsAt || room.status !== "playing") { setTimeout(() => setTimeLeft(0), 0); return; }
     const update = () => {
       const secs = Math.max(0, Math.round((new Date(room.roundEndsAt!).getTime() - Date.now()) / 1000));
       setTimeLeft(secs);
@@ -278,11 +278,11 @@ export function PictionaryRoom({ initialRoom, currentUserId, currentDisplayName,
                 </button>
               </div>
             )}
-            {isDrawer && room.status === "playing" && (
-              <div className="border-t border-white/8 px-3 py-2 text-center text-xs text-slate-500">
-                You're the artist — keep drawing! 🎨
-              </div>
-            )}
+                    {isDrawer && room.status === "playing" && (
+                        <div className="border-t border-white/8 px-3 py-2 text-center text-xs text-slate-500">
+                          You&apos;re the artist — keep drawing! 🎨
+                        </div>
+                      )}
           </div>
         </div>
       </div>

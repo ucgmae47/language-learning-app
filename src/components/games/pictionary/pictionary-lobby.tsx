@@ -72,7 +72,7 @@ export function PictionaryLobby({ language }: { language: Language }) {
             <Plus className="h-4 w-4 text-fuchsia-400" />
             <p className="font-bold text-white">Create a room</p>
           </div>
-          <p className="mb-4 text-sm text-slate-400">You'll become the host. Share the room code with friends to invite them.</p>
+          <p className="mb-4 text-sm text-slate-400">You&apos;ll become the host. Share the room code with friends to invite them.</p>
           <button
             type="button"
             onClick={handleCreate}

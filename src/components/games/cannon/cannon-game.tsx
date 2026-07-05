@@ -56,6 +56,7 @@ export function CannonGame({ pairs, language }: Props) {
 
   const livesRef = useRef(LIVES_START);
   const roundTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const spawnRoundRef = useRef<((pair: TranslationPair, lv: number, queue: TranslationPair[]) => void) | null>(null);
 
   const clearTimers = () => { roundTimers.current.forEach(clearTimeout); roundTimers.current = []; };
 
@@ -83,7 +84,7 @@ export function CannonGame({ pairs, language }: Props) {
       setRoundActive(true);
 
       // When correct word hits the bottom (miss)
-      const correctWord = words.find((w) => w.isCorrect)!;
+      // const correctWord = words.find((w) => w.isCorrect)!; // removed unused variable
       const missTimer = setTimeout(() => {
         livesRef.current -= 1;
         setLives(livesRef.current);
@@ -97,7 +98,8 @@ export function CannonGame({ pairs, language }: Props) {
         const [next, ...rest] = queue.length > 0 ? queue : shuffle(pairs);
         setPairQueue(rest.length > 0 ? rest : shuffle(pairs));
         setCurrentPair(next!);
-        spawnRound(next!, lv, rest);
+        // Call the latest spawnRound via ref to avoid "accessed before declared" lint.
+        spawnRoundRef.current?.(next!, lv, rest);
       }, dur + 200);
       roundTimers.current.push(missTimer);
 
@@ -111,6 +113,13 @@ export function CannonGame({ pairs, language }: Props) {
     },
     [pairs, fallDuration],
   );
+
+  // Keep a ref to the latest spawnRound so callbacks scheduled later can invoke it
+  // without tripping linter rules about accessing variables before declaration.
+  useEffect(() => {
+    spawnRoundRef.current = spawnRound;
+    return () => { spawnRoundRef.current = null; };
+  }, [spawnRound]);
 
   const startGame = useCallback(() => {
     clearTimers();

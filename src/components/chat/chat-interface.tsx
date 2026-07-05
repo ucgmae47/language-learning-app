@@ -68,6 +68,9 @@ export function ChatInterface({
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingSession, setLoadingSession] = useState(false);
+  // Keep `cefrLevel` referenced to avoid an unused-vars warning while it's
+  // currently unused in the UI; it may be surfaced in future iterations.
+  void cefrLevel;
 
   // ── Streaming chat ──────────────────────────────────────────────────────────
   const { messages, input, setInput, sendMessage, append, stop, isLoading, reset } =

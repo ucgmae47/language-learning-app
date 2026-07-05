@@ -34,11 +34,14 @@ export function NewsCard({ article, language }: Props) {
 
   // ── Dwell tracking ──────────────────────────────────────────────────────────
   // Log once after 30 s of the card being mounted, and log duration on unmount.
-  const mountTimeRef = useRef(Date.now());
+  const mountTimeRef = useRef<number | null>(null);
   const loggedRef = useRef(false);
 
   useEffect(() => {
     const topic = normalizeNewsCategory(article.category);
+
+    // Initialize mount time inside effect to avoid calling impure functions during render
+    mountTimeRef.current = Date.now();
 
     // Fire after 30 seconds of continuous view (base dwell event)
     const timer = setTimeout(() => {
@@ -57,7 +60,7 @@ export function NewsCard({ article, language }: Props) {
     // On unmount: log article_read with total duration if they stayed < 30 s
     return () => {
       clearTimeout(timer);
-      const durationS = Math.floor((Date.now() - mountTimeRef.current) / 1000);
+      const durationS = Math.floor((Date.now() - (mountTimeRef.current ?? Date.now())) / 1000);
       if (!loggedRef.current && durationS >= 5) {
         // They engaged at least 5 s — log a lightweight open event
         void logEvent({

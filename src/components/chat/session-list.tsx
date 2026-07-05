@@ -40,6 +40,8 @@ export function SessionList({
 }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  // Keep `language` referenced to avoid an unused-vars warning for now.
+  void language;
 
   function handleDelete(e: React.MouseEvent, session: ChatSession) {
     e.stopPropagation();

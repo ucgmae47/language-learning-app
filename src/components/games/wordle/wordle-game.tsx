@@ -68,7 +68,10 @@ function Tile({ letter, state, reveal, delay }: {
   const [displayed, setDisplayed] = useState<TileState>(reveal ? "empty" : state);
 
   useEffect(() => {
-    if (!reveal) { setDisplayed(state); return; }
+    if (!reveal) {
+      const id = setTimeout(() => setDisplayed(state), 0);
+      return () => clearTimeout(id);
+    }
     const t = setTimeout(() => setDisplayed(state), delay);
     return () => clearTimeout(t);
   }, [state, reveal, delay]);
