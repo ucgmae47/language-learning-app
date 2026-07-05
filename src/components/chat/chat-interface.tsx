@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import {
   Send,
   Square,
@@ -10,10 +10,13 @@ import {
   MicOff,
   Volume2,
   VolumeX,
+  History,
 } from "lucide-react";
-import type { CefrLevel, Language } from "@/lib/supabase/types";
-import { useStreamingChat } from "@/hooks/use-streaming-chat";
+import type { CefrLevel, ChatSession, Language, TutorMessage } from "@/lib/supabase/types";
+import { useStreamingChat, type ChatMessage } from "@/hooks/use-streaming-chat";
 import { useVoiceChat } from "@/hooks/use-voice-chat";
+import { SessionList } from "@/components/chat/session-list";
+import { getSessionMessages } from "@/app/actions/chat-history";
 
 const LANG_BCP47: Record<Language, string> = {
   es: "es-ES",
@@ -36,7 +39,17 @@ type Props = {
   cefrLevel: CefrLevel;
   language: Language;
   starters: string[];
+  /** Initial set of sessions to populate the sidebar with. */
+  initialSessions: ChatSession[];
+  /** Pre-loaded messages when continuing a saved session. */
+  initialMessages?: TutorMessage[];
+  /** The session ID being continued (null = new conversation). */
+  initialSessionId?: string | null;
 };
+
+function tutorToChat(msgs: TutorMessage[]): ChatMessage[] {
+  return msgs.map((m) => ({ id: m.id, role: m.role, content: m.content }));
+}
 
 export function ChatInterface({
   displayName,
@@ -44,18 +57,49 @@ export function ChatInterface({
   cefrLevel,
   language,
   starters,
+  initialSessions,
+  initialMessages,
+  initialSessionId,
 }: Props) {
-  const { messages, input, setInput, sendMessage, append, stop, isLoading } =
-    useStreamingChat("/api/chat");
+  // ── Session state ───────────────────────────────────────────────────────────
+  const [sessions, setSessions] = useState<ChatSession[]>(initialSessions);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(
+    initialSessionId ?? null,
+  );
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loadingSession, setLoadingSession] = useState(false);
+
+  // ── Streaming chat ──────────────────────────────────────────────────────────
+  const { messages, input, setInput, sendMessage, append, stop, isLoading, reset } =
+    useStreamingChat("/api/chat", {
+      initialMessages: initialMessages ? tutorToChat(initialMessages) : undefined,
+      initialSessionId: initialSessionId ?? null,
+      language,
+      onSessionCreated: (sessionId, title) => {
+        setActiveSessionId(sessionId);
+        // Prepend the new session to the sidebar list.
+        setSessions((prev) => [
+          {
+            id: sessionId,
+            user_id: "",
+            language,
+            title,
+            message_count: 2,
+            last_message_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+      },
+    });
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastSpokenIdRef = useRef<string | null>(null);
 
-  // ── Voice setup ────────────────────────────────────────────────────────────
+  // ── Voice setup ─────────────────────────────────────────────────────────────
   const handleFinalTranscript = useCallback(
     (text: string) => {
-      // Send immediately — no editing step, like ChatGPT voice mode.
       append(text);
     },
     [append],
@@ -75,7 +119,7 @@ export function ChatInterface({
     onFinalTranscript: handleFinalTranscript,
   });
 
-  // ── Auto-speak each completed AI response ──────────────────────────────────
+  // ── Auto-speak each completed AI response ───────────────────────────────────
   useEffect(() => {
     if (isLoading) return;
     const lastMsg = messages[messages.length - 1];
@@ -85,10 +129,37 @@ export function ChatInterface({
     speak(lastMsg.content);
   }, [isLoading, messages, speak]);
 
-  // ── Scroll to bottom ───────────────────────────────────────────────────────
+  // ── Scroll to bottom ────────────────────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, interimText]);
+
+  // ── Session switching ───────────────────────────────────────────────────────
+  async function handleSelectSession(session: ChatSession) {
+    if (session.id === activeSessionId) {
+      setSidebarOpen(false);
+      return;
+    }
+    setLoadingSession(true);
+    const msgs = await getSessionMessages(session.id);
+    reset(tutorToChat(msgs), session.id);
+    setActiveSessionId(session.id);
+    setLoadingSession(false);
+    setSidebarOpen(false);
+  }
+
+  function handleNewConversation() {
+    reset([], null);
+    setActiveSessionId(null);
+    setSidebarOpen(false);
+  }
+
+  function handleSessionDeleted(sessionId: string) {
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    if (activeSessionId === sessionId) {
+      handleNewConversation();
+    }
+  }
 
   const showSuggestions = messages.length === 0 && !isListening;
 
@@ -112,8 +183,7 @@ export function ChatInterface({
     }
   }
 
-  // ── Derive action button ───────────────────────────────────────────────────
-  // Priority: AI loading → listening → speaking → send
+  // ── Action button ───────────────────────────────────────────────────────────
   let actionButton: React.ReactNode;
   if (isLoading) {
     actionButton = (
@@ -151,195 +221,222 @@ export function ChatInterface({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* ── Messages ──────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto bg-[#07070f] px-4 py-6 sm:px-6">
-        {showSuggestions ? (
-          <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/30">
-              <Bot className="h-8 w-8 text-white" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-lg font-semibold text-slate-900">
-                {GREETING[language](displayName, tutorName)}
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                {SUBTITLE[language]}
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {starters.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => append(s)}
-                  className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-            {voiceSupported && (
-              <p className="flex items-center gap-1.5 text-xs text-slate-400">
-                <Mic className="h-3.5 w-3.5" aria-hidden="true" />
-                Tap the mic button below to speak instead of typing
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="mx-auto flex max-w-2xl flex-col gap-4">
-            {messages.map((msg) => {
-              const isUser = msg.role === "user";
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}
-                >
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${isUser ? "bg-gradient-to-br from-emerald-500 to-teal-600" : "bg-gradient-to-br from-cyan-600 to-blue-700"}`}
-                  >
-                    {isUser ? (
-                      <User className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Bot className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </div>
+    <div className="flex h-full overflow-hidden">
+      {/* ── History sidebar ──────────────────────────────────────────────────── */}
+      {/* Overlay on mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={`absolute inset-y-0 left-0 z-30 w-72 shrink-0 transition-transform duration-200 lg:relative lg:z-auto lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:hidden"
+        } ${sidebarOpen ? "lg:block" : ""}`}
+      >
+        <SessionList
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          language={language}
+          onSelectSession={handleSelectSession}
+          onNewConversation={handleNewConversation}
+          onSessionDeleted={handleSessionDeleted}
+          onClose={() => setSidebarOpen(false)}
+        />
+      </aside>
 
-                  <div className="group relative max-w-[75%]">
+      {/* ── Main chat area ───────────────────────────────────────────────────── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* ── Messages ──────────────────────────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto bg-[#07070f] px-4 py-6 sm:px-6">
+          {/* History toggle button — top-left of the message area */}
+          <button
+            type="button"
+            onClick={() => setSidebarOpen((v) => !v)}
+            title={sidebarOpen ? "Hide history" : "Conversation history"}
+            className="mb-4 flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-slate-400 transition hover:bg-white/10 hover:text-white"
+          >
+            <History className="h-3.5 w-3.5" aria-hidden="true" />
+            History
+            {sessions.length > 0 && (
+              <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-300">
+                {sessions.length}
+              </span>
+            )}
+          </button>
+
+          {loadingSession ? (
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+            </div>
+          ) : showSuggestions ? (
+            <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/30">
+                <Bot className="h-8 w-8 text-white" aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-white">
+                  {GREETING[language](displayName, tutorName)}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {SUBTITLE[language]}
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                {starters.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => append(s)}
+                    className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+              {voiceSupported && (
+                <p className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <Mic className="h-3.5 w-3.5" aria-hidden="true" />
+                  Tap the mic button below to speak instead of typing
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="mx-auto flex max-w-2xl flex-col gap-4">
+              {messages.map((msg) => {
+                const isUser = msg.role === "user";
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex items-end gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}
+                  >
                     <div
-                      className={`rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
-                        isUser
-                          ? "rounded-br-sm bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
-                          : "rounded-bl-sm border border-white/10 bg-white/8 text-slate-200"
-                      }`}
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${isUser ? "bg-gradient-to-br from-emerald-500 to-teal-600" : "bg-gradient-to-br from-cyan-600 to-blue-700"}`}
                     >
-                      {msg.content || (
-                        <span className="flex gap-1">
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:0ms]" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:150ms]" />
-                          <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:300ms]" />
-                        </span>
+                      {isUser ? (
+                        <User className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Bot className="h-4 w-4" aria-hidden="true" />
                       )}
                     </div>
 
-                    {/* Re-play TTS button on completed assistant messages */}
-                    {!isUser && voiceSupported && msg.content && !isLoading && (
-                      <button
-                        type="button"
-                        onClick={() => speak(msg.content)}
-                        className="absolute -bottom-2 -right-2 hidden h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm transition hover:text-violet-600 group-hover:flex"
-                        aria-label="Replay audio"
-                        title="Play aloud"
+                    <div className="group relative max-w-[75%]">
+                      <div
+                        className={`rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                          isUser
+                            ? "rounded-br-sm bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
+                            : "rounded-bl-sm border border-white/10 bg-white/8 text-slate-200"
+                        }`}
                       >
-                        <Volume2 className="h-3 w-3" aria-hidden="true" />
-                      </button>
-                    )}
+                        {msg.content || (
+                          <span className="flex gap-1">
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:0ms]" />
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:150ms]" />
+                            <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:300ms]" />
+                          </span>
+                        )}
+                      </div>
+
+                      {!isUser && voiceSupported && msg.content && !isLoading && (
+                        <button
+                          type="button"
+                          onClick={() => speak(msg.content)}
+                          className="absolute -bottom-2 -right-2 hidden h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm transition hover:text-violet-600 group-hover:flex"
+                          aria-label="Replay audio"
+                          title="Play aloud"
+                        >
+                          <Volume2 className="h-3 w-3" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            <div ref={bottomRef} />
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+
+        {/* ── Listening overlay ────────────────────────────────────────────── */}
+        {isListening && (
+          <div className="border-t border-red-500/20 bg-red-500/10 px-4 py-3 sm:px-6">
+            <div className="mx-auto flex max-w-2xl items-center gap-3">
+              <span className="flex shrink-0 gap-1" aria-hidden="true">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:0ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:150ms]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:300ms]" />
+              </span>
+              <p className={`flex-1 text-sm ${interimText ? "text-red-300" : "italic text-red-400"}`}>
+                {interimText || "Listening…"}
+              </p>
+              <span className="text-xs text-red-400">tap mic to stop</span>
+            </div>
           </div>
         )}
-      </div>
 
-      {/* ── Listening overlay ─────────────────────────────────────────────── */}
-      {isListening && (
-        <div className="border-t border-red-500/20 bg-red-500/10 px-4 py-3 sm:px-6">
-          <div className="mx-auto flex max-w-2xl items-center gap-3">
-            {/* Animated pulse dots */}
-            <span className="flex shrink-0 gap-1" aria-hidden="true">
-              <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:0ms]" />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:150ms]" />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-red-400 [animation-delay:300ms]" />
-            </span>
-            <p
-              className={`flex-1 text-sm ${interimText ? "text-red-300" : "italic text-red-400"}`}
-            >
-              {interimText || "Listening…"}
-            </p>
-            <span className="text-xs text-red-400">
-              tap mic to stop
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* ── Input bar ─────────────────────────────────────────────────────── */}
-      <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4 sm:px-6">
-        <form
-          onSubmit={handleSubmit}
-          className="mx-auto flex max-w-2xl items-end gap-2"
-        >
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            placeholder={
-              isListening
-                ? "Speaking…"
-                : language === "fr"
-                  ? "Écris un message…"
-                  : "Escribe un mensaje…"
-            }
-            disabled={isLoading || isListening}
-            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:bg-white/8 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
-            style={{ maxHeight: "120px" }}
-          />
-
-          {/* Mic button — hidden on unsupported browsers */}
-          {voiceSupported && (
-            <button
-              type="button"
-              onClick={handleMicClick}
-              disabled={isLoading}
-              aria-label={isListening ? "Stop listening" : "Start voice input"}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition disabled:opacity-40 ${
+        {/* ── Input bar ───────────────────────────────────────────────────── */}
+        <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4 sm:px-6">
+          <form
+            onSubmit={handleSubmit}
+            className="mx-auto flex max-w-2xl items-end gap-2"
+          >
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              placeholder={
                 isListening
-                  ? "animate-pulse border-red-300 bg-red-500 text-white shadow-lg"
-                  : "border-slate-300 bg-white text-slate-500 hover:border-emerald-300 hover:text-emerald-600"
-              }`}
-            >
-              {isListening ? (
-                <MicOff className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Mic className="h-4 w-4" aria-hidden="true" />
-              )}
-            </button>
-          )}
+                  ? "Speaking…"
+                  : language === "fr"
+                    ? "Écris un message…"
+                    : "Escribe un mensaje…"
+              }
+              disabled={isLoading || isListening}
+              className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:bg-white/8 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+              style={{ maxHeight: "120px" }}
+            />
 
-          {/* Action button: stop-loading / stop-TTS / send */}
-          {actionButton}
-        </form>
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={handleMicClick}
+                disabled={isLoading}
+                aria-label={isListening ? "Stop listening" : "Start voice input"}
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition disabled:opacity-40 ${
+                  isListening
+                    ? "animate-pulse border-red-300 bg-red-500 text-white shadow-lg"
+                    : "border-slate-300 bg-white text-slate-500 hover:border-emerald-300 hover:text-emerald-600"
+                }`}
+              >
+                {isListening ? (
+                  <MicOff className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Mic className="h-4 w-4" aria-hidden="true" />
+                )}
+              </button>
+            )}
 
-        <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-slate-400">
-          {voiceSupported ? (
-            <>
-              <kbd className="rounded border border-slate-200 px-1 font-mono">
-                Enter
-              </kbd>{" "}
-              to send ·{" "}
-              <kbd className="rounded border border-slate-200 px-1 font-mono">
-                Shift+Enter
-              </kbd>{" "}
-              for new line · mic for voice
-            </>
-          ) : (
-            <>
-              Press{" "}
-              <kbd className="rounded border border-slate-200 px-1 font-mono">
-                Enter
-              </kbd>{" "}
-              to send ·{" "}
-              <kbd className="rounded border border-slate-200 px-1 font-mono">
-                Shift+Enter
-              </kbd>{" "}
-              for new line
-            </>
-          )}
-        </p>
+            {actionButton}
+          </form>
+
+          <p className="mx-auto mt-2 max-w-2xl text-center text-xs text-slate-400">
+            {voiceSupported ? (
+              <>
+                <kbd className="rounded border border-slate-600 px-1 font-mono">Enter</kbd> to send ·{" "}
+                <kbd className="rounded border border-slate-600 px-1 font-mono">Shift+Enter</kbd> for new line · mic for voice
+              </>
+            ) : (
+              <>
+                Press <kbd className="rounded border border-slate-600 px-1 font-mono">Enter</kbd> to send ·{" "}
+                <kbd className="rounded border border-slate-600 px-1 font-mono">Shift+Enter</kbd> for new line
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );

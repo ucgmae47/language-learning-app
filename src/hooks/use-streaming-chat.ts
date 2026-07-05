@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { saveMessagePair } from "@/app/actions/chat-history";
+import type { Language } from "@/lib/supabase/types";
 
 export type ChatMessage = {
   id: string;
@@ -13,11 +15,39 @@ function nextId() {
   return `msg-${Date.now()}-${++idCounter}`;
 }
 
-export function useStreamingChat(api: string) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+type UseStreamingChatOptions = {
+  /** Pre-load messages from a saved session. */
+  initialMessages?: ChatMessage[];
+  /** Existing session ID to append to (loading a past conversation). */
+  initialSessionId?: string | null;
+  /** Active language — used when creating a new session row. */
+  language?: Language;
+  /** Called when a new session is created so the parent can add it to the list. */
+  onSessionCreated?: (sessionId: string, title: string) => void;
+};
+
+export function useStreamingChat(
+  api: string,
+  options: UseStreamingChatOptions = {},
+) {
+  const { initialMessages, initialSessionId, language = "es", onSessionCreated } = options;
+
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    initialMessages ?? [],
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  // Tracks the active DB session ID.  null = no session yet (new conversation).
+  const sessionIdRef = useRef<string | null>(initialSessionId ?? null);
+  const firstMessageRef = useRef(!(initialMessages && initialMessages.length > 0));
+
+  /** Reset to a fresh conversation (e.g. "New conversation" button clicked). */
+  const reset = useCallback((newMessages: ChatMessage[] = [], newSessionId: string | null = null) => {
+    setMessages(newMessages);
+    sessionIdRef.current = newSessionId;
+    firstMessageRef.current = newMessages.length === 0;
+  }, []);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -43,6 +73,8 @@ export function useStreamingChat(api: string) {
       const controller = new AbortController();
       abortRef.current = controller;
 
+      let finalContent = "";
+
       try {
         const res = await fetch(api, {
           method: "POST",
@@ -57,7 +89,6 @@ export function useStreamingChat(api: string) {
         });
 
         if (!res.ok || !res.body) {
-          // Try to extract a JSON error message from the body
           let detail = `Server error (${res.status}).`;
           try {
             const errBody = (await res.json()) as { error?: string };
@@ -70,9 +101,8 @@ export function useStreamingChat(api: string) {
 
         const contentType = res.headers.get("content-type") ?? "";
         if (!contentType.includes("text/plain")) {
-          // Unexpected response format — surface the body as an error
-          const text = await res.text();
-          throw new Error(text || `Unexpected response type: ${contentType}`);
+          const resText = await res.text();
+          throw new Error(resText || `Unexpected response type: ${contentType}`);
         }
 
         const reader = res.body.getReader();
@@ -82,6 +112,7 @@ export function useStreamingChat(api: string) {
           const { done, value } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
+          finalContent += chunk;
           setMessages((prev) =>
             prev.map((m) =>
               m.id === assistantMessage.id
@@ -95,16 +126,47 @@ export function useStreamingChat(api: string) {
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMessage.id
-              ? { ...m, content: "Sorry, something went wrong. Please try again." }
+              ? {
+                  ...m,
+                  content: "Sorry, something went wrong. Please try again.",
+                }
               : m,
           ),
         );
+        return;
       } finally {
         setIsLoading(false);
         abortRef.current = null;
       }
+
+      // ── Persist the exchange silently ──────────────────────────────────────
+      // Fire-and-forget — doesn't block the UI.
+      if (finalContent) {
+        const isFirst = firstMessageRef.current;
+        firstMessageRef.current = false;
+
+        void (async () => {
+          const { sessionId, error } = await saveMessagePair(
+            sessionIdRef.current,
+            language,
+            text,
+            finalContent,
+          );
+          if (!error && sessionId) {
+            const prevSessionId = sessionIdRef.current;
+            sessionIdRef.current = sessionId;
+            // Notify parent when a brand-new session is created.
+            if (isFirst && !prevSessionId && onSessionCreated) {
+              onSessionCreated(
+                sessionId,
+                text.trim().slice(0, 60) + (text.trim().length > 60 ? "…" : ""),
+              );
+            }
+          }
+        })();
+      }
     },
-    [api, messages, isLoading],
+    [api, messages, isLoading, language, onSessionCreated],
   );
 
   const append = useCallback(
@@ -127,5 +189,6 @@ export function useStreamingChat(api: string) {
     append,
     stop,
     isLoading,
+    reset,
   };
 }

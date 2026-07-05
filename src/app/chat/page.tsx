@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { generateChatStarters } from "@/lib/chat/generate-starters";
 import { generateAndQueueStarters } from "@/lib/chat/queue";
-import type { CefrLevel, InterestTopic, Language, QueuedChatStarters } from "@/lib/supabase/types";
+import { getChatSessions, getSessionMessages } from "@/app/actions/chat-history";
+import type { CefrLevel, InterestTopic, Language, QueuedChatStarters, TutorMessage } from "@/lib/supabase/types";
 
 export const metadata: Metadata = {
   title: "Chat Practice | LinguaPath",
@@ -16,7 +17,13 @@ export const metadata: Metadata = {
 
 const TUTOR_NAMES: Record<Language, string> = { es: "Lucía", fr: "Sophie" };
 
-export default async function ChatPage() {
+export default async function ChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session?: string }>;
+}) {
+  const { session: sessionParam } = await searchParams;
+
   const supabase = await createClient();
 
   const {
@@ -37,12 +44,10 @@ export default async function ChatPage() {
       .eq("user_id", user.id)
       .order("weight", { ascending: false })
       .limit(3),
-    // Check for a pre-queued starter set for this user's active language.
     supabase
       .from("queued_chat_starters")
       .select("starters")
       .eq("user_id", user.id)
-      // We need the language first, but we can join both queries below.
       .maybeSingle<Pick<QueuedChatStarters, "starters">>(),
   ]);
 
@@ -85,9 +90,15 @@ export default async function ChatPage() {
     );
   }
 
+  // ── Fetch sessions list + (optionally) load a saved session ─────────────
+  const [sessions, sessionMessages] = await Promise.all([
+    getChatSessions(language),
+    sessionParam ? getSessionMessages(sessionParam) : Promise.resolve([] as TutorMessage[]),
+  ]);
+
+  const activeSessionId = sessionParam ?? null;
+
   // ── After response: pre-generate the next set silently ───────────────────
-  // Captures the values needed in the background callback right now, before
-  // the request context is torn down.
   const capturedUserId = user.id;
   const capturedLanguage = language;
   const capturedLevel = cefrLevel;
@@ -148,6 +159,9 @@ export default async function ChatPage() {
           cefrLevel={cefrLevel}
           language={language}
           starters={starters}
+          initialSessions={sessions}
+          initialMessages={sessionMessages.length > 0 ? sessionMessages : undefined}
+          initialSessionId={activeSessionId}
         />
       </div>
     </div>

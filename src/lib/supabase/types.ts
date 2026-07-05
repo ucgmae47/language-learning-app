@@ -83,6 +83,27 @@ export type PersonalityTraits = {
   updated_at: string;
 };
 
+/** A saved 1-on-1 tutor chat session. */
+export type ChatSession = {
+  id: string;
+  user_id: string;
+  language: Language;
+  title: string;
+  message_count: number;
+  last_message_at: string;
+  created_at: string;
+};
+
+/** A single message within a saved tutor chat session. */
+export type TutorMessage = {
+  id: string;
+  session_id: string;
+  user_id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+};
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -405,6 +426,19 @@ export type Database = {
         Row: PictionarySecret;
         Insert: PictionarySecret;
         Update: Partial<PictionarySecret>;
+        Relationships: Rel;
+      };
+      chat_sessions: {
+        Row: ChatSession;
+        Insert: Omit<ChatSession, "id" | "created_at" | "last_message_at" | "message_count"> &
+          Partial<Pick<ChatSession, "id" | "message_count">>;
+        Update: Partial<Omit<ChatSession, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      chat_messages: {
+        Row: TutorMessage;
+        Insert: Omit<TutorMessage, "id" | "created_at"> & Partial<Pick<TutorMessage, "id">>;
+        Update: never;
         Relationships: Rel;
       };
     };
