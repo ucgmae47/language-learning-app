@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 export type AuthFormState = {
   error?: string;
@@ -24,6 +25,8 @@ export async function signup(
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const displayName = formData.get("display_name") as string;
+  // Encoded CEFR placement result: "lang:level" e.g. "es:B1"
+  const assessmentRaw = (formData.get("assessment") as string | null) ?? "";
   const next = safeNext(formData.get("next") as string | null);
 
   if (!email || !password || !displayName) {
@@ -48,7 +51,38 @@ export async function signup(
     return { error: error.message };
   }
 
-  redirect(next);
+  // ── Apply the CEFR placement result from the pre-signup assessment ─────────
+  // The result was encoded in the URL as ?assessment=es:B1 and carried through
+  // as a hidden form field.  We save it now that the user has a session.
+  if (assessmentRaw) {
+    const [lang, level] = assessmentRaw.split(":");
+    if (lang && level) {
+      // Fetch the new session to get the user ID.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const safeLanguage = (lang === "es" || lang === "fr" ? lang : "es") as Language;
+        const safeLevel = (["A1","A2","B1","B2","C1","C2"].includes(level) ? level : "B1") as CefrLevel;
+
+        // Upsert language profile and sync to active profile.
+        await Promise.all([
+          supabase.from("language_profiles").upsert(
+            { user_id: user.id, language: safeLanguage, cefr_level: safeLevel },
+            { onConflict: "user_id,language" },
+          ),
+          supabase.from("profiles").update({
+            language: safeLanguage,
+            cefr_level: safeLevel,
+            updated_at: new Date().toISOString(),
+          }).eq("id", user.id),
+        ]);
+      }
+    }
+  }
+
+  // New users always go to interests onboarding (unless a custom `next` was
+  // explicitly set, e.g. from an admin link).
+  const destination = next === "/dashboard" || !next ? "/onboarding/interests" : next;
+  redirect(destination);
 }
 
 export async function login(

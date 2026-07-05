@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createProxyClient } from "@/lib/supabase/proxy-client";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/assessment", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore", "/vocabulary", "/progress", "/phrasebook", "/recipes", "/pronunciation", "/calendar", "/analyzer", "/achievements", "/leaderboard", "/planner"];
+// /assessment is intentionally PUBLIC so new visitors can take the placement
+// test before creating an account.  Auth is handled inside the page itself
+// (isAuthenticated prop) so the quiz still works for returning users too.
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore", "/vocabulary", "/progress", "/phrasebook", "/recipes", "/pronunciation", "/calendar", "/analyzer", "/achievements", "/leaderboard", "/planner"];
 const AUTH_ROUTES = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {

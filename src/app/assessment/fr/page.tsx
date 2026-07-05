@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -17,17 +16,17 @@ export default async function FrenchAssessmentPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login?next=/assessment/fr");
+  const isAuthenticated = !!user;
 
   return (
     <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-xl">
         <Link
-          href="/dashboard"
+          href={isAuthenticated ? "/dashboard" : "/"}
           className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to dashboard
+          {isAuthenticated ? "Back to dashboard" : "Back to home"}
         </Link>
 
         <div className="mb-8">
@@ -43,7 +42,7 @@ export default async function FrenchAssessmentPage() {
           </p>
         </div>
 
-        <QuizClient questions={QUESTIONS_FR} language="fr" />
+        <QuizClient questions={QUESTIONS_FR} language="fr" isAuthenticated={isAuthenticated} />
       </div>
     </div>
   );

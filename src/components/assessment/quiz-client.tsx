@@ -66,9 +66,16 @@ const RESULT_COLORS: Record<CefrLevel, string> = {
 type Props = {
   questions: Question[];
   language: Language;
+  /**
+   * True when a Supabase session exists (server-rendered).
+   * False for first-time visitors who haven't created an account yet.
+   * Controls whether the quiz result is saved directly or encoded in a
+   * signup URL so it can be applied after account creation.
+   */
+  isAuthenticated: boolean;
 };
 
-export function QuizClient({ questions, language }: Props) {
+export function QuizClient({ questions, language, isAuthenticated }: Props) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -95,13 +102,25 @@ export function QuizClient({ questions, language }: Props) {
   function handleSubmit() {
     const level = calculateCefrLevel(state.answers, questions);
     dispatch({ type: "SUBMIT_START" });
+
+    if (!isAuthenticated) {
+      // Unauthenticated path: encode result in the signup URL so the server
+      // action can apply it after account creation, then redirect.
+      dispatch({ type: "SUBMIT_DONE", result: level });
+      setTimeout(() => {
+        // Format: /signup?assessment=es:B1
+        router.push(`/signup?assessment=${language}:${level}`);
+      }, 3500);
+      return;
+    }
+
+    // Authenticated path: save directly (returning user adding a language).
     startTransition(async () => {
       const { error, hasInterests } = await saveAssessmentResult(language, level);
       if (error) {
         dispatch({ type: "ERROR", message: error });
       } else {
         dispatch({ type: "SUBMIT_DONE", result: level });
-        // Redirect after a short display delay so the user sees their result.
         setTimeout(() => {
           router.push(hasInterests ? "/dashboard" : "/onboarding/interests");
         }, 3500);
@@ -130,16 +149,18 @@ export function QuizClient({ questions, language }: Props) {
           <span className="text-4xl font-bold text-white">{level}</span>
         </div>
 
-        <h2 className="text-2xl font-bold text-slate-900">
+        <h2 className="text-2xl font-bold text-white">
           Your {langFlag} {langName} level: {level}
         </h2>
-        <p className="mt-2 text-slate-600">{LEVEL_DESCRIPTIONS[level]}</p>
+        <p className="mt-2 text-slate-400">{LEVEL_DESCRIPTIONS[level]}</p>
 
-        <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-left">
-          <p className="text-sm font-medium text-emerald-800">What happens next?</p>
-          <p className="mt-1 text-sm text-emerald-700">
-            Stories, quizzes, and chatbot prompts will now be tailored to your{" "}
-            <strong>{level}</strong> {langName} level. Redirecting you now…
+        <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5 text-left">
+          <p className="text-sm font-medium text-emerald-300">What happens next?</p>
+          <p className="mt-1 text-sm text-emerald-200">
+            {isAuthenticated
+              ? <>Stories, quizzes, and chatbot prompts will be tailored to your <strong>{level}</strong> {langName} level. Redirecting you now…</>
+              : <>Create your free account and everything will be personalised to your <strong>{level}</strong> {langName} level from day one. Redirecting you now…</>
+            }
           </p>
         </div>
 

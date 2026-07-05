@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -17,17 +16,20 @@ export default async function SpanishAssessmentPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login?next=/assessment/es");
+  // Assessment is open to all visitors — no redirect for unauthenticated users.
+  // isAuthenticated is passed so QuizClient can decide whether to save directly
+  // or encode the result in a URL and redirect to /signup.
+  const isAuthenticated = !!user;
 
   return (
     <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-xl">
         <Link
-          href="/dashboard"
+          href={isAuthenticated ? "/dashboard" : "/"}
           className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Back to dashboard
+          {isAuthenticated ? "Back to dashboard" : "Back to home"}
         </Link>
 
         <div className="mb-8">
@@ -43,7 +45,7 @@ export default async function SpanishAssessmentPage() {
           </p>
         </div>
 
-        <QuizClient questions={QUESTIONS_ES} language="es" />
+        <QuizClient questions={QUESTIONS_ES} language="es" isAuthenticated={isAuthenticated} />
       </div>
     </div>
   );
