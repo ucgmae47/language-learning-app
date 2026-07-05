@@ -23,19 +23,12 @@ const AnswerSchema = z.object({
   isCorrectLanguage: z
     .boolean()
     .describe("True if the question is written in the required target language."),
-  languageNote: z
-    .string()
-    .optional()
-    .describe("If isCorrectLanguage is false, a short message (in English) telling the user to ask in the target language."),
-  answer: z
-    .enum(["yes", "no", "partially", "not_applicable"])
-    .optional()
-    .describe("The yes/no answer. Omit if isCorrectLanguage is false."),
   responseText: z
     .string()
-    .optional()
     .describe(
-      "A brief, natural response in the target language (e.g. '¡Sí!' or 'No, no exactamente.'). Omit if isCorrectLanguage is false.",
+      "Always required. " +
+      "If isCorrectLanguage is FALSE: a short message in English telling the player to ask in the target language. " +
+      "If isCorrectLanguage is TRUE: a brief, natural yes/no answer in the target language (1 sentence max, e.g. '¡Sí!' or 'No, no exactamente.').",
     ),
 });
 
@@ -96,17 +89,18 @@ The opening hint must be in ${langName} and must NOT reveal what the thing is �
         model: google("gemini-2.5-flash-lite"),
         schema: AnswerSchema,
         prompt: `You are playing 20 Questions. The secret is: "${secretWord}".
-The player must ask ALL questions in ${langName}. 
+The player must ask ALL questions in ${langName}.
 
 Player's question: "${question}"
 
-1. First decide: is this question written in ${langName}? Even a single-word answer counts if it's in ${langName}.
-   - If the question is in English or any other language, set isCorrectLanguage to false and provide a languageNote.
-   - If it IS in ${langName}, set isCorrectLanguage to true.
+Step 1 — Language check: Is this question written in ${langName}?
+- If NO (it's in English or any other language): set isCorrectLanguage to false.
+  Set responseText to a short English message like "Please ask your question in ${langName}!"
+- If YES: set isCorrectLanguage to true.
+  Set responseText to a short, natural answer in ${langName} (1 sentence max, e.g. "¡Sí!" or "No, no exactamente.").
+  Answer honestly based on the secret. Do NOT reveal the secret word.
 
-2. If isCorrectLanguage is true, answer the question honestly (yes/no/partially) based on the secret.
-   Respond in ${langName} with a short, natural, engaging answer (1 short sentence max).
-   Do NOT reveal the secret word directly.`,
+You MUST always provide responseText.`,
       });
       return NextResponse.json(object);
     } catch (err) {

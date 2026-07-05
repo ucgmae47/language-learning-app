@@ -102,22 +102,23 @@ export function TwentyQGame({ language, cefrLevel }: Props) {
     });
     const data = (await res.json()) as {
       isCorrectLanguage?: boolean;
-      languageNote?: string;
       responseText?: string;
       error?: string;
     };
 
+    const text = data.responseText ?? `Please ask in ${meta.name}.`;
+
     if (data.isCorrectLanguage === false) {
       setHistory((h) => [
         ...h,
-        { question: q, answer: data.languageNote ?? `Please ask in ${meta.name}.`, type: "error" },
+        { question: q, answer: text, type: "error" },
       ]);
     } else {
       const used = questionsUsed + 1;
       setQuestionsUsed(used);
       setHistory((h) => [
         ...h,
-        { question: q, answer: data.responseText ?? "…", type: "answer" },
+        { question: q, answer: text, type: "answer" },
       ]);
 
       if (used >= MAX_QUESTIONS) {
