@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/browser";
-import type { ChatRoomMessage, Language } from "@/lib/supabase/types";
+import type { ChatRoomMessage } from "@/lib/supabase/types";
 import type { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 
 export type CurrentUser = {
@@ -16,14 +16,13 @@ export type UseChatRoomReturn = {
   onlineCount: number;
   send: (content: string) => Promise<void>;
   isSending: boolean;
-  /** True after the Realtime channel is SUBSCRIBED. */
   isConnected: boolean;
 };
 
-const RATE_LIMIT_MS = 2000; // min ms between sends
+const RATE_LIMIT_MS = 2000;
 
 export function useChatRoom(
-  language: Language,
+  roomId: string,
   currentUser: CurrentUser,
   initialMessages: ChatRoomMessage[],
 ): UseChatRoomReturn {
@@ -32,31 +31,30 @@ export function useChatRoom(
   const [isSending, setIsSending] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Track IDs we've already displayed to avoid duplicates from Realtime.
-  const knownIds = useRef<Set<string>>(new Set(initialMessages.map((m) => m.id)));
+  const knownIds = useRef<Set<string>>(
+    new Set(initialMessages.map((m) => m.id)),
+  );
   const lastSendTime = useRef(0);
 
   useEffect(() => {
     const client = createClient();
 
-    const channel = client.channel(`chat-room-${language}`, {
+    const channel = client.channel(`chat-room:${roomId}`, {
       config: { presence: { key: currentUser.id } },
     });
 
-    // ── Presence: count learners in this room ─────────────────────────────
     channel.on("presence", { event: "sync" }, () => {
       const state = channel.presenceState<{ user_id: string }>();
       setOnlineCount(Math.max(1, Object.keys(state).length));
     });
 
-    // ── Realtime: new messages ────────────────────────────────────────────
     channel.on<ChatRoomMessage>(
       "postgres_changes",
       {
         event: "INSERT",
         schema: "public",
         table: "chat_room_messages",
-        filter: `language=eq.${language}`,
+        filter: `room_id=eq.${roomId}`,
       },
       (payload: RealtimePostgresInsertPayload<ChatRoomMessage>) => {
         const msg = payload.new;
@@ -83,14 +81,13 @@ export function useChatRoom(
       void client.removeChannel(channel);
       setIsConnected(false);
     };
-  }, [language, currentUser.id, currentUser.displayName]);
+  }, [roomId, currentUser.id, currentUser.displayName]);
 
   const send = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
       if (!trimmed || isSending) return;
 
-      // Client-side rate limiting
       const now = Date.now();
       if (now - lastSendTime.current < RATE_LIMIT_MS) return;
       lastSendTime.current = now;
@@ -99,8 +96,8 @@ export function useChatRoom(
       try {
         const client = createClient();
         await client.from("chat_room_messages").insert({
+          room_id: roomId,
           user_id: currentUser.id,
-          language,
           display_name: currentUser.displayName,
           cefr_level: currentUser.cefrLevel,
           content: trimmed,
@@ -109,7 +106,7 @@ export function useChatRoom(
         setIsSending(false);
       }
     },
-    [isSending, language, currentUser],
+    [isSending, roomId, currentUser],
   );
 
   return { messages, onlineCount, send, isSending, isConnected };

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Users, Wifi, WifiOff } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Send, Users, Wifi, WifiOff, Clock, ArrowLeft, X } from "lucide-react";
 import { useChatRoom, type CurrentUser } from "@/hooks/use-chat-room";
-import type { ChatRoomMessage, Language } from "@/lib/supabase/types";
+import { closeChatRoom } from "@/app/actions/chat-room";
+import type { ChatRoom, ChatRoomMessage } from "@/lib/supabase/types";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -41,26 +43,57 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const LANG_META: Record<Language, { name: string; flag: string; hint: string }> = {
-  es: { name: "Spanish Room", flag: "🇪🇸", hint: "Practice in Spanish — all levels welcome!" },
-  fr: { name: "French Room", flag: "🇫🇷", hint: "Pratiquez en français — tous niveaux bienvenus!" },
+function useCountdown(expiresAt: string) {
+  const [secsLeft, setSecsLeft] = useState(() =>
+    Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)),
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecsLeft(Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [expiresAt]);
+
+  const h = Math.floor(secsLeft / 3600);
+  const m = Math.floor((secsLeft % 3600) / 60);
+  const s = secsLeft % 60;
+
+  let label: string;
+  if (secsLeft === 0) label = "Ended";
+  else if (h > 0) label = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  else label = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+
+  return { secsLeft, label, hasEnded: secsLeft === 0 };
+}
+
+const TOPIC_COLORS: Record<string, string> = {
+  "Free Conversation": "bg-emerald-500/20 text-emerald-300",
+  "Travel & Places": "bg-blue-500/20 text-blue-300",
+  "Food & Cooking": "bg-orange-500/20 text-orange-300",
+  "Movies & TV": "bg-purple-500/20 text-purple-300",
+  "Music": "bg-pink-500/20 text-pink-300",
+  "Sports": "bg-cyan-500/20 text-cyan-300",
+  "Technology": "bg-indigo-500/20 text-indigo-300",
+  "Books & Literature": "bg-amber-500/20 text-amber-300",
+  "Current Events": "bg-red-500/20 text-red-300",
+  "Daily Life": "bg-teal-500/20 text-teal-300",
 };
+
+function topicColor(topic: string): string {
+  return TOPIC_COLORS[topic] ?? "bg-slate-500/20 text-slate-300";
+}
+
+const LANG_FLAG: Record<string, string> = { es: "🇪🇸", fr: "🇫🇷" };
 
 // ── Message bubble ──────────────────────────────────────────────────────────
 
-function MessageBubble({
-  msg,
-  isOwn,
-}: {
-  msg: ChatRoomMessage;
-  isOwn: boolean;
-}) {
+function MessageBubble({ msg, isOwn }: { msg: ChatRoomMessage; isOwn: boolean }) {
   const gradient = avatarGradient(msg.user_id);
   const abbr = initials(msg.display_name);
 
   return (
     <div className={`flex items-end gap-2.5 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
-      {/* Avatar */}
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-bold text-white shadow-md ${gradient}`}
         title={msg.display_name}
@@ -70,7 +103,6 @@ function MessageBubble({
       </div>
 
       <div className={`flex max-w-[75%] flex-col gap-1 ${isOwn ? "items-end" : "items-start"}`}>
-        {/* Name + CEFR badge */}
         {!isOwn && (
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-semibold text-slate-300">{msg.display_name}</span>
@@ -79,8 +111,6 @@ function MessageBubble({
             </span>
           </div>
         )}
-
-        {/* Message bubble */}
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-6 shadow-sm ${
             isOwn
@@ -90,7 +120,6 @@ function MessageBubble({
         >
           {msg.content}
         </div>
-
         <span className="text-[10px] text-slate-600">{formatTime(msg.created_at)}</span>
       </div>
     </div>
@@ -100,26 +129,29 @@ function MessageBubble({
 // ── Main component ──────────────────────────────────────────────────────────
 
 type Props = {
-  language: Language;
+  room: ChatRoom;
   currentUser: CurrentUser;
   initialMessages: ChatRoomMessage[];
+  isHost: boolean;
 };
 
-export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
+export function ChatRoomUI({ room, currentUser, initialMessages, isHost }: Props) {
+  const router = useRouter();
+  const [isPendingClose, startClose] = useTransition();
+
   const { messages, onlineCount, send, isSending, isConnected } = useChatRoom(
-    language,
+    room.id,
     currentUser,
     initialMessages,
   );
 
+  const { secsLeft, label: countdownLabel, hasEnded } = useCountdown(room.expires_at);
+  const isUrgent = secsLeft > 0 && secsLeft <= 300; // last 5 minutes
+
   const [draft, setDraft] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isAtBottomRef = useRef(true);
 
-  const meta = LANG_META[language];
-
-  // Auto-scroll only when user is already at the bottom
   useEffect(() => {
     if (isAtBottomRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -132,13 +164,12 @@ export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
   }
 
   const handleSend = useCallback(async () => {
-    if (!draft.trim()) return;
+    if (!draft.trim() || hasEnded) return;
     await send(draft);
     setDraft("");
-    // Always scroll to bottom after sending your own message
     isAtBottomRef.current = true;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [draft, send]);
+  }, [draft, send, hasEnded]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -147,25 +178,67 @@ export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
     }
   }
 
+  function handleCloseRoom() {
+    startClose(async () => {
+      await closeChatRoom(room.id);
+      router.push("/chat-room");
+    });
+  }
+
+  const flag = LANG_FLAG[room.language] ?? "💬";
+
   return (
-    <div className="flex h-full flex-col" ref={bottomRef}>
-      {/* ── Room header ──────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-white/8 bg-white/3 px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-xl" aria-hidden="true">{meta.flag}</span>
-          <span className="text-sm font-bold text-white">{meta.name}</span>
+    <div className="flex h-full flex-col">
+      {/* ── Room header ─────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-3 border-b border-white/8 bg-white/3 px-4 py-3">
+        {/* Left: back + room info */}
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/chat-room")}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            aria-label="Back to rooms"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          </button>
+          <span className="text-xl" aria-hidden="true">{flag}</span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-white">{room.name}</p>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${topicColor(room.topic)}`}
+              >
+                {room.topic}
+              </span>
+              <span className="rounded-md bg-violet-500/20 px-1.5 py-0.5 text-[10px] font-bold text-violet-300">
+                {room.cefr_level}
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Online count */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1">
+        {/* Right: stats + countdown + controls */}
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-2 py-1">
             <Users className="h-3 w-3 text-emerald-400" aria-hidden="true" />
             <span className="text-xs font-semibold text-emerald-400">
-              {onlineCount} online
+              {onlineCount}/{room.max_members}
             </span>
           </div>
 
-          {/* Connection status dot */}
+          <div
+            className={`flex items-center gap-1 rounded-xl border px-2 py-1 text-xs font-bold ${
+              hasEnded
+                ? "border-slate-600/30 bg-slate-600/10 text-slate-500"
+                : isUrgent
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  : "border-slate-600/20 bg-white/3 text-slate-400"
+            }`}
+          >
+            <Clock className="h-3 w-3" aria-hidden="true" />
+            {countdownLabel}
+          </div>
+
           <div
             className={`flex items-center gap-1 text-xs ${isConnected ? "text-emerald-400" : "text-amber-400"}`}
             title={isConnected ? "Connected" : "Connecting…"}
@@ -175,12 +248,40 @@ export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
             ) : (
               <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />
             )}
-            <span className="hidden sm:inline">{isConnected ? "Live" : "Connecting…"}</span>
           </div>
+
+          {isHost && !hasEnded && (
+            <button
+              type="button"
+              onClick={handleCloseRoom}
+              disabled={isPendingClose}
+              title="Close this room"
+              className="flex h-7 items-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-2.5 text-xs font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-50"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
+              Close
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── Messages ─────────────────────────────────────────────────────── */}
+      {/* ── Ended banner ────────────────────────────────────────────────── */}
+      {hasEnded && (
+        <div className="flex items-center justify-between gap-3 border-b border-amber-500/20 bg-amber-500/10 px-4 py-2.5">
+          <p className="text-sm font-semibold text-amber-300">
+            This room has ended. Messages are read-only.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/chat-room")}
+            className="rounded-xl bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-500/30"
+          >
+            Browse Rooms
+          </button>
+        </div>
+      )}
+
+      {/* ── Messages ────────────────────────────────────────────────────── */}
       <div
         className="flex-1 overflow-y-auto px-4 py-5"
         onScroll={handleScroll}
@@ -188,9 +289,11 @@ export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
       >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <span className="text-5xl" aria-hidden="true">{meta.flag}</span>
+            <span className="text-4xl" aria-hidden="true">{flag}</span>
             <p className="text-lg font-bold text-white">Start the conversation!</p>
-            <p className="max-w-xs text-sm text-slate-400">{meta.hint}</p>
+            <p className="max-w-xs text-sm text-slate-400">
+              Topic: <span className="text-white">{room.topic}</span>
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -206,37 +309,37 @@ export function ChatRoomUI({ language, currentUser, initialMessages }: Props) {
         )}
       </div>
 
-      {/* ── Input bar ────────────────────────────────────────────────────── */}
-      <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4">
-        <div className="mx-auto flex max-w-3xl items-end gap-2">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={handleKeyDown}
-            rows={1}
-            maxLength={500}
-            placeholder={`Message the ${meta.name}…`}
-            disabled={isSending}
-            className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
-            style={{ maxHeight: "120px" }}
-          />
-
-          <button
-            type="button"
-            onClick={() => void handleSend()}
-            disabled={!draft.trim() || isSending}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40"
-            aria-label="Send message"
-          >
-            <Send className="h-4 w-4" aria-hidden="true" />
-          </button>
+      {/* ── Input bar ───────────────────────────────────────────────────── */}
+      {!hasEnded && (
+        <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4">
+          <div className="mx-auto flex max-w-3xl items-end gap-2">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={1}
+              maxLength={500}
+              placeholder={`Message the room…`}
+              disabled={isSending}
+              className="flex-1 resize-none rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60"
+              style={{ maxHeight: "120px" }}
+            />
+            <button
+              type="button"
+              onClick={() => void handleSend()}
+              disabled={!draft.trim() || isSending}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30 transition hover:from-emerald-400 hover:to-teal-500 disabled:opacity-40"
+              aria-label="Send message"
+            >
+              <Send className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+          <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-slate-600">
+            <kbd className="rounded border border-slate-700 px-1 font-mono">Enter</kbd>{" "}
+            to send · Shift+Enter for newline
+          </p>
         </div>
-
-        <p className="mx-auto mt-2 max-w-3xl text-center text-xs text-slate-600">
-          {meta.hint} ·{" "}
-          <kbd className="rounded border border-slate-700 px-1 font-mono">Enter</kbd> to send
-        </p>
-      </div>
+      )}
     </div>
   );
 }

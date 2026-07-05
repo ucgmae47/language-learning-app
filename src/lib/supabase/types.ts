@@ -147,10 +147,26 @@ export type JournalEntry = {
   created_at: string;
 };
 
+export type ChatRoomStatus = "active" | "closed";
+
+export type ChatRoom = {
+  id: string;
+  host_id: string;
+  language: Language;
+  name: string;
+  topic: string;
+  cefr_level: string;
+  max_members: number;
+  expires_at: string;
+  status: ChatRoomStatus;
+  host_display_name: string;
+  created_at: string;
+};
+
 export type ChatRoomMessage = {
   id: string;
+  room_id: string;
   user_id: string;
-  language: Language;
   display_name: string;
   cefr_level: string;
   content: string;
@@ -219,6 +235,12 @@ export type Database = {
         Row: JournalEntry;
         Insert: Omit<JournalEntry, "id" | "created_at"> & Partial<Pick<JournalEntry, "id">>;
         Update: Partial<Omit<JournalEntry, "id" | "user_id" | "created_at">>;
+        Relationships: Rel;
+      };
+      chat_rooms: {
+        Row: ChatRoom;
+        Insert: Omit<ChatRoom, "id" | "created_at"> & Partial<Pick<ChatRoom, "id">>;
+        Update: Partial<Omit<ChatRoom, "id" | "host_id" | "created_at">>;
         Relationships: Rel;
       };
       chat_room_messages: {
