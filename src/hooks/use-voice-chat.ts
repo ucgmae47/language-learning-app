@@ -85,6 +85,11 @@ export function useVoiceChat({
     onFinalRef.current = onFinalTranscript;
   }, [onFinalTranscript]);
 
+  // Ref to the currently-playing HTMLAudioElement (ElevenLabs path).
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Tracks object URLs so we can revoke them after playback to avoid leaks.
+  const blobUrlRef = useRef<string | null>(null);
+
   useEffect(() => {
     setIsSupported(
       typeof window !== "undefined" &&
@@ -93,26 +98,81 @@ export function useVoiceChat({
   }, []);
 
   const stopSpeaking = useCallback(() => {
+    // Stop ElevenLabs audio if playing.
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+    // Also cancel any browser speechSynthesis fallback that may be running.
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
   }, []);
 
+  /** Speak text via ElevenLabs (server route), falling back to browser TTS. */
   const speak = useCallback(
-    (text: string) => {
-      if (typeof window === "undefined" || !window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      // Slightly slower than default — better for language learners to follow along.
-      utterance.rate = 0.85;
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-      window.speechSynthesis.speak(utterance);
+    async (text: string) => {
+      if (typeof window === "undefined") return;
+
+      // Stop anything already playing.
+      stopSpeaking();
+      setIsSpeaking(true);
+
+      // Extract the language code from the BCP-47 tag (e.g. "es-ES" → "es").
+      const langCode = lang.split("-")[0] ?? "es";
+
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, lang: langCode }),
+        });
+
+        if (!res.ok) throw new Error(`TTS route returned ${res.status}`);
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        blobUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          setIsSpeaking(false);
+          if (blobUrlRef.current === url) {
+            URL.revokeObjectURL(url);
+            blobUrlRef.current = null;
+          }
+          audioRef.current = null;
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          audioRef.current = null;
+        };
+
+        await audio.play();
+      } catch {
+        // ElevenLabs unavailable (quota, network, missing key) — fall back to
+        // the browser's built-in speechSynthesis so the feature never goes silent.
+        if (!window.speechSynthesis) {
+          setIsSpeaking(false);
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+        utterance.rate = 0.85;
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+        window.speechSynthesis.speak(utterance);
+      }
     },
-    [lang],
+    [lang, stopSpeaking],
   );
 
   const stopListening = useCallback(() => {
