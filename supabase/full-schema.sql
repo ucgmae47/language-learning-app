@@ -453,7 +453,12 @@ CREATE INDEX IF NOT EXISTS idx_chat_rooms_lang_status_expires
 
 
 -- ── chat_room_messages ─────────────────────────────────────────
--- Room-scoped messages (the old flat global table was replaced by this one).
+-- The original chat_room_messages had a "language" column (global chat).
+-- The redesign replaced it with a room_id FK. Drop the old version so the
+-- new CREATE TABLE runs cleanly. Any old message data is intentionally
+-- discarded — the chat rooms feature was fully redesigned.
+DROP TABLE IF EXISTS chat_room_messages;
+
 CREATE TABLE IF NOT EXISTS chat_room_messages (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   room_id      UUID        NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
