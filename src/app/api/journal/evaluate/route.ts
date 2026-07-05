@@ -11,8 +11,10 @@ const CorrectionSchema = z.object({
   ),
   corrected: z.string().describe("The corrected replacement for the original span."),
   type: z
-    .enum(["spelling", "conjugation", "word_choice", "grammar", "accent"])
-    .describe("Category of the error."),
+    .string()
+    .describe(
+      "Category of the error. Use exactly one of: spelling, conjugation, word_choice, grammar, accent",
+    ),
   explanation: z.string().describe(
     "A short, friendly explanation of why this is wrong and what the rule is.",
   ),

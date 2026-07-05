@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       cefrLevel: string;
     };
 
-    const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! });
+    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
 
     const { object } = await generateObject({
       model: google("gemini-2.5-flash-lite"),
