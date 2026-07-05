@@ -60,6 +60,29 @@ export type LanguageProfile = {
   updated_at: string;
 };
 
+/**
+ * Learner personality traits detected by the chat analyzer.
+ * Written to profiles.personality_traits after every 5th user message.
+ */
+export type PersonalityTraits = {
+  /** Overall conversational tone */
+  tone: "sarcastic" | "playful" | "formal" | "casual" | "warm" | "reserved";
+  /** Energy level of their messages */
+  energy: "high" | "medium" | "low";
+  /** Whether they prefer light chit-chat or deep topics */
+  depth: "prefers_small_talk" | "mixed" | "prefers_deep_discussion";
+  /** How often they use humour */
+  humor: "frequent" | "occasional" | "rare";
+  /** How they express themselves emotionally */
+  emotional_style: "expressive" | "balanced" | "analytical";
+  /**
+   * A short free-text note for the AI about how to best mirror this learner.
+   * e.g. "Uses irony and understatement. Dislikes over-explanation."
+   */
+  mirror_notes: string;
+  updated_at: string;
+};
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -67,6 +90,8 @@ export type Profile = {
   language: Language;
   streak_count: number;
   stories_read: number;
+  /** Detected communication style — written by the personality analyzer. */
+  personality_traits: PersonalityTraits | null;
   created_at: string;
   updated_at: string;
 };

@@ -1,10 +1,12 @@
+import { after } from "next/server";
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, createTextStreamResponse } from "ai";
 import type { ModelMessage } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { buildChatSystemPrompt } from "@/lib/chat/system-prompt";
 import { getUserContext } from "@/lib/user-context";
-import type { CefrLevel, Language } from "@/lib/supabase/types";
+import { analyzeAndStorePersonality } from "@/lib/chat/personality-analyzer";
+import type { CefrLevel, Language, PersonalityTraits } from "@/lib/supabase/types";
 
 function getModel() {
   const github = createOpenAI({
@@ -32,11 +34,10 @@ export async function POST(request: Request) {
     messages: ModelMessage[];
   };
 
-  // Fetch base profile to get language / level, then build the full learner
-  // context that aggregates all preference signals (interests, music, stories).
+  // Fetch profile including stored personality traits.
   const profileResult = await supabase
     .from("profiles")
-    .select("display_name, cefr_level, language")
+    .select("display_name, cefr_level, language, personality_traits")
     .eq("id", user.id)
     .single();
 
@@ -46,7 +47,10 @@ export async function POST(request: Request) {
     profileResult.data?.display_name ??
     user.user_metadata?.display_name ??
     "Learner";
+  const personalityTraits =
+    (profileResult.data?.personality_traits as PersonalityTraits | null) ?? null;
 
+  // Assemble the full cross-app learner context.
   const userCtx = await getUserContext(
     supabase,
     user.id,
@@ -61,7 +65,25 @@ export async function POST(request: Request) {
     userCtx.explicitInterests,
     language,
     userCtx.contextString,
+    personalityTraits,
   );
+
+  // ── Background personality analysis ─────────────────────────────────────────
+  // Extract the user's messages from the conversation history.
+  const userMessages = messages
+    .filter((m) => m.role === "user")
+    .map((m) => (typeof m.content === "string" ? m.content : ""))
+    .filter(Boolean);
+
+  // Re-analyze on every 5th user message (1st, 6th, 11th, …) so the model
+  // gets smarter over time without running on every single turn.
+  if (userMessages.length > 0 && userMessages.length % 5 === 0) {
+    const capturedUserId = user.id;
+    const capturedMessages = [...userMessages];
+    after(async () => {
+      await analyzeAndStorePersonality(capturedUserId, capturedMessages);
+    });
+  }
 
   try {
     const result = streamText({

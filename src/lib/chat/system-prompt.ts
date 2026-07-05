@@ -1,4 +1,4 @@
-import type { CefrLevel, Language } from "@/lib/supabase/types";
+import type { CefrLevel, Language, PersonalityTraits } from "@/lib/supabase/types";
 
 const LEVEL_INSTRUCTIONS: Record<Language, Record<CefrLevel, string>> = {
   es: {
@@ -41,6 +41,57 @@ const TUTOR_PERSONAS: Record<Language, { name: string; lang: string; correction:
   },
 };
 
+/** Build the personality mirroring instructions block from stored traits. */
+function buildPersonalitySection(traits: PersonalityTraits): string {
+  const toneMap: Record<PersonalityTraits["tone"], string> = {
+    sarcastic:
+      "Match their dry wit — use light irony and understatement. Never be earnest to the point of seeming oblivious. Acknowledge their sarcasm with a knowing reply.",
+    playful:
+      "Be playful and light. Use wordplay, gentle teasing, and fun examples. Match their enthusiasm.",
+    formal:
+      "Keep a polished, respectful register. Avoid slang. Structure your responses clearly.",
+    casual:
+      "Stay relaxed and conversational. Contractions are fine. Sound like a friendly peer, not a textbook.",
+    warm:
+      "Lead with warmth and empathy. Validate their feelings before moving forward with language content.",
+    reserved:
+      "Respect their quieter energy. Don't flood them with questions. Let silence breathe. One focused question is better than three.",
+  };
+
+  const depthMap: Record<PersonalityTraits["depth"], string> = {
+    prefers_small_talk: "Keep topics light and everyday — news, food, plans.",
+    mixed: "Mix casual topics with occasional deeper questions.",
+    prefers_deep_discussion:
+      "Skip surface-level small talk quickly. Ask probing, philosophical, or introspective questions. This learner enjoys depth.",
+  };
+
+  const humorMap: Record<PersonalityTraits["humor"], string> = {
+    frequent:
+      "They enjoy humour — weave in jokes, puns, or funny cultural observations.",
+    occasional: "Light humour is welcome but don't force it.",
+    rare:
+      "Avoid jokes — this learner prefers straightforward conversation.",
+  };
+
+  const emotionMap: Record<PersonalityTraits["emotional_style"], string> = {
+    expressive:
+      "They share feelings openly — respond with empathy and emotional mirroring.",
+    balanced: "Balanced emotional register — neither cold nor over-the-top.",
+    analytical:
+      "They prefer logic and structure over emotional expression. When correcting, explain the rule briefly rather than just modelling it.",
+  };
+
+  return `PERSONALITY MIRRORING
+This learner's style has been learned over time. Adapt accordingly — this overrides the default tutor personality below.
+- Tone: ${toneMap[traits.tone]}
+- Conversational depth: ${depthMap[traits.depth]}
+- Humour: ${humorMap[traits.humor]}
+- Emotional style: ${emotionMap[traits.emotional_style]}
+${traits.mirror_notes ? `- Specific note: ${traits.mirror_notes}` : ""}
+
+Guardrail: always stay kind and encouraging even in sarcastic or analytical mode.`;
+}
+
 export function buildChatSystemPrompt(
   displayName: string,
   cefrLevel: CefrLevel,
@@ -48,6 +99,8 @@ export function buildChatSystemPrompt(
   language: Language = "es",
   /** Full learner context string from getUserContext() — injected verbatim when available */
   learnerContextString?: string,
+  /** Detected personality traits — persisted across sessions by the analyzer */
+  personalityTraits?: PersonalityTraits | null,
 ): string {
   const persona = TUTOR_PERSONAS[language];
   const levelInstr = LEVEL_INSTRUCTIONS[language][cefrLevel];
@@ -61,8 +114,12 @@ export function buildChatSystemPrompt(
       ? `• Stated interests: ${interests.join(", ")}`
       : "• No preference data yet — use everyday topics like food, travel, and daily routines.";
 
-  return `You are ${persona.name}, a warm and encouraging ${persona.lang} language tutor. Your student's name is ${displayName}.
+  const personalitySection = personalityTraits
+    ? `\n${buildPersonalitySection(personalityTraits)}\n`
+    : "";
 
+  return `You are ${persona.name}, a ${persona.lang} language tutor. Your student's name is ${displayName}.
+${personalitySection}
 STUDENT PROFILE
 - Name: ${displayName}
 - CEFR Level: ${cefrLevel}
@@ -80,7 +137,7 @@ LANGUAGE GUIDELINES
 - Always end your response with an open question to keep the dialogue flowing.
 - If the student writes in English, respond in ${persona.lang} but acknowledge what they said. Gently encourage them to try in ${persona.lang} next time.
 
-PERSONALITY
+PERSONALITY (defaults — override with PERSONALITY MIRRORING above when present)
 - Be warm, patient, and genuinely curious about the student.
 - Celebrate effort over correctness — encouragement drives learning.
 - Adapt your enthusiasm to match the student's energy.
