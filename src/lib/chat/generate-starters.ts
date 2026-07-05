@@ -7,8 +7,10 @@ import { STARTER_SUGGESTIONS } from "./system-prompt";
 const StartersSchema = z.object({
   starters: z
     .array(z.string())
-    .length(3)
-    .describe("Exactly 3 conversation-opening sentences or questions in the target language."),
+    .length(4)
+    .describe(
+      "Exactly 4 conversation-opening sentences or questions in the target language.",
+    ),
 });
 
 const LEVEL_LANG: Record<Language, Record<CefrLevel, string>> = {
@@ -32,11 +34,26 @@ const LEVEL_LANG: Record<Language, Record<CefrLevel, string>> = {
 
 const LANG_NAMES: Record<Language, string> = { es: "Spanish", fr: "French" };
 
+export type RecommendationHints = {
+  primaryGenre: string;
+  interestTopics: string[];
+};
+
+/**
+ * Generates 4 personalised conversation starter chips.
+ *
+ * When `hints` is provided (background pre-generation path) the prompt
+ * is also shaped by the recommendation engine's genre/topic selection,
+ * making the starters consistent with what the user would see in stories.
+ *
+ * Falls back to level-appropriate static starters if the AI call fails.
+ */
 export async function generateChatStarters(
   displayName: string,
   cefrLevel: CefrLevel,
   interests: string[],
   language: Language = "es",
+  hints?: RecommendationHints,
 ): Promise<string[]> {
   const langName = LANG_NAMES[language];
 
@@ -50,6 +67,14 @@ export async function generateChatStarters(
         ? `The learner's interests include: ${interests.join(", ")}.`
         : "The learner hasn't specified interests yet — use universal, engaging topics.";
 
+    // When the recommendation engine has driven topic selection, use it.
+    const recommendationClause = hints
+      ? `The personalisation engine suggests focusing on the "${hints.primaryGenre}" theme` +
+        (hints.interestTopics.length > 0
+          ? ` and the learner's strongest interests: ${hints.interestTopics.join(", ")}.`
+          : ".")
+      : "";
+
     const { object } = await generateObject({
       model: google("gemini-2.5-flash-lite"),
       schema: StartersSchema,
@@ -59,15 +84,21 @@ STUDENT PROFILE
 - Name: ${displayName}
 - CEFR Level: ${cefrLevel}
 - ${interestClause}
+${recommendationClause ? `- ${recommendationClause}` : ""}
 
 TASK
-Generate exactly 3 conversation-opening sentences or questions written in ${langName}. These will be shown as clickable suggestion chips for the student to start a conversation with their AI tutor.
+Generate exactly 4 conversation-opening sentences or questions written in ${langName}.
+These will be shown as clickable suggestion chips for the student to start a conversation.
 
 REQUIREMENTS
 - Write in ${LEVEL_LANG[language][cefrLevel]}
-- Each starter must be different in style: one casual remark, one personal question, one opinion question
-- Reference the student's interests naturally — don't force them
-- Each starter should feel fresh and specific, not generic
+- Each starter must be different in style:
+    1. A casual personal remark
+    2. A question about the student's life or day
+    3. An opinion or preference question tied to their interests
+    4. A cultural or topic question relevant to the language
+- Reference the student's interests/recommended theme naturally — don't force it
+- Each starter must feel fresh and specific, NOT generic
 - Do NOT include English translations
 - Do NOT number or bullet them — just the ${langName} text
 

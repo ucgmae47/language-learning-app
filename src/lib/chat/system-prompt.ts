@@ -81,19 +81,19 @@ Remember: you are a conversation partner first, a grammar teacher second.`;
 
 export const STARTER_SUGGESTIONS: Record<Language, Record<CefrLevel, string[]>> = {
   es: {
-    A1: ["Hola, ¿cómo te llamas?", "¿De dónde eres?", "¿Cuántos años tienes?"],
-    A2: ["¿Qué hiciste ayer?", "¿Cuál es tu comida favorita?", "¿Tienes mascotas?"],
-    B1: ["¿Qué planes tienes para el fin de semana?", "Cuéntame sobre tu trabajo o estudios.", "¿Qué programas de televisión te gustan?"],
-    B2: ["¿Qué opinas sobre el cambio climático?", "¿Cuál es el mejor consejo que has recibido?", "Háblame de un viaje que recuerdes mucho."],
-    C1: ["¿Cómo crees que la tecnología cambiará la educación?", "¿Qué libro recomiendas y por qué?", "¿Cuál es tu postura sobre la inteligencia artificial?"],
-    C2: ["¿Qué distinción harías entre libertad e independencia?", "Discutamos el papel de la cultura en la identidad nacional.", "¿Crees que el arte tiene obligación moral?"],
+    A1: ["Hola, ¿cómo te llamas?", "¿De dónde eres?", "¿Cuántos años tienes?", "¿Te gusta la música?"],
+    A2: ["¿Qué hiciste ayer?", "¿Cuál es tu comida favorita?", "¿Tienes mascotas?", "¿Adónde te gusta ir los fines de semana?"],
+    B1: ["¿Qué planes tienes para el fin de semana?", "Cuéntame sobre tu trabajo o estudios.", "¿Qué programas de televisión te gustan?", "¿Qué tipo de música escuchas últimamente?"],
+    B2: ["¿Qué opinas sobre el cambio climático?", "¿Cuál es el mejor consejo que has recibido?", "Háblame de un viaje que recuerdes mucho.", "¿Cómo ha cambiado la tecnología tu vida diaria?"],
+    C1: ["¿Cómo crees que la tecnología cambiará la educación?", "¿Qué libro recomiendas y por qué?", "¿Cuál es tu postura sobre la inteligencia artificial?", "¿Qué significa el éxito para ti?"],
+    C2: ["¿Qué distinción harías entre libertad e independencia?", "Discutamos el papel de la cultura en la identidad nacional.", "¿Crees que el arte tiene obligación moral?", "¿Puede existir la objetividad en el periodismo moderno?"],
   },
   fr: {
-    A1: ["Bonjour ! Comment tu t'appelles ?", "Tu viens d'où ?", "Quel âge as-tu ?"],
-    A2: ["Qu'est-ce que tu as fait hier ?", "Quel est ton plat préféré ?", "Tu as des animaux ?"],
-    B1: ["Qu'est-ce que tu comptes faire ce week-end ?", "Parle-moi de ton travail ou de tes études.", "Quelles séries ou émissions tu aimes regarder ?"],
-    B2: ["Qu'est-ce que tu penses du changement climatique ?", "Quel est le meilleur conseil qu'on t'ait donné ?", "Raconte-moi un voyage qui t'a marqué."],
-    C1: ["Comment la technologie va-t-elle transformer l'éducation selon toi ?", "Quel livre recommanderais-tu et pourquoi ?", "Quelle est ta position sur l'intelligence artificielle ?"],
-    C2: ["Quelle distinction ferais-tu entre liberté et indépendance ?", "Parlons du rôle de la culture dans l'identité nationale.", "Penses-tu que l'art a une obligation morale ?"],
+    A1: ["Bonjour ! Comment tu t'appelles ?", "Tu viens d'où ?", "Quel âge as-tu ?", "Tu aimes la musique ?"],
+    A2: ["Qu'est-ce que tu as fait hier ?", "Quel est ton plat préféré ?", "Tu as des animaux ?", "Où tu aimes aller le week-end ?"],
+    B1: ["Qu'est-ce que tu comptes faire ce week-end ?", "Parle-moi de ton travail ou de tes études.", "Quelles séries ou émissions tu aimes regarder ?", "Quelle musique tu écoutes en ce moment ?"],
+    B2: ["Qu'est-ce que tu penses du changement climatique ?", "Quel est le meilleur conseil qu'on t'ait donné ?", "Raconte-moi un voyage qui t'a marqué.", "Comment la technologie a-t-elle changé ta vie quotidienne ?"],
+    C1: ["Comment la technologie va-t-elle transformer l'éducation selon toi ?", "Quel livre recommanderais-tu et pourquoi ?", "Quelle est ta position sur l'intelligence artificielle ?", "Que signifie le succès pour toi ?"],
+    C2: ["Quelle distinction ferais-tu entre liberté et indépendance ?", "Parlons du rôle de la culture dans l'identité nationale.", "Penses-tu que l'art a une obligation morale ?", "Peut-il exister une objectivité dans le journalisme moderne ?"],
   },
 };

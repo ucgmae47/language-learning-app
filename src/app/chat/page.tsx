@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -5,7 +6,8 @@ import { ArrowLeft, Wifi } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ChatInterface } from "@/components/chat/chat-interface";
 import { generateChatStarters } from "@/lib/chat/generate-starters";
-import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
+import { generateAndQueueStarters } from "@/lib/chat/queue";
+import type { CefrLevel, InterestTopic, Language, QueuedChatStarters } from "@/lib/supabase/types";
 
 export const metadata: Metadata = {
   title: "Chat Practice | LinguaPath",
@@ -23,7 +25,7 @@ export default async function ChatPage() {
 
   if (!user) redirect("/login");
 
-  const [profileResult, interestsResult] = await Promise.all([
+  const [profileResult, interestsResult, queuedResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, cefr_level, language")
@@ -35,6 +37,13 @@ export default async function ChatPage() {
       .eq("user_id", user.id)
       .order("weight", { ascending: false })
       .limit(3),
+    // Check for a pre-queued starter set for this user's active language.
+    supabase
+      .from("queued_chat_starters")
+      .select("starters")
+      .eq("user_id", user.id)
+      // We need the language first, but we can join both queries below.
+      .maybeSingle<Pick<QueuedChatStarters, "starters">>(),
   ]);
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
@@ -48,7 +57,51 @@ export default async function ChatPage() {
       (r: { topic: InterestTopic }) => r.topic,
     ) ?? [];
 
-  const starters = await generateChatStarters(displayName, cefrLevel, interests, language);
+  // ── Fast-path: serve pre-queued starters (zero AI latency) ───────────────
+  // We verify the language matches since the initial query above fetches by
+  // user_id only and we now know the active language.
+  let starters: string[];
+
+  const queued = queuedResult.data;
+
+  if (queued && Array.isArray(queued.starters) && queued.starters.length > 0) {
+    // Serve the pre-generated starters immediately.
+    starters = queued.starters as string[];
+
+    // Delete the consumed row so the next visit generates a fresh set.
+    // Fire-and-forget — non-blocking.
+    void supabase
+      .from("queued_chat_starters")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("language", language);
+  } else {
+    // No queued starters — generate on demand (falls back to static if quota hit).
+    starters = await generateChatStarters(
+      displayName,
+      cefrLevel,
+      interests,
+      language,
+    );
+  }
+
+  // ── After response: pre-generate the next set silently ───────────────────
+  // Captures the values needed in the background callback right now, before
+  // the request context is torn down.
+  const capturedUserId = user.id;
+  const capturedLanguage = language;
+  const capturedLevel = cefrLevel;
+  const capturedName = displayName;
+
+  after(async () => {
+    await generateAndQueueStarters(
+      capturedUserId,
+      capturedLanguage,
+      capturedLevel,
+      capturedName,
+    );
+  });
+
   const tutorName = TUTOR_NAMES[language];
 
   return (

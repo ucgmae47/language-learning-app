@@ -199,6 +199,13 @@ export type UserAchievement = {
   unlocked_at: string;
 };
 
+export type QueuedChatStarters = {
+  user_id: string;
+  language: Language;
+  starters: string[];
+  created_at: string;
+};
+
 export type MusicLike = {
   id: string;
   user_id: string;
@@ -298,6 +305,12 @@ export type Database = {
         Row: UserAchievement;
         Insert: Omit<UserAchievement, "id" | "unlocked_at"> & Partial<Pick<UserAchievement, "id">>;
         Update: never;
+        Relationships: Rel;
+      };
+      queued_chat_starters: {
+        Row: QueuedChatStarters;
+        Insert: QueuedChatStarters;
+        Update: Partial<QueuedChatStarters>;
         Relationships: Rel;
       };
       music_likes: {
