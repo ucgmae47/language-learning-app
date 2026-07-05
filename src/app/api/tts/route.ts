@@ -15,16 +15,19 @@
  */
 
 // Rachel — warm, clear, works beautifully with eleven_multilingual_v2.
-// Users can swap this to any voice from their ElevenLabs account.
+// Users can swap this to any voice from their ElevenLabs account via env vars:
+//   ELEVENLABS_VOICE_ES  — voice ID for Spanish
+//   ELEVENLABS_VOICE_FR  — voice ID for French
 const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
-
-const VOICE_BY_LANG: Record<string, string> = {
-  es: process.env.ELEVENLABS_VOICE_ES ?? DEFAULT_VOICE_ID,
-  fr: process.env.ELEVENLABS_VOICE_FR ?? DEFAULT_VOICE_ID,
-};
 
 export async function POST(request: Request) {
   const apiKey = process.env.ELEVENLABS_API_KEY;
+
+  // Read voice IDs inside the handler so they're always fresh (no module-level caching).
+  const VOICE_BY_LANG: Record<string, string> = {
+    es: process.env.ELEVENLABS_VOICE_ES ?? DEFAULT_VOICE_ID,
+    fr: process.env.ELEVENLABS_VOICE_FR ?? DEFAULT_VOICE_ID,
+  };
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: "ELEVENLABS_API_KEY is not configured." }),
@@ -54,14 +57,14 @@ export async function POST(request: Request) {
 
   const voiceId = VOICE_BY_LANG[lang] ?? DEFAULT_VOICE_ID;
 
+  // output_format must be a query param, not a body field.
   const elRes = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_44100_128`,
     {
       method: "POST",
       headers: {
         "xi-api-key": apiKey,
         "Content-Type": "application/json",
-        // Ask ElevenLabs to return the audio as a stream rather than buffering.
         Accept: "audio/mpeg",
       },
       body: JSON.stringify({
@@ -70,12 +73,9 @@ export async function POST(request: Request) {
         voice_settings: {
           stability: 0.5,
           similarity_boost: 0.75,
-          // style: 0 = neutral, 1 = max expressive.
-          // 0.3 adds natural variation without sounding theatrical.
           style: 0.3,
           use_speaker_boost: true,
         },
-        output_format: "mp3_44100_128",
       }),
     },
   ).catch((err: unknown) => {
@@ -87,9 +87,20 @@ export async function POST(request: Request) {
     const detail = elRes
       ? await elRes.text().catch(() => elRes.statusText)
       : "network error";
+
+    let code = "tts_unavailable";
+    try {
+      const parsed = JSON.parse(detail) as {
+        detail?: { code?: string; message?: string };
+      };
+      if (parsed.detail?.code) code = parsed.detail.code;
+    } catch {
+      // detail may be plain text
+    }
+
     console.error("[tts] ElevenLabs error:", detail);
     return new Response(
-      JSON.stringify({ error: "TTS service unavailable.", detail }),
+      JSON.stringify({ error: "TTS service unavailable.", code, detail }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }

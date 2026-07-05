@@ -114,6 +114,8 @@ export function ChatInterface({
     speak,
     isSpeaking,
     stopSpeaking,
+    ttsFallbackReason,
+    clearTtsFallback,
   } = useVoiceChat({
     lang: LANG_BCP47[language],
     onFinalTranscript: handleFinalTranscript,
@@ -266,6 +268,33 @@ export function ChatInterface({
               </span>
             )}
           </button>
+
+          {ttsFallbackReason && (
+            <div className="mb-4 flex items-start justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+              <p>
+                Using browser voice — ElevenLabs unavailable. On the free plan,
+                create a voice in{" "}
+                <a
+                  href="https://elevenlabs.io/voice-lab"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-amber-100"
+                >
+                  Voice Lab
+                </a>
+                , copy its ID, and set <code className="rounded bg-white/10 px-1">ELEVENLABS_VOICE_ES</code> in{" "}
+                <code className="rounded bg-white/10 px-1">.env.local</code>.
+              </p>
+              <button
+                type="button"
+                onClick={clearTtsFallback}
+                className="shrink-0 text-amber-400 hover:text-amber-200"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {loadingSession ? (
             <div className="flex h-64 items-center justify-center">

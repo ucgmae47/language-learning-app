@@ -6,24 +6,111 @@ Update it after every significant session.
 
 ---
 
-## Current State (as of Jun 27, 2026)
+## Current State (as of Jul 5, 2026)
 
-### Phase 1: Complete ✅
+### What's working / built
 
-| Feature | Route / File | Status |
+| Area | Status | Notes |
 |---|---|---|
-| Supabase Auth (signup/login/logout) | `/login`, `/signup`, `actions/auth.ts` | ✅ |
-| Session management (proxy.ts) | `src/proxy.ts` | ✅ |
-| CEFR Assessment Quiz | `/assessment` | ✅ |
-| Word of the Day widget | `/dashboard` | ✅ |
-| WOTD daily email (Vercel Cron) | `/api/cron/wotd-email` | ✅ |
-| AI Story Generation (Gemini 2.5) | `/stories`, `/api/stories/generate` | ✅ |
-| Story genre topic selector | `components/stories/story-generator.tsx` | ✅ |
-| Post-reading comprehension quiz | `/stories/[id]/quiz` | ✅ |
-| Chat tutor "Lucía" (GitHub Models) | `/chat`, `/api/chat` | ✅ |
-| AI-generated personalised chat starters | `lib/chat/generate-starters.ts` | ✅ |
-| Interest tracking tables (DB only) | `supabase/schema.sql` | ✅ schema only |
-| Git + GitHub remote | `github.com/ucgmae47/language-learning-app` | ✅ |
+| Auth + assessment-first onboarding | ✅ | Language → CEFR test → signup (no direct `/signup` without `?assessment=`) |
+| Email confirmation → Sign in | ✅ | `/auth/callback` confirms email, signs out, redirects to `/login?confirmed=1` |
+| Dashboard spin wheel | ✅ | Arrow navigation only (no scroll hijack) |
+| Unified header | ✅ | Single bar: logo, welcome, language control, icon settings/sign out |
+| Language control | ✅ | Dropdown to switch added languages + `+` divider for add-language menu |
+| Behavioral Interest Engine | ✅ | `user_events` → `topic_scores` → `genre_interests` with anti-binge rules |
+| Persistent chat history | ✅ | `chat_sessions` + `chat_messages`, sidebar in `/chat` |
+| Personality mirroring (chatbot) | ✅ | `profiles.personality_traits`, analyzed every 5th user message |
+| Unified learner context | ✅ | `getUserContext()` feeds stories, chat, starters |
+| Story pre-queuing | ✅ | Queued story + queued chat starters via `after()` |
+| Story reader (paginated) | ✅ | One sentence at a time, EN translation below, word tooltips above |
+| ElevenLabs TTS (chatbot) | ⚠️ | Wired up; **free plan cannot use library voices via API** — needs custom Voice Lab IDs |
+| 20+ features (games, news, journal, etc.) | ✅ built | Many need API/quota testing — see Testing Queue below |
+
+### Run pending Supabase migrations if not yet applied
+
+```bash
+# Run in Supabase SQL Editor (in order if schema is behind):
+supabase/behavioral-events-migration.sql   # user_events, topic_scores
+supabase/chat-history-migration.sql        # chat_sessions, chat_messages
+supabase/personality-migration.sql         # profiles.personality_traits
+# Or run the full idempotent dump:
+supabase/full-schema.sql
+```
+
+---
+
+## Session Log — Jul 4–5, 2026
+
+### Behavioral Interest Engine (committed)
+
+Replaced single-event writes to `genre_interests` with a three-layer pipeline:
+
+1. **`user_events`** — append-only raw event log (news dwell, story quiz, music like, journal save, etc.)
+2. **`topic_scores`** — aggregated confidence with session diminishing returns (25%), time decay, source diversity bonus
+3. **Promotion to `genre_interests`** — only when score ≥ threshold AND events span ≥ N distinct calendar days
+
+Files: `src/lib/events/{taxonomy,log-event,aggregate}.ts`, `src/app/actions/events.ts`, `supabase/behavioral-events-migration.sql`
+
+Integrated in: news, stories, music, journal, recipes, explore, vocabulary.
+
+### Onboarding & auth polish
+
+- Removed generic "Get started" / "Create account" paths — signup requires completing CEFR assessment first
+- `/signup` without `?assessment=es:B1` redirects to `/`
+- Assessment result stored in `user_metadata.pending_assessment` when email confirmation required; applied on first login
+- Email confirmation link → `/auth/callback?next=/login` → Sign in page with success banner
+
+### Header & language UX
+
+- Merged duplicate dashboard header into global `SiteHeader`
+- `LanguageControl` component: active language dropdown (switch between added languages) + `+` button (add un-added languages via assessment)
+- Settings and Sign out are icon-only buttons
+- "Sign in" hidden when authenticated
+
+### Story reader redesign
+
+- **`TranslatedStoryBody`** now shows **one sentence at a time**
+- English translation always visible underneath (no hover)
+- Navigate via arrow buttons, scroll wheel, or keyboard arrows
+- Slide-up / slide-down animation between sentences
+- Word tooltips: click a word → meaning appears **above** the word
+
+### ElevenLabs TTS
+
+- Route: `/api/tts` proxies to ElevenLabs `eleven_multilingual_v2`
+- Hook: `use-voice-chat.ts` calls `/api/tts`, falls back to browser `speechSynthesis` on failure
+- **Known issue:** Free ElevenLabs plan returns `paid_plan_required` for library voices (e.g. Rachel default)
+- **Fix:** Create voices in [Voice Lab](https://elevenlabs.io/voice-lab), set IDs in `.env.local`:
+  ```
+  ELEVENLABS_VOICE_ES=<your_voice_id>
+  ELEVENLABS_VOICE_FR=<your_voice_id>
+  ```
+- Chat shows amber banner when falling back to browser voice
+- Restart dev server after env changes
+
+### Dev environment notes
+
+- Dev server may run on **port 3001** if 3000 is occupied
+- Set `NEXT_PUBLIC_APP_URL=http://localhost:3001` and add `http://localhost:3001/auth/callback` to Supabase redirect URLs
+- User accounts were cleared via Supabase admin API for fresh onboarding testing
+
+---
+
+## Testing Queue (pick up tomorrow)
+
+Features built but likely need hands-on testing / API quota fixes:
+
+| Feature | Route | Likely issues |
+|---|---|---|
+| Story generation | `/stories` | Gemini daily quota (429) — queued story fallback works |
+| Story tooltips backfill | `/stories` | Same quota limits |
+| Chat tutor | `/chat` | ElevenLabs voice (see above); GitHub Models token |
+| News | `/news` | `NEWS_API_KEY`, Gemini summarization |
+| Journal | `/journal` | Gemini structured output |
+| Music | `/music` | YouTube API key optional |
+| Sentence Builder | `/sentence-builder` | Gemini generate/judge |
+| Pictionary / Chat Room | `/gameroom`, `/chat-room` | Supabase Realtime, RLS |
+| Behavioral events | all integrated features | Run `behavioral-events-migration.sql` first |
 
 ---
 
@@ -35,177 +122,80 @@ Update it after every significant session.
 | Language | TypeScript (strict mode) |
 | Styling | Tailwind CSS v4 |
 | Database & Auth | Supabase (PostgreSQL + RLS) |
-| AI — stories | Google Gemini 2.5 Flash Lite (`@ai-sdk/google`) |
-| AI — chat | GitHub Models `gpt-4o-mini` via OpenAI-compatible API |
-| AI — chat starters | Google Gemini 2.5 Flash Lite |
+| AI — stories, news, journal, etc. | Google Gemini 2.5 Flash Lite |
+| AI — chat tutor | GitHub Models `gpt-4o-mini` |
+| AI — grammar drills | Groq `llama-3.1-8b-instant` |
+| TTS — chatbot | ElevenLabs `eleven_multilingual_v2` (with browser fallback) |
 | Email | Resend |
-| Deployment target | Vercel (Free Tier) |
+| Deployment target | Vercel |
 
 ### Critical API notes
 
-- `@ai-sdk/google` reads `GOOGLE_GENERATIVE_AI_API_KEY` by default.
-  **We pass the key explicitly** via `createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })` to avoid renaming the env var.
-- `@ai-sdk/openai` v4 defaults to the **Responses API** (`/responses` endpoint).
-  GitHub Models only supports Chat Completions. **Always use `github.chat("model-id")`** instead of `github("model-id")`.
-- `gemini-2.0-flash` and `gemini-1.5-flash` are unavailable on the free tier with
-  a new project. Use `gemini-2.5-flash-lite` (confirmed working).
-- The GitHub token needs the **GitHub Copilot / Models** account permission
-  (found under fine-grained token → "Account permissions").
+- Pass Gemini key explicitly: `createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })`
+- GitHub Models: use `github.chat("gpt-4o-mini")` not `github("gpt-4o-mini")`
+- Use model slug `gemini-2.5-flash-lite` (stable)
+- ElevenLabs `output_format` must be a **query param**, not body field
+- Gemini free tier: ~20 req/min + daily quota — custom retry + user-facing 429 messages in story routes
 
 ---
 
 ## Database Schema Summary
 
-See `supabase/schema.sql` for the full schema. Key tables:
+See `supabase/full-schema.sql` for the complete idempotent DDL. Key tables beyond Phase 1:
 
 ```
-auth.users          ← managed by Supabase Auth
-profiles            ← display_name, cefr_level, streak_count, stories_read
-user_interests      ← topic (enum), weight (int), user_id
-session_metrics     ← per-day engagement stats
-word_of_day_logs    ← which word each user saw per date
-stories             ← AI-generated passages + quiz JSONB
-story_attempts      ← quiz scores per user per story
+language_profiles       ← per-language CEFR (es, fr)
+genre_interests         ← behavioral genre weights (promoted from topic_scores)
+user_events             ← raw behavioral event log
+topic_scores            ← aggregated topic confidence
+chat_sessions           ← persistent tutor conversations
+chat_messages           ← messages within sessions
+queued_chat_starters    ← pre-generated chat starters
+profiles.personality_traits  ← JSONB chatbot mirroring
+stories.is_queued       ← pre-generated story flag
+stories.sentence_translations / word_translations  ← hover/tooltip data
 ```
 
-RPC function `increment_stories_read(uid)` must be created manually in Supabase
-SQL Editor if running a fresh schema (included in schema.sql).
-
 ---
 
-## Ideas Queued for Future Implementation
+## Onboarding Flow (current)
 
-### 🔴 HIGH PRIORITY — Behavioural Interest Graph
+```
+Homepage → language card → /assessment/es|fr → /signup?assessment=es:C1
+  → email confirmation → /auth/callback → /login?confirmed=1
+  → sign in → /onboarding/interests → /dashboard
+```
 
-**What:** Track what topics/themes a user gravitates toward over time and use that
-signal to personalise every surface of the app — story prompts, chat topics, word
-selections, email content.
-
-**Why it matters:** The `user_interests` table already exists with a `weight` column
-designed for this. Right now weights are static (set at onboarding, never updated).
-Making them dynamic is the single highest-leverage personalization improvement.
-
-**Signal sources (ranked by strength):**
-
-| Signal | Event | Weight delta |
-|---|---|---|
-| Story genre selection | User picks "Romance" in topic picker | +3 |
-| Story read completion | User finishes a story on a topic | +2 |
-| Story quiz score ≥ 4/5 | Strong comprehension = genuine interest | +1 |
-| Chat conversation topic | AI detects topic cluster in conversation | +1 |
-| Word of Day interaction | User clicks to learn more | +1 |
-| Topic not engaged | User skips story of a genre repeatedly | −1 |
-
-**Implementation plan:**
-
-1. **Story topic selection** (easiest — already captured in API route):
-   In `/api/stories/generate/route.ts`, after saving the story, upsert
-   `user_interests` for the selected genre:
-   ```typescript
-   if (selectedTopic) {
-     await supabase.from("user_interests").upsert(
-       { user_id: user.id, topic: selectedTopic, weight: 1 },
-       { onConflict: "user_id,topic", ignoreDuplicates: false }
-     );
-     // Or better: call an RPC that does weight += 3 with a cap
-   }
-   ```
-
-2. **Chat topic detection** (medium):
-   At the end of a chat session (or periodically), send the last N messages to
-   Gemini with a prompt like: "List the top 1–2 topics discussed in this
-   conversation from this enum: [fantasy, mystery, romance, ...]". Upsert the
-   result into `user_interests`.
-
-3. **Weight decay** (important for freshness):
-   Add a Supabase scheduled function (pg_cron) or Vercel Cron that runs weekly:
-   ```sql
-   UPDATE user_interests SET weight = GREATEST(0, weight - 1)
-   WHERE updated_at < NOW() - INTERVAL '14 days';
-   ```
-   This ensures old signals fade and recent behavior dominates.
-
-4. **Schema addition needed** — add `interest_slug` support for the story genres
-   (currently the `interest_topic` enum is a fixed set; the story topic picker uses
-   free-text strings). Options:
-   - Extend the `interest_topic` enum to include genres like `fantasy`, `mystery`, etc.
-   - Or store genre interests in a separate `genre_interests` table with a text column.
-
-5. **Consumption** — wherever we currently read interests (story generation prompt,
-   chat system prompt, WOTD email), the ranked interest list by weight will
-   automatically improve the output once weights are dynamic.
-
----
-
-### Phase 2 — French Language Support + Content Library Expansion
-
-- Add a `language` field to `profiles` (default `'es'`, add `'fr'`)
-- Parameterise all prompts with `targetLanguage` instead of hardcoded "Spanish"
-- Expand the WOTD bank for French
-- Daily crossword puzzle component (local state, vocabulary-focused)
-- Curated public-domain story bank (Project Gutenberg excerpts, adapted)
-
-### Phase 3 — Grammar Drills & Conjugation Engine
-
-- New table: `grammar_weaknesses (user_id, verb_form, error_count, last_seen)`
-- Drill engine: Groq or Cerebras free tier (ultra-fast Llama inference) for
-  real-time correction feedback
-- Idiom/expression flashcard system (flip card UI component)
-
-### Phase 4 — Personalization Engine Refinement ✅ COMPLETE
-
-- **Behavioural interest graph** (`genre_interests` table) — implicit genre
-  preference signals recorded from story generation (+3) and quiz completion
-  (+1, +1 bonus if score ≥ 4/5). Top genres fed back into `buildStoryPrompt`.
-  Run `supabase/phase4-migration.sql` to create the table.
-- **Adaptive CEFR banner** — dashboard checks last 7 days of `session_metrics`.
-  If ≥3 scored sessions average < 50% → suggests downgrade. Average ≥ 90% →
-  suggests upgrade. One-click apply updates both `profiles` and `language_profiles`.
-- Deferred: A/B test for WOTD email timing (low priority).
-
-### Phase 5 — Voice Chat & Speaking Practice
-
-- Speech-to-text input in `/chat` using the Web Speech API (free, browser-native)
-- Text-to-speech playback of Lucía's responses using the Web Speech API
-- Or: integrate Cartesia / ElevenLabs free tier for higher-quality voice
-
----
-
-## Phase 1 Polish Items (deferred)
-
-These were discussed and deliberately deferred:
-
-1. **Sentence/word translation tooltips on story reader** — hover a sentence to
-   see its English translation; hover a word within to see word-level translation.
-   Needs: story text tokenised into sentences, Gemini translation call on hover
-   (debounced), two-level tooltip UI. Save for Phase 2.
-
-2. **CEFR question bank expansion** — currently ~8 questions (A2/B1/B2 only).
-   Target: 5 quality questions per level × 6 active levels = 30 questions minimum.
-   Consider AI-generated adaptive assessment in Phase 4 instead of expanding the
-   static bank.
-
-3. **Onboarding interest selection UI** — the `user_interests` table is wired up
-   but users have no UI to set initial interests. Add a step after CEFR assessment
-   that shows a grid of topic chips and saves selections.
-
-4. **User settings page** — display name, language preference, email notification
-   toggle, CEFR level override.
+Authenticated users adding a second language: header `+` → assessment → saves to `language_profiles`.
 
 ---
 
 ## Environment Variables Reference
 
-See `.env.example` for all required keys. The mapping:
+See `.env.example`. Key additions since Phase 1:
 
 | Variable | Service | Notes |
 |---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase | Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase | Safe to expose |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase | Server-only — never expose |
-| `GEMINI_API_KEY` | Google AI Studio | Used explicitly, not via SDK env auto-detect |
-| `RESEND_API_KEY` | Resend | For WOTD emails |
-| `WOTD_FROM_EMAIL` | Resend | Must be a verified sender domain |
-| `CRON_SECRET` | Vercel | Secures `/api/cron/wotd-email` |
-| `GITHUB_TOKEN` | GitHub Models | Needs "GitHub Copilot/Models" account permission |
-| `NEXT_PUBLIC_APP_URL` | App | Used in email CTAs |
+| `ELEVENLABS_API_KEY` | ElevenLabs | Chatbot TTS |
+| `ELEVENLABS_VOICE_ES` | ElevenLabs | **Required on free plan** — custom Voice Lab ID |
+| `ELEVENLABS_VOICE_FR` | ElevenLabs | **Required on free plan** — custom Voice Lab ID |
+| `NEWS_API_KEY` | NewsAPI | News feature |
+| `GROQ_API_KEY` | Groq | Grammar drill feedback |
+| `YOUTUBE_API_KEY` | Google | Music embeds (optional) |
+
+---
+
+## Ideas / Future Work
+
+- Story batching across similar users (reduce API calls) — discussed, not implemented
+- Expand CEFR question bank (5+ questions per level)
+- Full dark theme on story reader page (currently light card on dark app shell)
+- ElevenLabs Starter upgrade ($5/mo) unlocks library voices via API
+- Cron job for story/chat pre-queuing (currently uses `after()` on user actions)
+
+---
+
+## Git / Remote
+
+- Remote: `github.com/ucgmae47/language-learning-app`
+- Branch `main` may be ahead of origin — push when ready

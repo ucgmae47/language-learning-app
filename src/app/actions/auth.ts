@@ -18,6 +18,36 @@ function safeNext(raw: string | null | undefined): string {
   return "/dashboard";
 }
 
+function appUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
+async function applyPendingAssessment(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  assessmentRaw: string,
+): Promise<void> {
+  const [lang, level] = assessmentRaw.split(":");
+  if (!lang || !level) return;
+
+  const safeLanguage = (lang === "es" || lang === "fr" ? lang : "es") as Language;
+  const safeLevel = (
+    ["A1", "A2", "B1", "B2", "C1", "C2"].includes(level) ? level : "B1"
+  ) as CefrLevel;
+
+  await Promise.all([
+    supabase.from("language_profiles").upsert(
+      { user_id: userId, language: safeLanguage, cefr_level: safeLevel },
+      { onConflict: "user_id,language" },
+    ),
+    supabase.from("profiles").update({
+      language: safeLanguage,
+      cefr_level: safeLevel,
+      updated_at: new Date().toISOString(),
+    }).eq("id", userId),
+  ]);
+}
+
 export async function signup(
   _prev: AuthFormState,
   formData: FormData,
@@ -39,11 +69,15 @@ export async function signup(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { display_name: displayName },
+      data: {
+        display_name: displayName,
+        ...(assessmentRaw ? { pending_assessment: assessmentRaw } : {}),
+      },
+      emailRedirectTo: `${appUrl()}/auth/callback?next=/login`,
     },
   });
 
@@ -51,31 +85,19 @@ export async function signup(
     return { error: error.message };
   }
 
+  // Email confirmation required — no session yet. Send user to Sign in with a
+  // prompt to check their inbox; assessment data is applied after they confirm.
+  if (!data.session) {
+    redirect("/login?check_email=1");
+  }
+
   // ── Apply the CEFR placement result from the pre-signup assessment ─────────
   // The result was encoded in the URL as ?assessment=es:B1 and carried through
   // as a hidden form field.  We save it now that the user has a session.
   if (assessmentRaw) {
-    const [lang, level] = assessmentRaw.split(":");
-    if (lang && level) {
-      // Fetch the new session to get the user ID.
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const safeLanguage = (lang === "es" || lang === "fr" ? lang : "es") as Language;
-        const safeLevel = (["A1","A2","B1","B2","C1","C2"].includes(level) ? level : "B1") as CefrLevel;
-
-        // Upsert language profile and sync to active profile.
-        await Promise.all([
-          supabase.from("language_profiles").upsert(
-            { user_id: user.id, language: safeLanguage, cefr_level: safeLevel },
-            { onConflict: "user_id,language" },
-          ),
-          supabase.from("profiles").update({
-            language: safeLanguage,
-            cefr_level: safeLevel,
-            updated_at: new Date().toISOString(),
-          }).eq("id", user.id),
-        ]);
-      }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await applyPendingAssessment(supabase, user.id, assessmentRaw);
     }
   }
 
@@ -103,6 +125,15 @@ export async function login(
 
   if (error) {
     return { error: error.message };
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const pendingAssessment = user?.user_metadata?.pending_assessment as string | undefined;
+  if (user && pendingAssessment) {
+    await applyPendingAssessment(supabase, user.id, pendingAssessment);
+    await supabase.auth.updateUser({
+      data: { pending_assessment: null },
+    });
   }
 
   redirect(next);

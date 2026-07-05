@@ -71,3 +71,34 @@ html {
 .card-spin-active {
   animation: spin-pulse 0.15s ease-in-out infinite;
 }
+
+/* Story reader — sentence slide transitions */
+@keyframes story-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes story-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-2.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.story-slide-up {
+  animation: story-slide-up 0.4s ease-out both;
+}
+
+.story-slide-down {
+  animation: story-slide-down 0.4s ease-out both;
+}

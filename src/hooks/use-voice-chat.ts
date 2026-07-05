@@ -61,10 +61,13 @@ export type UseVoiceChatReturn = {
   stopListening: () => void;
   /** Live interim transcript — empty when not listening. */
   interimText: string;
-  /** Speak a string aloud using the browser's speech synthesis. */
+  /** Speak a string aloud via ElevenLabs, falling back to browser TTS. */
   speak: (text: string) => void;
   isSpeaking: boolean;
   stopSpeaking: () => void;
+  /** Set when ElevenLabs failed and browser TTS was used instead. */
+  ttsFallbackReason: string | null;
+  clearTtsFallback: () => void;
 };
 
 export function useVoiceChat({
@@ -75,6 +78,7 @@ export function useVoiceChat({
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [ttsFallbackReason, setTtsFallbackReason] = useState<string | null>(null);
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
   // Accumulates the final portion of the transcript across result chunks.
@@ -134,8 +138,23 @@ export function useVoiceChat({
           body: JSON.stringify({ text, lang: langCode }),
         });
 
-        if (!res.ok) throw new Error(`TTS route returned ${res.status}`);
+        if (!res.ok) {
+          let reason = "ElevenLabs unavailable";
+          try {
+            const json = (await res.json()) as { code?: string; detail?: string };
+            if (json.code === "paid_plan_required") {
+              reason =
+                "ElevenLabs free plan cannot use library voices via the API. Create a voice in Voice Lab, copy its ID, and set ELEVENLABS_VOICE_ES in .env.local.";
+            } else if (json.code) {
+              reason = `ElevenLabs error: ${json.code}`;
+            }
+          } catch {
+            // ignore parse errors
+          }
+          throw new Error(reason);
+        }
 
+        setTtsFallbackReason(null);
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         blobUrlRef.current = url;
@@ -157,9 +176,11 @@ export function useVoiceChat({
         };
 
         await audio.play();
-      } catch {
-        // ElevenLabs unavailable (quota, network, missing key) — fall back to
-        // the browser's built-in speechSynthesis so the feature never goes silent.
+      } catch (err) {
+        const reason =
+          err instanceof Error ? err.message : "ElevenLabs unavailable";
+        setTtsFallbackReason(reason);
+        console.warn("[tts] falling back to browser voice:", reason);
         if (!window.speechSynthesis) {
           setIsSpeaking(false);
           return;
@@ -263,5 +284,7 @@ export function useVoiceChat({
     speak,
     isSpeaking,
     stopSpeaking,
+    ttsFallbackReason,
+    clearTtsFallback: () => setTtsFallbackReason(null),
   };
 }

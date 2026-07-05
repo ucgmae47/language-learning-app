@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { splitSentences, cleanWord } from "@/lib/stories/utils";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { allSentences, cleanWord } from "@/lib/stories/utils";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -9,6 +10,8 @@ type Translations = {
   sentences: string[];
   words: Record<string, string>;
 };
+
+type SlideDirection = "next" | "prev";
 
 // ─── WordSpan ────────────────────────────────────────────────────────────────
 
@@ -33,11 +36,18 @@ function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanPr
   }
 
   return (
-    <span
-      className="relative inline"
-      data-word-span="true"
-      onClick={handleClick}
-    >
+    <span className="relative inline" data-word-span="true" onClick={handleClick}>
+      {/* Word tooltip — shown above the word */}
+      {isActive && meaning && (
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl"
+          role="tooltip"
+        >
+          {meaning}
+          <span className="absolute -bottom-1 left-1/2 h-0 w-0 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+        </span>
+      )}
+
       <span
         className={
           hasTranslation
@@ -49,98 +59,45 @@ function WordSpan({ token, wordKey, meaning, activeKey, onActivate }: WordSpanPr
       >
         {token}
       </span>
-
-      {isActive && meaning && (
-        <span
-          className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-xl"
-          role="tooltip"
-        >
-          {meaning}
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0 w-0 border-4 border-transparent border-t-slate-900" />
-        </span>
-      )}
     </span>
   );
 }
 
-// ─── SentenceSpan ────────────────────────────────────────────────────────────
-// The tooltip is pointer-events-none so it never intercepts mouse events.
-// A short leave-delay (150 ms) prevents the tooltip from blinking when the
-// mouse briefly crosses the gap between the sentence text and the tooltip card.
+// ─── SentenceBlock ───────────────────────────────────────────────────────────
 
-type SentenceSpanProps = {
+type SentenceBlockProps = {
   sentence: string;
-  sentenceTranslation: string | undefined;
   sentenceKey: string;
   wordTranslations: Record<string, string>;
   activeKey: string | null;
   onActivate: (key: string | null) => void;
 };
 
-function SentenceSpan({
+function SentenceBlock({
   sentence,
-  sentenceTranslation,
   sentenceKey,
   wordTranslations,
   activeKey,
   onActivate,
-}: SentenceSpanProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+}: SentenceBlockProps) {
   const tokens = sentence.split(/(\s+)/);
 
-  function handleEnter() {
-    if (leaveTimer.current) clearTimeout(leaveTimer.current);
-    setIsHovered(true);
-  }
-
-  function handleLeave() {
-    // Short delay so the cursor can cross the gap between sentence and tooltip
-    // without the tooltip blinking away.
-    leaveTimer.current = setTimeout(() => setIsHovered(false), 150);
-  }
-
   return (
-    // Outermost wrapper carries the hover handlers so that moving the mouse
-    // between the sentence text and the (absolutely positioned) tooltip card
-    // doesn't fire a premature leave event.
-    <span
-      className="relative"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-    >
-      {/* Sentence highlight */}
-      <span
-        className={`rounded transition-colors duration-100 ${
-          isHovered ? "bg-yellow-100" : ""
-        }`}
-      >
-        {tokens.map((token, ti) => {
-          const clean = cleanWord(token);
-          return (
-            <WordSpan
-              key={ti}
-              token={token}
-              wordKey={`${sentenceKey}-${ti}`}
-              meaning={clean.length >= 2 ? wordTranslations[clean] : undefined}
-              activeKey={activeKey}
-              onActivate={onActivate}
-            />
-          );
-        })}
-      </span>
-
-      {/* Translation tooltip — pointer-events-none so it never swallows mouse events */}
-      {isHovered && sentenceTranslation && (
-        <span
-          className="pointer-events-none absolute left-0 top-full z-20 mt-1 block max-w-sm rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm leading-snug text-slate-700 shadow-lg"
-          style={{ minWidth: "180px" }}
-          role="tooltip"
-        >
-          {sentenceTranslation}
-        </span>
-      )}
-    </span>
+    <p className="text-xl font-medium leading-relaxed text-slate-900 sm:text-2xl sm:leading-relaxed">
+      {tokens.map((token, ti) => {
+        const clean = cleanWord(token);
+        return (
+          <WordSpan
+            key={ti}
+            token={token}
+            wordKey={`${sentenceKey}-${ti}`}
+            meaning={clean.length >= 2 ? wordTranslations[clean] : undefined}
+            activeKey={activeKey}
+            onActivate={onActivate}
+          />
+        );
+      })}
+    </p>
   );
 }
 
@@ -152,7 +109,33 @@ type Props = {
 };
 
 export function TranslatedStoryBody({ body, translations }: Props) {
+  const sentences = allSentences(body);
+  const total = sentences.length;
+
+  const [index, setIndex] = useState(0);
+  const [direction, setDirection] = useState<SlideDirection>("next");
   const [activeWordKey, setActiveWordKey] = useState<string | null>(null);
+
+  const wheelLock = useRef(false);
+  const readerRef = useRef<HTMLDivElement>(null);
+
+  const goNext = useCallback(() => {
+    setIndex((i) => {
+      if (i >= total - 1) return i;
+      return i + 1;
+    });
+    setDirection("next");
+    setActiveWordKey(null);
+  }, [total]);
+
+  const goPrev = useCallback(() => {
+    setIndex((i) => {
+      if (i <= 0) return i;
+      return i - 1;
+    });
+    setDirection("prev");
+    setActiveWordKey(null);
+  }, []);
 
   useEffect(() => {
     function handleMouseDown(e: MouseEvent) {
@@ -164,56 +147,166 @@ export function TranslatedStoryBody({ body, translations }: Props) {
     return () => document.removeEventListener("mousedown", handleMouseDown);
   }, []);
 
-  const paragraphs = body
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        goNext();
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        goPrev();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [goNext, goPrev]);
 
+  function handleWheel(e: React.WheelEvent) {
+    if (Math.abs(e.deltaY) < 25) return;
+    e.preventDefault();
+
+    if (wheelLock.current) return;
+    wheelLock.current = true;
+    setTimeout(() => {
+      wheelLock.current = false;
+    }, 450);
+
+    if (e.deltaY > 0) goNext();
+    else goPrev();
+  }
+
+  if (total === 0) return null;
+
+  const currentSentence = sentences[index] ?? "";
+  const currentTranslation = translations?.sentences[index];
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+
+  // No translations — plain paginated reader
   if (!translations) {
     return (
-      <>
-        {paragraphs.map((para, pi) => (
-          <p key={pi} className="mt-5 text-base leading-8 text-slate-800 first:mt-0">
-            {para}
-          </p>
-        ))}
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Generate a new story to get interactive hover translations.
+      <div className="flex flex-col gap-6">
+        <p className="text-center text-xs text-slate-400">
+          Scroll or use arrows to move through the story · Generate a new story for word
+          tooltips
         </p>
-      </>
+        <div
+          ref={readerRef}
+          onWheel={handleWheel}
+          className="relative min-h-[200px] overflow-hidden"
+        >
+          <div key={index} className={direction === "next" ? "story-slide-up" : "story-slide-down"}>
+            <p className="text-xl font-medium leading-relaxed text-slate-900 sm:text-2xl">
+              {currentSentence}
+            </p>
+          </div>
+        </div>
+        <StoryNav
+          index={index}
+          total={total}
+          isFirst={isFirst}
+          isLast={isLast}
+          onPrev={goPrev}
+          onNext={goNext}
+        />
+      </div>
     );
   }
 
-  let sentenceIdx = 0;
-
   return (
-    <>
-      <p className="mb-5 text-xs text-slate-400">
-        Hover a sentence for its translation · click any word for its meaning
+    <div className="flex flex-col gap-6">
+      <p className="text-center text-xs text-slate-400">
+        Scroll or use arrows for the next sentence · click any word for its meaning
       </p>
 
-      {paragraphs.map((para, pi) => {
-        const sentences = splitSentences(para);
-        return (
-          <p key={pi} className="mt-5 text-base leading-8 text-slate-800 first:mt-0">
-            {sentences.map((sent, si) => {
-              const translation = translations.sentences[sentenceIdx];
-              sentenceIdx++;
-              return (
-                <SentenceSpan
-                  key={`${pi}-${si}`}
-                  sentence={sent}
-                  sentenceTranslation={translation}
-                  sentenceKey={`${pi}-${si}`}
-                  wordTranslations={translations.words}
-                  activeKey={activeWordKey}
-                  onActivate={setActiveWordKey}
-                />
-              );
-            })}
-          </p>
-        );
-      })}
-    </>
+      {/* Sentence viewport */}
+      <div
+        ref={readerRef}
+        onWheel={handleWheel}
+        className="relative flex min-h-[220px] flex-col justify-center overflow-hidden py-4"
+      >
+        <div
+          key={index}
+          className={`flex flex-col gap-5 ${direction === "next" ? "story-slide-up" : "story-slide-down"}`}
+        >
+          <SentenceBlock
+            sentence={currentSentence}
+            sentenceKey={`s-${index}`}
+            wordTranslations={translations.words}
+            activeKey={activeWordKey}
+            onActivate={setActiveWordKey}
+          />
+
+          {currentTranslation && (
+            <p className="border-t border-slate-100 pt-4 text-base leading-relaxed text-slate-500 sm:text-lg">
+              {currentTranslation}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <StoryNav
+        index={index}
+        total={total}
+        isFirst={isFirst}
+        isLast={isLast}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
+    </div>
+  );
+}
+
+// ─── Navigation bar ──────────────────────────────────────────────────────────
+
+type NavProps = {
+  index: number;
+  total: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+};
+
+function StoryNav({ index, total, isFirst, isLast, onPrev, onNext }: NavProps) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <button
+        type="button"
+        onClick={onPrev}
+        disabled={isFirst}
+        aria-label="Previous sentence"
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+      </button>
+
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-xs font-semibold text-slate-500">
+          {index + 1} / {total}
+        </span>
+        <div className="flex gap-1">
+          {Array.from({ length: total }, (_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all ${
+                i === index ? "w-4 bg-emerald-500" : "w-1.5 bg-slate-200"
+              }`}
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={isLast}
+        aria-label="Next sentence"
+        className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30"
+      >
+        <ChevronRight className="h-5 w-5" aria-hidden="true" />
+      </button>
+    </div>
   );
 }

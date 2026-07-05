@@ -16,6 +16,9 @@ type AuthFormProps = {
   mode: "login" | "signup";
   action: (prev: AuthFormState, formData: FormData) => Promise<AuthFormState>;
   next?: string;
+  confirmed?: boolean;
+  checkEmail?: boolean;
+  authError?: string;
   /**
    * Encoded placement result from the CEFR assessment, format "lang:level"
    * e.g. "es:B1". When present the signup form shows a contextual banner
@@ -24,7 +27,15 @@ type AuthFormProps = {
   assessment?: string;
 };
 
-export function AuthForm({ mode, action, next, assessment }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  action,
+  next,
+  assessment,
+  confirmed,
+  checkEmail,
+  authError,
+}: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, null);
   const isSignup = mode === "signup";
 
@@ -34,6 +45,24 @@ export function AuthForm({ mode, action, next, assessment }: AuthFormProps) {
 
   return (
     <div className="w-full">
+      {confirmed && (
+        <div className="mb-5 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-300">
+          Your email is confirmed. Sign in to continue.
+        </div>
+      )}
+
+      {checkEmail && (
+        <div className="mb-5 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-5 py-4 text-sm text-blue-300">
+          Check your inbox for a confirmation link. After confirming, you&apos;ll be brought back here to sign in.
+        </div>
+      )}
+
+      {authError === "confirmation_failed" && (
+        <div className="mb-5 rounded-2xl border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm text-red-400">
+          Email confirmation failed. The link may have expired — try signing up again.
+        </div>
+      )}
+
       {/* Assessment result banner — shown only on signup after the quiz */}
       {hasAssessment && (
         <div className="mb-5 flex items-center gap-4 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-5 py-4">
@@ -150,25 +179,17 @@ export function AuthForm({ mode, action, next, assessment }: AuthFormProps) {
           </>
         ) : (
           <>
-            Don&apos;t have an account?{" "}
+            New here?{" "}
             <Link
-              href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
+              href="/"
               className="font-semibold text-emerald-400 hover:text-emerald-300 hover:underline"
             >
-              Create one
+              Take the placement test first →
             </Link>
           </>
         )}
       </p>
 
-      {!isSignup && (
-        <p className="mt-3 text-center text-sm text-slate-600">
-          New here?{" "}
-          <Link href="/" className="font-semibold text-slate-400 hover:text-white hover:underline">
-            Take the placement test first →
-          </Link>
-        </p>
-      )}
     </div>
   );
 }
