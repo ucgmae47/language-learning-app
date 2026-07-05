@@ -2,6 +2,16 @@ export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
 
 export type Language = "es" | "fr";
 
+export type SentenceAttempt = {
+  id: string;
+  user_id: string;
+  language: Language;
+  english: string;
+  target: string;
+  correct: boolean;
+  created_at: string;
+};
+
 export type PictionaryRoomStatus = "lobby" | "playing" | "game_over";
 
 export type PictionaryRoom = {
@@ -258,6 +268,12 @@ export type Database = {
         Row: StoryAttempt;
         Insert: Omit<StoryAttempt, "id" | "completed_at"> &
           Partial<Pick<StoryAttempt, "id">>;
+        Update: never;
+        Relationships: Rel;
+      };
+      sentence_attempts: {
+        Row: SentenceAttempt;
+        Insert: Omit<SentenceAttempt, "id" | "created_at"> & Partial<Pick<SentenceAttempt, "id">>;
         Update: never;
         Relationships: Rel;
       };

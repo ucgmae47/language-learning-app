@@ -106,6 +106,16 @@ const FEATURES: Feature[] = [
     glowColor: "rgba(244,63,94,0.55)",
     textAccent: "text-rose-300",
   },
+  {
+    id: "sentence-builder",
+    label: "Sentence Builder",
+    emoji: "🧩",
+    description: "Tap word tiles to construct the correct translation of an English sentence",
+    href: "/sentence-builder",
+    gradient: "from-violet-500 via-purple-500 to-indigo-600",
+    glowColor: "rgba(139,92,246,0.55)",
+    textAccent: "text-violet-300",
+  },
 ];
 
 const N = FEATURES.length;
@@ -136,7 +146,6 @@ export function SpinWheel() {
   const [hasLanded, setHasLanded] = useState(false);
   const router = useRouter();
   const wheelRef = useRef<HTMLDivElement>(null);
-  const lastScrollTime = useRef(0);
 
   // Advance or retreat by one position
   const advance = useCallback(
@@ -147,15 +156,6 @@ export function SpinWheel() {
     },
     [isSpinning],
   );
-
-  // Mouse-wheel scrolling (debounced to one step per 300ms)
-  function handleWheel(e: React.WheelEvent) {
-    e.preventDefault();
-    const now = Date.now();
-    if (now - lastScrollTime.current < 300) return;
-    lastScrollTime.current = now;
-    advance(e.deltaY > 0 ? 1 : -1);
-  }
 
   // Spin button: advance rapidly with deceleration, land on a random card
   function spin() {
@@ -199,8 +199,7 @@ export function SpinWheel() {
         ref={wheelRef}
         className="relative flex h-[420px] w-full items-center justify-center overflow-visible"
         style={{ perspective: "1200px" }}
-        onWheel={handleWheel}
-        aria-label="Feature spin wheel — scroll or use arrows to browse"
+        aria-label="Feature spin wheel — use arrows to browse"
       >
         {FEATURES.map((feature, i) => {
           const offset = ((i - activeIndex + N) % N + N) % N;
