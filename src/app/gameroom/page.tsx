@@ -37,7 +37,7 @@ const GAMES: Game[] = [
     difficulty: "Easy",
     href: "/gameroom/hangman",
     gradient: "from-amber-500 to-orange-600",
-    available: false,
+    available: true,
   },
   {
     id: "cannon",
@@ -70,7 +70,7 @@ const GAMES: Game[] = [
     difficulty: "Medium",
     href: "/gameroom/twenty-questions",
     gradient: "from-cyan-500 to-blue-600",
-    available: false,
+    available: true,
   },
   {
     id: "verb-race",
