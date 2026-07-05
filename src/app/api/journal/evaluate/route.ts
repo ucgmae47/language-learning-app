@@ -88,7 +88,7 @@ Return structured feedback. If the entry is flawless, return an empty correction
     const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
 
     const { object: feedback } = await generateObject({
-      model: google("gemini-2.5-flash-lite-preview-06-17"),
+      model: google("gemini-2.5-flash-lite"),
       schema: FeedbackSchema,
       prompt,
     });

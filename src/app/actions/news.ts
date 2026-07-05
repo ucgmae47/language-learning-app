@@ -100,7 +100,7 @@ Return one entry per article with the zero-based index.`;
   const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
 
   const { object } = await generateObject({
-    model: google("gemini-2.5-flash-lite-preview-06-17"),
+    model: google("gemini-2.5-flash-lite"),
     schema: SummaryArraySchema,
     prompt,
   });
