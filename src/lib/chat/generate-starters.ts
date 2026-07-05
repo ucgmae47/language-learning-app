@@ -46,6 +46,10 @@ export type RecommendationHints = {
  * is also shaped by the recommendation engine's genre/topic selection,
  * making the starters consistent with what the user would see in stories.
  *
+ * When `learnerContextString` is provided (from getUserContext) the full
+ * cross-app preference profile — including music taste and recent story
+ * topics — is injected so the starters feel genuinely personal.
+ *
  * Falls back to level-appropriate static starters if the AI call fails.
  */
 export async function generateChatStarters(
@@ -54,6 +58,8 @@ export async function generateChatStarters(
   interests: string[],
   language: Language = "es",
   hints?: RecommendationHints,
+  /** Full learner context string from getUserContext() */
+  learnerContextString?: string,
 ): Promise<string[]> {
   const langName = LANG_NAMES[language];
 
@@ -75,11 +81,16 @@ export async function generateChatStarters(
           : ".")
       : "";
 
+    // Full cross-app context (music, genres, recent stories) when available.
+    const contextSection = learnerContextString
+      ? `\n${learnerContextString}\n`
+      : "";
+
     const { object } = await generateObject({
       model: google("gemini-2.5-flash-lite"),
       schema: StartersSchema,
       prompt: `You are a ${langName} conversation tutor creating personalised conversation openers for a student.
-
+${contextSection}
 STUDENT PROFILE
 - Name: ${displayName}
 - CEFR Level: ${cefrLevel}
@@ -93,11 +104,11 @@ These will be shown as clickable suggestion chips for the student to start a con
 REQUIREMENTS
 - Write in ${LEVEL_LANG[language][cefrLevel]}
 - Each starter must be different in style:
-    1. A casual personal remark
+    1. A casual personal remark or statement the student might say
     2. A question about the student's life or day
-    3. An opinion or preference question tied to their interests
-    4. A cultural or topic question relevant to the language
-- Reference the student's interests/recommended theme naturally — don't force it
+    3. An opinion or preference question tied to their interests or music taste
+    4. A cultural or topic question relevant to the language and their profile
+- Reference the student's interests, favourite artists, or recent topics naturally — don't force it
 - Each starter must feel fresh and specific, NOT generic
 - Do NOT include English translations
 - Do NOT number or bullet them — just the ${langName} text

@@ -46,22 +46,32 @@ export function buildChatSystemPrompt(
   cefrLevel: CefrLevel,
   interests: string[],
   language: Language = "es",
+  /** Full learner context string from getUserContext() — injected verbatim when available */
+  learnerContextString?: string,
 ): string {
   const persona = TUTOR_PERSONAS[language];
   const levelInstr = LEVEL_INSTRUCTIONS[language][cefrLevel];
   const lengthInstr = LEVEL_RESPONSE_LENGTH[cefrLevel];
 
-  const interestLine =
-    interests.length > 0
-      ? `The student's interests include: ${interests.join(", ")}. Weave these topics into the conversation naturally to keep them engaged.`
-      : "Use everyday topics like food, travel, and daily routines.";
+  // When a rich context is available we use it; otherwise fall back to the
+  // simple interests list that was always there.
+  const profileSection = learnerContextString
+    ? learnerContextString
+    : interests.length > 0
+      ? `• Stated interests: ${interests.join(", ")}`
+      : "• No preference data yet — use everyday topics like food, travel, and daily routines.";
 
   return `You are ${persona.name}, a warm and encouraging ${persona.lang} language tutor. Your student's name is ${displayName}.
 
 STUDENT PROFILE
 - Name: ${displayName}
 - CEFR Level: ${cefrLevel}
-- ${interestLine}
+${profileSection}
+
+HOW TO USE THE PROFILE
+- Weave the student's interests, music taste, and recent story topics into the conversation naturally.
+- If they like a certain artist or genre, you can reference it in example sentences or small talk.
+- Avoid mentioning the same topic every single message — vary it so it feels organic, not scripted.
 
 LANGUAGE GUIDELINES
 - ${levelInstr}

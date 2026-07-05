@@ -8,8 +8,9 @@ import { GeneratedStorySchema } from "@/lib/stories/schema";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
 import { updateGenreInterest } from "@/app/actions/interests";
 import { generateQueuedStory } from "@/lib/stories/queue";
+import { getUserContext } from "@/lib/user-context";
 import type { GeneratedStory } from "@/lib/stories/schema";
-import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
+import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -31,33 +32,31 @@ export async function POST(request: Request) {
     // Body may be empty — that's fine.
   }
 
-  const [profileResult, interestsResult, genreResult] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("cefr_level, language")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("user_interests")
-      .select("topic")
-      .eq("user_id", user.id)
-      .order("weight", { ascending: false })
-      .limit(3),
-    supabase
-      .from("genre_interests")
-      .select("genre")
-      .eq("user_id", user.id)
-      .order("weight", { ascending: false })
-      .limit(2),
-  ]);
+  // Fetch profile first (we need language/level to call getUserContext).
+  const profileResult = await supabase
+    .from("profiles")
+    .select("display_name, cefr_level, language")
+    .eq("id", user.id)
+    .single();
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
   const language: Language = profileResult.data?.language ?? "es";
-  const topics: string[] =
-    interestsResult.data?.map((r: { topic: InterestTopic }) => r.topic) ?? [];
-  const topGenres: string[] = (genreResult.data ?? []).map(
-    (r: { genre: string }) => r.genre,
+  const displayName: string =
+    profileResult.data?.display_name ??
+    user.user_metadata?.display_name ??
+    "Learner";
+
+  // Assemble the full cross-app learner context (interests, music, recent topics).
+  const userCtx = await getUserContext(
+    supabase,
+    user.id,
+    language,
+    cefrLevel,
+    displayName,
   );
+
+  const topics = userCtx.explicitInterests;
+  const topGenres = userCtx.topBehavioralGenres.slice(0, 2);
 
   // ── Fast-path: serve a pre-queued story when no explicit topic is chosen ──
   // The queued story was silently pre-generated and personalised by the
@@ -95,6 +94,7 @@ export async function POST(request: Request) {
     selectedTopic ?? undefined,
     language,
     topGenres,
+    userCtx.contextString,
   );
 
   const google = createGoogleGenerativeAI({

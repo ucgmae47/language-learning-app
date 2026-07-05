@@ -9,6 +9,7 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { buildPersonalizedTopics } from "@/lib/stories/recommendation";
 import { generateChatStarters } from "@/lib/chat/generate-starters";
+import { getUserContext } from "@/lib/user-context";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
@@ -42,7 +43,16 @@ export async function generateAndQueueStarters(
     if (ageMs < REFRESH_INTERVAL_MS) return;
   }
 
-  // ── Build recommendation signals ──────────────────────────────────────────
+  // ── Build full cross-app learner context (includes music, stories, genres) ─
+  const userCtx = await getUserContext(
+    supabase,
+    userId,
+    language,
+    cefrLevel,
+    displayName,
+  );
+
+  // ── Build recommendation signals for genre-aware starters ─────────────────
   let hints;
   try {
     const { primaryGenre, interestTopics } = await buildPersonalizedTopics(
@@ -55,25 +65,14 @@ export async function generateAndQueueStarters(
     hints = undefined; // non-fatal: fall back to interest-only starters
   }
 
-  // ── Fetch user interests for the prompt ───────────────────────────────────
-  const { data: interestsData } = await supabase
-    .from("user_interests")
-    .select("topic")
-    .eq("user_id", userId)
-    .order("weight", { ascending: false })
-    .limit(3);
-
-  const interests = (interestsData ?? []).map(
-    (r: { topic: string }) => r.topic,
-  );
-
-  // ── Generate starters ─────────────────────────────────────────────────────
+  // ── Generate starters (enriched with full learner context) ────────────────
   const starters = await generateChatStarters(
     displayName,
     cefrLevel,
-    interests,
+    userCtx.explicitInterests,
     language,
     hints,
+    userCtx.contextString,
   );
 
   // ── Upsert (one row per user per language) ────────────────────────────────

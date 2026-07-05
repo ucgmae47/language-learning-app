@@ -3,7 +3,8 @@ import { streamText, createTextStreamResponse } from "ai";
 import type { ModelMessage } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { buildChatSystemPrompt } from "@/lib/chat/system-prompt";
-import type { CefrLevel, InterestTopic, Language } from "@/lib/supabase/types";
+import { getUserContext } from "@/lib/user-context";
+import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 function getModel() {
   const github = createOpenAI({
@@ -31,19 +32,13 @@ export async function POST(request: Request) {
     messages: ModelMessage[];
   };
 
-  const [profileResult, interestsResult] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("display_name, cefr_level, language")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("user_interests")
-      .select("topic")
-      .eq("user_id", user.id)
-      .order("weight", { ascending: false })
-      .limit(5),
-  ]);
+  // Fetch base profile to get language / level, then build the full learner
+  // context that aggregates all preference signals (interests, music, stories).
+  const profileResult = await supabase
+    .from("profiles")
+    .select("display_name, cefr_level, language")
+    .eq("id", user.id)
+    .single();
 
   const cefrLevel: CefrLevel = profileResult.data?.cefr_level ?? "B1";
   const language: Language = profileResult.data?.language ?? "es";
@@ -51,12 +46,22 @@ export async function POST(request: Request) {
     profileResult.data?.display_name ??
     user.user_metadata?.display_name ??
     "Learner";
-  const interests: string[] =
-    interestsResult.data?.map(
-      (r: { topic: InterestTopic }) => r.topic,
-    ) ?? [];
 
-  const systemPrompt = buildChatSystemPrompt(displayName, cefrLevel, interests, language);
+  const userCtx = await getUserContext(
+    supabase,
+    user.id,
+    language,
+    cefrLevel,
+    displayName,
+  );
+
+  const systemPrompt = buildChatSystemPrompt(
+    displayName,
+    cefrLevel,
+    userCtx.explicitInterests,
+    language,
+    userCtx.contextString,
+  );
 
   try {
     const result = streamText({

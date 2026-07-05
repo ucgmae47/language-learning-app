@@ -23,6 +23,8 @@ export function buildStoryPrompt(
   selectedTopic?: string,
   language: Language = "es",
   topGenres: string[] = [],
+  /** Optional: full learner context string from getUserContext() */
+  learnerContextString?: string,
 ): string {
   const langName = LANGUAGE_NAMES[language];
 
@@ -49,10 +51,16 @@ export function buildStoryPrompt(
     themeInstruction = `Weave the following topic(s) naturally into the narrative: ${topicList}.${genreHint}`;
   }
 
+  // Include the full learner profile when available so the story can naturally
+  // reference music artists, cultural interests, or recently explored topics.
+  const learnerSection = learnerContextString
+    ? `\n${learnerContextString}\nUse this profile as texture — let it influence character names, settings, and cultural details without forcing every item in.`
+    : "";
+
   const levelGuide = LEVEL_GUIDANCE[cefrLevel];
 
   return `You are an expert ${langName} language educator creating immersive reading material.
-
+${learnerSection}
 TASK
 Write an original short story in ${langName} and then produce a 5-question comprehension quiz in English.
 
