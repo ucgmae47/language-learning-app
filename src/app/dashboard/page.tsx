@@ -7,6 +7,7 @@ import { WordOfTheDay } from "@/components/dashboard/word-of-the-day";
 import { CefrAdaptBanner } from "@/components/dashboard/cefr-adapt-banner";
 import { SpinWheel } from "@/components/dashboard/spin-wheel";
 import { getWordForDate } from "@/lib/word-of-the-day/bank";
+import { isStoriesOnlyPreview } from "@/lib/features/preview-gate";
 import type { Language, Profile } from "@/lib/supabase/types";
 
 const LANG_META: Record<Language, { flag: string; label: string; assessmentHref: string }> = {
@@ -38,27 +39,29 @@ export default async function DashboardPage() {
 
   const activeLangMeta = LANG_META[language];
 
+  const storiesOnlyPreview = isStoriesOnlyPreview();
+
   return (
-    <div className="min-h-screen bg-[#07070f]">
-      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="min-h-screen overflow-x-hidden bg-[#07070f]">
+      <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 sm:py-10">
         {/* ── Stats row ────────────────────────────────────────────────── */}
-        <div className="mb-8 flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-3 rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/20 to-red-500/10 px-5 py-4 shadow-lg shadow-orange-500/10">
-            <Flame className="h-6 w-6 text-orange-400" aria-hidden="true" />
-            <div>
+        <div className="mb-6 flex flex-wrap items-center gap-3 sm:mb-8 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/20 to-red-500/10 px-4 py-3 shadow-lg shadow-orange-500/10 sm:flex-none sm:px-5 sm:py-4">
+            <Flame className="h-5 w-5 shrink-0 text-orange-400 sm:h-6 sm:w-6" aria-hidden="true" />
+            <div className="min-w-0">
               <p className="text-xs font-medium text-orange-300/70">Current streak</p>
-              <p className="text-2xl font-black text-white">
+              <p className="text-xl font-black text-white sm:text-2xl">
                 {profile?.streak_count ?? 0}
                 <span className="ml-1 text-sm font-medium text-orange-300/70">days</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
-            <BookOpen className="h-6 w-6 text-violet-400" aria-hidden="true" />
-            <div>
+          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 sm:flex-none sm:px-5 sm:py-4">
+            <BookOpen className="h-5 w-5 shrink-0 text-violet-400 sm:h-6 sm:w-6" aria-hidden="true" />
+            <div className="min-w-0">
               <p className="text-xs font-medium text-slate-400">Stories read</p>
-              <p className="text-2xl font-black text-white">
+              <p className="text-xl font-black text-white sm:text-2xl">
                 {profile?.stories_read ?? 0}
               </p>
             </div>
@@ -75,23 +78,23 @@ export default async function DashboardPage() {
         </div>
 
         {/* ── Spin Wheel section ───────────────────────────────────────── */}
-        <section aria-labelledby="wheel-heading" className="py-4">
-          <div className="mb-8 text-center">
+        <section aria-labelledby="wheel-heading" className="py-2 sm:py-4">
+          <div className="mb-6 text-center sm:mb-8">
             <h2
               id="wheel-heading"
-              className="text-3xl font-black tracking-tight text-white sm:text-4xl"
+              className="text-2xl font-black tracking-tight text-white sm:text-4xl"
             >
               What will you practice{" "}
               <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
                 today?
               </span>
             </h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Scroll, click the arrows, or spin for a random activity
+            <p className="mt-2 px-2 text-sm text-slate-500">
+              Use the arrows or spin for a random activity
             </p>
           </div>
 
-          <SpinWheel />
+          <SpinWheel storiesOnlyPreview={storiesOnlyPreview} />
         </section>
 
         {/* Retake assessment */}

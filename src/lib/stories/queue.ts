@@ -5,42 +5,106 @@
  * HTTP response has already been sent to the user).  It MUST use the service-
  * role Supabase client because request cookies are no longer available at that
  * point.
+ *
+ * A queued story is only left visible (`is_queued = true` with translations)
+ * when both the story and its translations succeed. Incomplete rows are deleted.
  */
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject, generateText } from "ai";
+import { generateObject } from "ai";
 import { createServiceClient } from "@/lib/supabase/service";
 import { buildStoryPrompt } from "@/lib/stories/prompt";
 import { GeneratedStorySchema } from "@/lib/stories/schema";
-import { allSentences, extractContentWords } from "@/lib/stories/utils";
 import { buildPersonalizedTopics } from "@/lib/stories/recommendation";
+import { withAiRetries } from "@/lib/stories/retry";
+import { generateStoryTranslations } from "@/lib/stories/translations";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 /**
  * Silently generates and stores a personalised story with `is_queued = true`
- * for the given user.  Does nothing if the user already has a queued story
- * (prevents double-generation when multiple requests fire in quick succession).
+ * for the given user.  Does nothing if the user already has a fully-ready
+ * queued story (unless `force` is true — then the old queued story is replaced).
  *
- * @param userId    Supabase user UUID
- * @param language  The user's currently active language ("es" | "fr")
- * @param cefrLevel The user's CEFR level
+ * A queued story without translations counts as "still preparing" and will be
+ * replaced / finished rather than blocking forever.
  */
 export async function generateQueuedStory(
   userId: string,
   language: Language,
   cefrLevel: CefrLevel,
+  options: { force?: boolean } = {},
 ): Promise<void> {
   const supabase = createServiceClient();
 
-  // ── Guard: skip if already queued ─────────────────────────────────────────
-  const { data: existing } = await supabase
-    .from("stories")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("is_queued", true)
-    .limit(1);
+  const STUCK_AFTER_MS = 5 * 60 * 1000;
 
-  if (existing && existing.length > 0) return;
+  if (options.force) {
+    await supabase
+      .from("stories")
+      .delete()
+      .eq("user_id", userId)
+      .eq("language", language)
+      .eq("is_queued", true);
+  } else {
+    // Ready queued story already waiting — nothing to do.
+    const { data: ready } = await supabase
+      .from("stories")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("language", language)
+      .eq("is_queued", true)
+      .not("sentence_translations", "is", null)
+      .limit(1);
+
+    if (ready && ready.length > 0) return;
+
+    // A preparing row means generation is in flight — or translations failed
+    // after the story body was saved. Try to finish translations quietly.
+    const { data: preparing } = await supabase
+      .from("stories")
+      .select("id, body, created_at")
+      .eq("user_id", userId)
+      .eq("language", language)
+      .eq("is_queued", true)
+      .is("sentence_translations", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ id: string; body: string; created_at: string }>();
+
+    if (preparing) {
+      const ageMs = Date.now() - new Date(preparing.created_at).getTime();
+      // Very fresh row: another worker is likely still generating translations.
+      if (ageMs < 45_000) return;
+
+      try {
+        const translations = await generateStoryTranslations(
+          preparing.body,
+          language,
+          "story-queue/finish-translations",
+        );
+        const { error: updateError } = await supabase
+          .from("stories")
+          .update({
+            sentence_translations: translations.sentences,
+            word_translations: translations.words,
+          })
+          .eq("id", preparing.id);
+
+        if (!updateError) return;
+        console.error(
+          "[story-queue] Failed to finish translations:",
+          updateError.message,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("[story-queue] Finish-translations failed:", msg);
+      }
+
+      // Only replace if clearly stuck so we don't thrash active work.
+      if (ageMs < STUCK_AFTER_MS) return;
+      await supabase.from("stories").delete().eq("id", preparing.id);
+    }
+  }
 
   // ── Build personalised topics ──────────────────────────────────────────────
   const { primaryGenre, secondaryGenre, interestTopics } =
@@ -50,8 +114,6 @@ export async function generateQueuedStory(
     ? [primaryGenre, secondaryGenre]
     : [primaryGenre];
 
-  // Use primaryGenre as the "selected topic" so the story is firmly centred on
-  // the recommendation engine's choice (not just a hint).
   const prompt = buildStoryPrompt(
     cefrLevel,
     interestTopics,
@@ -64,19 +126,26 @@ export async function generateQueuedStory(
     apiKey: process.env.GEMINI_API_KEY ?? "",
   });
 
-  // ── Generate story ─────────────────────────────────────────────────────────
   let storyId: string | null = null;
 
   try {
-    const { object } = await generateObject({
-      model: google("gemini-2.5-flash-lite"),
-      schema: GeneratedStorySchema,
-      prompt,
-      maxRetries: 0,
-    });
+    const object = await withAiRetries(
+      async () => {
+        const { object: generated } = await generateObject({
+          model: google("gemini-2.5-flash-lite"),
+          schema: GeneratedStorySchema,
+          prompt,
+          maxRetries: 0,
+        });
+        return generated;
+      },
+      { attempts: 5, label: "story-queue" },
+    );
 
     const wordCount = object.body.trim().split(/\s+/).length;
 
+    // Insert as preparing (queued, no translations yet). UI shows a spinner
+    // for this state and never offers "Read now" until translations land.
     const { data, error } = await supabase
       .from("stories")
       .insert({
@@ -84,6 +153,7 @@ export async function generateQueuedStory(
         title: object.title,
         body: object.body,
         cefr_level: cefrLevel,
+        language,
         topics: interestTopics,
         word_count: wordCount,
         quiz: object.quiz,
@@ -100,86 +170,30 @@ export async function generateQueuedStory(
     }
 
     storyId = data.id as string;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[story-queue] Story generation failed:", msg);
-    return;
-  }
 
-  // ── Pre-generate translations (non-fatal) ─────────────────────────────────
-  if (!storyId) return;
+    const translations = await generateStoryTranslations(
+      object.body,
+      language,
+      "story-queue/translations",
+    );
 
-  try {
-    const { data: saved } = await supabase
-      .from("stories")
-      .select("body")
-      .eq("id", storyId)
-      .single<{ body: string }>();
-
-    if (!saved) return;
-
-    const sentences = allSentences(saved.body);
-    const words = extractContentWords(saved.body);
-    const langName = language === "es" ? "Spanish" : "French";
-
-    const translationPrompt = `You are a professional ${langName}-to-English translator.
-
-Return ONLY a valid JSON object — no markdown fences, no extra text, nothing else.
-
-The JSON must have exactly this structure:
-{
-  "sentences": ["English translation of sentence 1", "English translation of sentence 2", ...],
-  "words": {
-    "word1": "1-3 word meaning",
-    "word2": "1-3 word meaning"
-  }
-}
-
-Rules:
-- "sentences" must be an array with EXACTLY ${sentences.length} items, one per sentence, in the same order.
-- "words" keys must be lowercase with no punctuation.
-- Word meanings must be 1-3 words, lowercase.
-
-Sentences to translate (in order):
-${sentences.map((s, i) => `${i + 1}. ${s}`).join("\n")}
-
-Words to translate:
-${words.join(", ")}`;
-
-    const { text: raw } = await generateText({
-      model: google("gemini-2.5-flash-lite"),
-      prompt: translationPrompt,
-      maxOutputTokens: 8192,
-    });
-
-    const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```\s*$/i, "")
-      .trim();
-
-    const parsed = JSON.parse(cleaned) as {
-      sentences: string[];
-      words: Record<string, string>;
-    };
-
-    const sentenceTranslations =
-      Array.isArray(parsed.sentences) &&
-      parsed.sentences.length === sentences.length
-        ? parsed.sentences
-        : null;
-
-    await supabase
+    const { error: updateError } = await supabase
       .from("stories")
       .update({
-        sentence_translations: sentenceTranslations,
-        word_translations:
-          parsed.words && typeof parsed.words === "object"
-            ? parsed.words
-            : null,
+        sentence_translations: translations.sentences,
+        word_translations: translations.words,
       })
       .eq("id", storyId);
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[story-queue] Translation pre-generation failed:", msg);
+    console.error("[story-queue] Generation failed:", msg);
+    if (storyId) {
+      // Never leave an incomplete story visible/accessible.
+      await supabase.from("stories").delete().eq("id", storyId);
+    }
   }
 }

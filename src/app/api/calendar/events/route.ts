@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const CalendarSchema = z.object({
   events: z.string().describe(
@@ -22,6 +23,9 @@ export type CalendarEvent = {
 };
 
 export async function GET(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const { searchParams } = new URL(request.url);
     const language = searchParams.get("language") ?? "es";

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { BookOpen, Zap } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, BookOpen, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { DrillSessionClient } from "@/components/drills/drill-session-client";
 import { QUESTIONS_ES } from "@/lib/drills/questions-es";
@@ -32,6 +33,11 @@ export default async function DrillsPage() {
 
   const language: Language = profileResult.data?.language ?? "es";
   const weaknesses: GrammarWeakness[] = (weaknessResult.data ?? []) as GrammarWeakness[];
+  const displayName =
+    profileResult.data?.display_name ??
+    user.user_metadata?.display_name ??
+    "Learner";
+  const cefrLevel = profileResult.data?.cefr_level ?? "B1";
 
   const questions = language === "es" ? QUESTIONS_ES : QUESTIONS_FR;
   const flag = language === "es" ? "🇪🇸" : "🇫🇷";
@@ -43,28 +49,44 @@ export default async function DrillsPage() {
     .slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-[#07070f]">
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 shadow-lg shadow-rose-500/30">
-            <BookOpen className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-white">
-              ⚡ Grammar Drills
-            </h1>
-            <p className="text-sm text-slate-400">
-              {flag} {langName} · powered by Groq AI
-            </p>
+    <div className="min-h-screen bg-[#07070f]">
+      <header className="sticky top-16 z-40 flex items-center justify-between border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Dashboard
+          </Link>
+
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-red-600 shadow-lg shadow-rose-500/30">
+              <BookOpen className="h-4 w-4 text-white" aria-hidden="true" />
+            </div>
+            <div>
+              <h1 className="text-lg font-extrabold leading-none text-white">
+                Grammar Drills
+              </h1>
+              <p className="text-xs text-slate-400">
+                {flag} {langName} · powered by Groq AI
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Weak areas banner */}
+        <div className="text-sm text-slate-400">
+          <span className="font-semibold text-rose-400">{cefrLevel}</span>
+          {" · "}
+          <span className="font-semibold text-slate-300">{displayName}</span>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-2xl px-4 py-8">
         {topWeak.length > 0 && (
           <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
             <div className="mb-2 flex items-center gap-2">
-              <Zap className="h-4 w-4 text-amber-400" />
+              <Zap className="h-4 w-4 text-amber-400" aria-hidden="true" />
               <p className="text-sm font-bold text-amber-300">Focus areas for you</p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -81,13 +103,12 @@ export default async function DrillsPage() {
           </div>
         )}
 
-        {/* Drill engine */}
         <DrillSessionClient
           language={language}
           questions={questions}
           weaknesses={weaknesses}
         />
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PlannerSchema = z.object({
   week_theme: z.string().describe(
@@ -21,6 +22,9 @@ const PlannerSchema = z.object({
 export type PlannerResult = z.infer<typeof PlannerSchema>;
 
 export async function POST(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const body = (await request.json()) as {
       language: string;

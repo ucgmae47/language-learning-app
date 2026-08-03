@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const MusicRecommendationSchema = z.object({
   title: z.string().describe("Song title"),
@@ -19,6 +20,9 @@ const MusicRecommendationSchema = z.object({
 export type MusicRecommendation = z.infer<typeof MusicRecommendationSchema>;
 
 export async function POST(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const body = await request.json() as {
       language: string;

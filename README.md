@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LinguaPath
 
-## Getting Started
+**Live demo:** [https://language-learning-app-vert-eight.vercel.app](https://language-learning-app-vert-eight.vercel.app)
 
-First, run the development server:
+Personalized Spanish & French learning app built with Next.js, Supabase, and AI-assisted features.
+
+## What’s live right now
+
+Soft launch focused on the **Story Library**:
+
+- Graded reading passages with tap-to-translate
+- CEFR filters (defaults to your level; All / multi-select available)
+- Other wheel features are temporarily locked to control AI costs
+
+Create an account on the live demo to try it.
+
+## Stack
+
+- **Next.js** (App Router)
+- **Supabase** (auth + Postgres)
+- **Vercel** hosting
+- AI providers (Gemini / others) for Premium-path features when enabled
+
+## Local development
 
 ```bash
+npm install
+cp .env.example .env.local
+# fill in Supabase + API keys
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Useful scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run seed:story-library      # seed free shared stories into Supabase
+npm run generate:story-library  # batch-generate more library stories (needs GEMINI_API_KEY)
+npm run generate:crosswords     # offline crossword bank generation
+```
 
-## Learn More
+### Soft-launch env flags
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.example` for:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `FREE_PREVIEW_STORIES_ONLY=true` — only Stories unlocked
+- `DISABLE_TTS=true` — ElevenLabs off
+- `ENABLE_PERSONAL_STORY_QUEUE=false` — no per-user AI story pre-generation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private / personal project unless otherwise noted.

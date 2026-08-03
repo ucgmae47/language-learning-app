@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const RecipeSchema = z.object({
   name: z.string().describe("Recipe name in the target language"),
@@ -26,6 +27,9 @@ const RecipeSchema = z.object({
 export type Recipe = z.infer<typeof RecipeSchema>;
 
 export async function POST(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const body = (await request.json()) as {
       language: string;

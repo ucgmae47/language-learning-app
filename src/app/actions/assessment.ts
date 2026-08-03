@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { schedulePresetRefresh } from "@/lib/personalization/refresh-presets";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 /**
@@ -12,6 +14,7 @@ import type { CefrLevel, Language } from "@/lib/supabase/types";
  * - Returns `hasInterests` so the client knows where to redirect:
  *   `false` → /onboarding/interests (first-time user)
  *   `true`  → /dashboard (returning user adding a second language)
+ * - When interests already exist, regenerates personalised story + chat starters.
  */
 export async function saveAssessmentResult(
   language: Language,
@@ -29,7 +32,12 @@ export async function saveAssessmentResult(
   const { error: lpError } = await supabase
     .from("language_profiles")
     .upsert(
-      { user_id: user.id, language, cefr_level: level },
+      {
+        user_id: user.id,
+        language,
+        cefr_level: level,
+        updated_at: new Date().toISOString(),
+      },
       { onConflict: "user_id,language" },
     );
 
@@ -48,11 +56,40 @@ export async function saveAssessmentResult(
   if (profileError) return { error: profileError.message };
 
   // 3. Check whether the user already has interests (determines redirect).
-  const { data: interests } = await supabase
-    .from("user_interests")
-    .select("id")
-    .eq("user_id", user.id)
-    .limit(1);
+  const [{ data: interests }, { data: profile }] = await Promise.all([
+    supabase
+      .from("user_interests")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1),
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .maybeSingle<{ display_name: string | null }>(),
+  ]);
 
-  return { hasInterests: (interests?.length ?? 0) > 0 };
+  const hasInterests = (interests?.length ?? 0) > 0;
+
+  // Returning users: refresh presets for the new level immediately.
+  // First-time users refresh after they pick interests.
+  if (hasInterests) {
+    schedulePresetRefresh({
+      userId: user.id,
+      language,
+      cefrLevel: level,
+      displayName:
+        profile?.display_name?.trim() ||
+        (user.user_metadata?.display_name as string | undefined)?.trim() ||
+        "Learner",
+    });
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard");
+  revalidatePath("/settings");
+  revalidatePath("/stories");
+  revalidatePath("/chat");
+
+  return { hasInterests };
 }

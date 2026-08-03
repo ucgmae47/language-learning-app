@@ -14,9 +14,11 @@ export type CurrentUser = {
 export type UseChatRoomReturn = {
   messages: ChatRoomMessage[];
   onlineCount: number;
-  send: (content: string) => Promise<void>;
+  send: (content: string) => Promise<boolean>;
   isSending: boolean;
   isConnected: boolean;
+  sendError: string | null;
+  clearSendError: () => void;
 };
 
 const RATE_LIMIT_MS = 2000;
@@ -30,6 +32,7 @@ export function useChatRoom(
   const [onlineCount, setOnlineCount] = useState(1);
   const [isSending, setIsSending] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const knownIds = useRef<Set<string>>(
     new Set(initialMessages.map((m) => m.id)),
@@ -86,22 +89,34 @@ export function useChatRoom(
   const send = useCallback(
     async (content: string) => {
       const trimmed = content.trim();
-      if (!trimmed || isSending) return;
+      if (!trimmed || isSending) return false;
 
       const now = Date.now();
-      if (now - lastSendTime.current < RATE_LIMIT_MS) return;
+      if (now - lastSendTime.current < RATE_LIMIT_MS) return false;
       lastSendTime.current = now;
 
       setIsSending(true);
+      setSendError(null);
       try {
         const client = createClient();
-        await client.from("chat_room_messages").insert({
+        const { error } = await client.from("chat_room_messages").insert({
           room_id: roomId,
           user_id: currentUser.id,
           display_name: currentUser.displayName,
           cefr_level: currentUser.cefrLevel,
           content: trimmed,
         });
+        if (error) {
+          console.error("[chat-room] send failed:", error.message);
+          setSendError("Message could not be sent. Please try again.");
+          return false;
+        }
+        return true;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Send failed";
+        console.error("[chat-room] send threw:", msg);
+        setSendError("Message could not be sent. Please try again.");
+        return false;
       } finally {
         setIsSending(false);
       }
@@ -109,5 +124,13 @@ export function useChatRoom(
     [isSending, roomId, currentUser],
   );
 
-  return { messages, onlineCount, send, isSending, isConnected };
+  return {
+    messages,
+    onlineCount,
+    send,
+    isSending,
+    isConnected,
+    sendError,
+    clearSendError: () => setSendError(null),
+  };
 }

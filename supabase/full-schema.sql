@@ -300,7 +300,8 @@ CREATE INDEX IF NOT EXISTS word_of_day_logs_user_id_idx ON word_of_day_logs(user
 -- ── stories ────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS stories (
   id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id               UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  -- Null for shared free-library catalog rows (is_library = TRUE).
+  user_id               UUID        REFERENCES auth.users(id) ON DELETE CASCADE,
   title                 TEXT        NOT NULL,
   body                  TEXT        NOT NULL,
   cefr_level            cefr_level  NOT NULL,
@@ -312,6 +313,10 @@ CREATE TABLE IF NOT EXISTS stories (
   word_translations     JSONB,
   -- added by story-queue-migration.sql
   is_queued             BOOLEAN     NOT NULL DEFAULT FALSE,
+  -- added by story-library-migration.sql
+  is_library            BOOLEAN     NOT NULL DEFAULT FALSE,
+  -- added by story-language-migration.sql
+  language              TEXT        NOT NULL DEFAULT 'es' CHECK (language IN ('es', 'fr')),
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -319,21 +324,36 @@ CREATE TABLE IF NOT EXISTS stories (
 ALTER TABLE stories ADD COLUMN IF NOT EXISTS sentence_translations JSONB;
 ALTER TABLE stories ADD COLUMN IF NOT EXISTS word_translations     JSONB;
 ALTER TABLE stories ADD COLUMN IF NOT EXISTS is_queued BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS is_library BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE stories ADD COLUMN IF NOT EXISTS language TEXT NOT NULL DEFAULT 'es' CHECK (language IN ('es', 'fr'));
+ALTER TABLE stories ALTER COLUMN user_id DROP NOT NULL;
+
+CREATE INDEX IF NOT EXISTS stories_user_language_queued_idx
+  ON stories (user_id, language, is_queued)
+  WHERE is_queued = TRUE;
+
+CREATE INDEX IF NOT EXISTS stories_library_lang_cefr_idx
+  ON stories (language, cefr_level, created_at DESC)
+  WHERE is_library = TRUE;
 
 ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Users can view their own stories"   ON stories;
+DROP POLICY IF EXISTS "Users can view own or library stories" ON stories;
 DROP POLICY IF EXISTS "Users can insert their own stories" ON stories;
 DROP POLICY IF EXISTS "Users can update their own stories" ON stories;
 
-CREATE POLICY "Users can view their own stories"
-  ON stories FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own or library stories"
+  ON stories FOR SELECT
+  USING (is_library = TRUE OR auth.uid() = user_id);
 CREATE POLICY "Users can insert their own stories"
-  ON stories FOR INSERT WITH CHECK (auth.uid() = user_id);
+  ON stories FOR INSERT
+  WITH CHECK (auth.uid() = user_id AND is_library = FALSE);
 -- Needed for translation backfill, is_queued toggling, and queue consumption.
 CREATE POLICY "Users can update their own stories"
   ON stories FOR UPDATE
-  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+  USING (auth.uid() = user_id AND is_library = FALSE)
+  WITH CHECK (auth.uid() = user_id AND is_library = FALSE);
 
 CREATE INDEX IF NOT EXISTS stories_user_id_created_at_idx
   ON stories(user_id, created_at DESC);
@@ -649,6 +669,43 @@ ALTER TABLE queued_chat_starters ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage own chat starters" ON queued_chat_starters;
 CREATE POLICY "Users manage own chat starters"
   ON queued_chat_starters FOR ALL
+  USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+
+-- ── idiom_daily_lessons ────────────────────────────────────────
+-- One daily idiom deck per user per language. Progress persists
+-- across visits; nightly cron prebuilds tomorrow for completers.
+CREATE TABLE IF NOT EXISTS idiom_daily_lessons (
+  id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  language        TEXT        NOT NULL CHECK (language IN ('es', 'fr')),
+  lesson_date     DATE        NOT NULL DEFAULT (CURRENT_DATE),
+  card_ids        TEXT[]      NOT NULL DEFAULT '{}',
+  current_idx     INTEGER     NOT NULL DEFAULT 0,
+  known_ids       TEXT[]      NOT NULL DEFAULT '{}',
+  review_ids      TEXT[]      NOT NULL DEFAULT '{}',
+  status          TEXT        NOT NULL DEFAULT 'studying'
+                              CHECK (status IN ('studying', 'quiz', 'completed')),
+  quiz_answers    JSONB       NOT NULL DEFAULT '{}',
+  quiz_score      INTEGER     CHECK (quiz_score IS NULL OR quiz_score BETWEEN 0 AND 100),
+  completed_at    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (user_id, language, lesson_date)
+);
+
+CREATE INDEX IF NOT EXISTS idiom_daily_lessons_user_date_idx
+  ON idiom_daily_lessons (user_id, lesson_date DESC);
+
+CREATE INDEX IF NOT EXISTS idiom_daily_lessons_completed_date_idx
+  ON idiom_daily_lessons (lesson_date, status)
+  WHERE status = 'completed';
+
+ALTER TABLE idiom_daily_lessons ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users manage own idiom lessons" ON idiom_daily_lessons;
+CREATE POLICY "Users manage own idiom lessons"
+  ON idiom_daily_lessons FOR ALL
   USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 

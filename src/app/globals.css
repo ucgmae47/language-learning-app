@@ -72,11 +72,11 @@ html {
   animation: spin-pulse 0.15s ease-in-out infinite;
 }
 
-/* Story reader — sentence slide transitions */
-@keyframes story-slide-up {
+/* Story reader */
+@keyframes story-slide-in {
   from {
     opacity: 0;
-    transform: translateY(2.5rem);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -84,21 +84,34 @@ html {
   }
 }
 
-@keyframes story-slide-down {
+@keyframes story-translation-in {
   from {
     opacity: 0;
-    transform: translateY(-2.5rem);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.story-slide-up {
-  animation: story-slide-up 0.4s ease-out both;
+@keyframes story-end-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.story-slide-down {
-  animation: story-slide-down 0.4s ease-out both;
+.story-slide-in {
+  animation: story-slide-in 0.35s ease-out both;
+}
+
+.story-translation-in {
+  animation: story-translation-in 0.5s ease-out 0.1s both;
+}
+
+.story-end-fade {
+  animation: story-end-fade 0.4s ease-out both;
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Loader2, Mic, MicOff, Volume2, CheckCircle } from "lucide-react";
+import { Loader2, Mic, MicOff, Volume2, VolumeX, CheckCircle } from "lucide-react";
+import { useTts } from "@/hooks/use-tts";
 import type { Language } from "@/lib/supabase/types";
 
 type PronunciationEval = {
@@ -87,6 +88,14 @@ function scoreColor(score: number) {
 export function PronunciationClient({ language }: Props) {
   const presets = PRESET_PHRASES[language];
   const voiceLang = LANG_VOICE[language];
+  const {
+    speak,
+    stopSpeaking,
+    isSpeaking,
+    isLoading: ttsLoading,
+    ttsError,
+    clearTtsError,
+  } = useTts({ lang: voiceLang });
 
   const [customPhrase, setCustomPhrase] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -101,11 +110,11 @@ export function PronunciationClient({ language }: Props) {
 
   function hearPhrase() {
     if (!targetPhrase) return;
-    window.speechSynthesis?.cancel();
-    const utt = new SpeechSynthesisUtterance(targetPhrase);
-    utt.lang = voiceLang;
-    utt.rate = 0.8;
-    window.speechSynthesis?.speak(utt);
+    if (isSpeaking || ttsLoading) {
+      stopSpeaking();
+      return;
+    }
+    void speak(targetPhrase);
   }
 
   function startRecording() {
@@ -230,9 +239,29 @@ export function PronunciationClient({ language }: Props) {
             type="button"
             onClick={hearPhrase}
             aria-label="Hear phrase"
-            className="shrink-0 flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
           >
-            <Volume2 className="h-5 w-5" aria-hidden="true" />
+            {ttsLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+            ) : isSpeaking ? (
+              <VolumeX className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Volume2 className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      )}
+
+      {ttsError && (
+        <div className="flex items-start justify-between gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+          <p>{ttsError}</p>
+          <button
+            type="button"
+            onClick={clearTtsError}
+            className="shrink-0 text-amber-400 hover:text-amber-200"
+            aria-label="Dismiss"
+          >
+            ×
           </button>
         </div>
       )}

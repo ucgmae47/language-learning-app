@@ -76,6 +76,19 @@ export function getCountryByNumericId(
   return map[id] ?? null;
 }
 
+/** Look up a country by ISO alpha-2 code within the language's map. */
+export function getCountryByAlpha2(
+  alpha2: string,
+  language: Language,
+): CountryEntry | null {
+  const map = getCountriesForLanguage(language);
+  const upper = alpha2.toUpperCase();
+  for (const entry of Object.values(map)) {
+    if (entry.alpha2 === upper) return entry;
+  }
+  return null;
+}
+
 export const LANGUAGE_META: Record<
   Language,
   { name: string; flag: string; langName: string; accent: string; count: number }

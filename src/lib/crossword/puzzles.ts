@@ -201,8 +201,24 @@ const FR_3: CrosswordPuzzle = {
 // Exports
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PUZZLES_ES: CrosswordPuzzle[] = [ES_1, ES_2, ES_3];
-const PUZZLES_FR: CrosswordPuzzle[] = [FR_1, FR_2, FR_3];
+import {
+  GENERATED_PUZZLES_ES,
+  GENERATED_PUZZLES_FR,
+} from "@/lib/crossword/generated";
+
+const LEGACY_ES: CrosswordPuzzle[] = [ES_1, ES_2, ES_3];
+const LEGACY_FR: CrosswordPuzzle[] = [FR_1, FR_2, FR_3];
+
+/** Prefer the generated bank when large enough; legacy puzzles fill in as fallback. */
+const PUZZLES_ES: CrosswordPuzzle[] =
+  GENERATED_PUZZLES_ES.length >= 10
+    ? GENERATED_PUZZLES_ES
+    : [...LEGACY_ES, ...GENERATED_PUZZLES_ES];
+
+const PUZZLES_FR: CrosswordPuzzle[] =
+  GENERATED_PUZZLES_FR.length >= 10
+    ? GENERATED_PUZZLES_FR
+    : [...LEGACY_FR, ...GENERATED_PUZZLES_FR];
 
 /**
  * Returns today's puzzle for the given language deterministically.

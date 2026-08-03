@@ -114,6 +114,7 @@ The JSON must have exactly this structure:
 Rules:
 - "sentences" must be an array with EXACTLY ${sentences.length} items, one per sentence, in the same order.
 - "words" keys must be lowercase with no punctuation.
+- Include EVERY listed word, including short words and articles (el, la, un, a, y, de, etc.).
 - Word meanings must be 1-3 words, lowercase.
 
 Sentences to translate (in order):

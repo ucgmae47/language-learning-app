@@ -1,11 +1,18 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, BookOpen, Clock } from "lucide-react";
+import { after } from "next/server";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { StoryGenerator } from "@/components/stories/story-generator";
-import { BackfillButton } from "@/components/stories/backfill-button";
-import type { Story } from "@/lib/supabase/types";
+import {
+  StoryLibraryClient,
+  type LibraryStoryCard,
+} from "@/components/stories/story-library-client";
+import { generateQueuedStory } from "@/lib/stories/queue";
+import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enabled";
+import type { CefrLevel, Language, Story } from "@/lib/supabase/types";
 
 type QueuedStory = Pick<Story, "id" | "title" | "topics">;
 
@@ -15,6 +22,7 @@ export const metadata: Metadata = {
 
 export default async function StoriesPage() {
   const supabase = await createClient();
+  const personalQueue = isPersonalStoryQueueEnabled();
 
   const {
     data: { user },
@@ -22,126 +30,110 @@ export default async function StoriesPage() {
 
   if (!user) redirect("/login");
 
-  // Fetch the queued story (if any), the published story list, and a count of
-  // stories that are missing translations (for the backfill banner).
-  const [{ data: stories }, { data: queuedStory }, { count: missingCount }] =
-    await Promise.all([
-      supabase
-        .from("stories")
-        .select("id, title, cefr_level, topics, word_count, created_at")
-        .eq("user_id", user.id)
-        .eq("is_queued", false)
-        .order("created_at", { ascending: false })
-        .limit(20)
-        .returns<
-          Pick<
-            Story,
-            | "id"
-            | "title"
-            | "cefr_level"
-            | "topics"
-            | "word_count"
-            | "created_at"
-          >[]
-        >(),
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("language, cefr_level")
+    .eq("id", user.id)
+    .single<{ language: Language; cefr_level: CefrLevel }>();
 
+  const language: Language = profile?.language ?? "es";
+  const cefrLevel: CefrLevel = profile?.cefr_level ?? "B1";
+
+  const { data: libraryStories } = await supabase
+    .from("stories")
+    .select("id, title, cefr_level, topics, word_count, created_at")
+    .eq("is_library", true)
+    .eq("language", language)
+    .eq("is_queued", false)
+    .not("sentence_translations", "is", null)
+    .order("cefr_level", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(100)
+    .returns<LibraryStoryCard[]>();
+
+  let queuedReady: QueuedStory | null = null;
+  let isPreparingNext = false;
+
+  if (personalQueue) {
+    const [{ data: ready }, { data: preparing }] = await Promise.all([
       supabase
         .from("stories")
         .select("id, title, topics")
         .eq("user_id", user.id)
+        .eq("language", language)
         .eq("is_queued", true)
+        .not("sentence_translations", "is", null)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle<QueuedStory>(),
-
       supabase
         .from("stories")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("user_id", user.id)
-        .eq("is_queued", false)
-        .is("sentence_translations", null),
+        .eq("language", language)
+        .eq("is_queued", true)
+        .is("sentence_translations", null)
+        .limit(1)
+        .maybeSingle<{ id: string }>(),
     ]);
 
+    queuedReady = ready ?? null;
+    isPreparingNext = !queuedReady && !!preparing;
+
+    if (!queuedReady) {
+      after(async () => {
+        await generateQueuedStory(user.id, language, cefrLevel);
+      });
+    }
+
+    after(async () => {
+      const service = createServiceClient();
+      await service
+        .from("stories")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("is_queued", false)
+        .eq("is_library", false)
+        .is("sentence_translations", null);
+    });
+  }
+
+  const stories = libraryStories ?? [];
+
   return (
-    <div className="min-h-screen bg-[#07070f] px-4 py-10 sm:px-6">
+    <div className="min-h-screen overflow-x-hidden bg-[#07070f] px-3 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-3xl">
         <Link
           href="/dashboard"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-white sm:mb-8"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to dashboard
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-white">📖 Your Stories</h1>
-          <p className="mb-6 mt-1 text-sm text-slate-400">
-            AI-generated reading passages personalised to your level and interests.
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl font-black text-white sm:text-3xl">📖 Story Library</h1>
+          <p className="mb-4 mt-1 text-sm text-slate-400 sm:mb-6">
+            Graded reading passages — filter by CEFR level. Defaults to your level (
+            {cefrLevel}).
           </p>
-          <StoryGenerator queuedStory={queuedStory ?? null} />
+          {personalQueue ? (
+            <StoryGenerator
+              queuedStory={queuedReady}
+              isPreparingNext={isPreparingNext}
+            />
+          ) : (
+            <div className="flex items-start gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-sm text-violet-200">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>
+                Personalized AI stories are coming with Premium. Browse the shared library
+                for now — tap <span className="font-semibold">All</span> to see every level.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Banner only shown when stories are missing hover translations */}
-        {(missingCount ?? 0) > 0 && (
-          <BackfillButton count={missingCount ?? 0} />
-        )}
-
-        {!stories || stories.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
-            <BookOpen className="mx-auto h-10 w-10 text-slate-600" />
-            <p className="mt-4 font-bold text-slate-300">No stories yet</p>
-            <p className="mt-1 text-sm text-slate-500">
-              Hit &ldquo;Generate new story&rdquo; to create your first personalised passage.
-            </p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {stories.map((story) => {
-              const date = new Date(story.created_at).toLocaleDateString(
-                "en-US",
-                { month: "short", day: "numeric", year: "numeric" },
-              );
-              const readingMins = story.word_count
-                ? Math.max(1, Math.round(story.word_count / 180))
-                : null;
-
-              return (
-                <li key={story.id}>
-                  <Link
-                    href={`/stories/${story.id}`}
-                    className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/5 p-5 transition hover:-translate-y-0.5 hover:border-violet-500/30 hover:bg-white/8 hover:shadow-lg hover:shadow-violet-500/10"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-bold text-white">
-                        {story.title}
-                      </p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <span className="rounded-lg bg-violet-500/20 px-2 py-0.5 text-xs font-bold text-violet-300">
-                          {story.cefr_level}
-                        </span>
-                        {story.topics.slice(0, 2).map((t) => (
-                          <span
-                            key={t}
-                            className="rounded-lg border border-white/8 bg-white/5 px-2 py-0.5 text-xs text-slate-400 capitalize"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                        {readingMins && (
-                          <span className="flex items-center gap-1 text-xs text-slate-500">
-                            <Clock className="h-3 w-3" />
-                            {readingMins} min read
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <span className="shrink-0 text-xs text-slate-500">{date}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <StoryLibraryClient stories={stories} userCefrLevel={cefrLevel} />
       </div>
     </div>
   );

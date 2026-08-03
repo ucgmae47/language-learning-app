@@ -2,8 +2,12 @@
 
 import { useReducer, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, ChevronRight, Loader2 } from "lucide-react";
-import { calculateCefrLevel, LEVEL_DESCRIPTIONS } from "@/lib/assessment/questions";
+import { CheckCircle, ChevronRight, Flag, HelpCircle, Loader2 } from "lucide-react";
+import {
+  calculateCefrLevel,
+  LEVEL_DESCRIPTIONS,
+  NOT_SURE,
+} from "@/lib/assessment/questions";
 import type { Question } from "@/lib/assessment/questions";
 import { saveAssessmentResult } from "@/app/actions/assessment";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
@@ -48,10 +52,13 @@ function quizReducer(state: QuizState, action: QuizAction): QuizState {
   }
 }
 
-const BAND_LABELS: Record<string, string> = {
+const BAND_LABELS: Record<CefrLevel, string> = {
+  A1: "Beginner",
   A2: "Elementary",
   B1: "Intermediate",
   B2: "Upper-Intermediate",
+  C1: "Advanced",
+  C2: "Mastery",
 };
 
 const RESULT_COLORS: Record<CefrLevel, string> = {
@@ -75,6 +82,17 @@ type Props = {
   isAuthenticated: boolean;
 };
 
+function fillUnansweredAsNotSure(
+  answers: Record<number, string>,
+  questions: Question[],
+): Record<number, string> {
+  const filled = { ...answers };
+  for (const q of questions) {
+    if (!filled[q.id]) filled[q.id] = NOT_SURE;
+  }
+  return filled;
+}
+
 export function QuizClient({ questions, language, isAuthenticated }: Props) {
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const [, startTransition] = useTransition();
@@ -83,7 +101,8 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
   const question = questions[state.currentIndex];
   const isLast = state.currentIndex === questions.length - 1;
   const selectedAnswer = question ? state.answers[question.id] : undefined;
-  const progress = (state.currentIndex / questions.length) * 100;
+  const progress = ((state.currentIndex + (selectedAnswer ? 1 : 0)) / questions.length) * 100;
+  const canFinishEarly = state.currentIndex > 0 || !!selectedAnswer;
 
   function handleSelect(value: string) {
     if (!question || state.phase !== "quiz") return;
@@ -93,28 +112,30 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
   function handleNext() {
     if (!selectedAnswer) return;
     if (isLast) {
-      handleSubmit();
+      handleSubmit(state.answers);
     } else {
       dispatch({ type: "NEXT" });
     }
   }
 
-  function handleSubmit() {
-    const level = calculateCefrLevel(state.answers, questions);
+  function handleFinishEarly() {
+    if (!canFinishEarly || state.phase !== "quiz") return;
+    const filled = fillUnansweredAsNotSure(state.answers, questions);
+    handleSubmit(filled);
+  }
+
+  function handleSubmit(answers: Record<number, string>) {
+    const level = calculateCefrLevel(answers, questions);
     dispatch({ type: "SUBMIT_START" });
 
     if (!isAuthenticated) {
-      // Unauthenticated path: encode result in the signup URL so the server
-      // action can apply it after account creation, then redirect.
       dispatch({ type: "SUBMIT_DONE", result: level });
       setTimeout(() => {
-        // Format: /signup?assessment=es:B1
         router.push(`/signup?assessment=${language}:${level}`);
       }, 3500);
       return;
     }
 
-    // Authenticated path: save directly (returning user adding a language).
     startTransition(async () => {
       const { error, hasInterests } = await saveAssessmentResult(language, level);
       if (error) {
@@ -123,6 +144,7 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
         dispatch({ type: "SUBMIT_DONE", result: level });
         setTimeout(() => {
           router.push(hasInterests ? "/dashboard" : "/onboarding/interests");
+          router.refresh();
         }, 3500);
       }
     });
@@ -132,7 +154,7 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
         <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
-        <p className="text-slate-600">Calculating your level…</p>
+        <p className="text-slate-400">Calculating your level…</p>
       </div>
     );
   }
@@ -175,6 +197,7 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
   if (!question) return null;
 
   const bandLabel = BAND_LABELS[question.band] ?? question.band;
+  const isNotSureSelected = selectedAnswer === NOT_SURE;
 
   return (
     <div className="mx-auto max-w-xl">
@@ -184,20 +207,20 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
           <span>
             Question {state.currentIndex + 1} of {questions.length}
           </span>
-          <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 font-medium">
-            {bandLabel}
+          <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-medium text-slate-300">
+            {question.band} · {bandLabel}
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-2 overflow-hidden rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
+            style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
       </div>
 
       {/* Question card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-white/10 bg-white p-6 shadow-sm">
         <p className="text-base font-medium leading-7 text-slate-900">
           {question.prompt}
         </p>
@@ -232,6 +255,31 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
               </li>
             );
           })}
+
+          <li>
+            <button
+              type="button"
+              onClick={() => handleSelect(NOT_SURE)}
+              className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition
+                ${
+                  isNotSureSelected
+                    ? "border-slate-400 bg-slate-100 text-slate-800 ring-2 ring-slate-400/20"
+                    : "border-dashed border-slate-300 bg-slate-50 text-slate-600 hover:border-slate-400 hover:bg-slate-100"
+                }`}
+            >
+              <span
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs
+                  ${isNotSureSelected ? "border-slate-500 bg-slate-500 text-white" : "border-slate-300 text-slate-400"}`}
+              >
+                {isNotSureSelected ? (
+                  <CheckCircle className="h-4 w-4" />
+                ) : (
+                  <HelpCircle className="h-3.5 w-3.5" />
+                )}
+              </span>
+              Not sure
+            </button>
+          </li>
         </ul>
 
         {state.error && (
@@ -249,7 +297,22 @@ export function QuizClient({ questions, language, isAuthenticated }: Props) {
           {isLast ? "See my result" : "Next question"}
           <ChevronRight className="h-4 w-4" aria-hidden="true" />
         </button>
+
+        {canFinishEarly && !isLast && (
+          <button
+            type="button"
+            onClick={handleFinishEarly}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white py-2.5 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800"
+          >
+            <Flag className="h-3.5 w-3.5" aria-hidden="true" />
+            Too hard — finish now &amp; see my level
+          </button>
+        )}
       </div>
+
+      <p className="mt-3 text-center text-xs text-slate-500">
+        Prefer &ldquo;Not sure&rdquo; over guessing — lucky guesses can inflate your level.
+      </p>
     </div>
   );
 }

@@ -22,14 +22,13 @@ export default async function StoryQuizPage({ params }: Props) {
 
   const { data: story } = await supabase
     .from("stories")
-    .select("id, title, quiz")
+    .select("id, title, quiz, user_id, is_library")
     .eq("id", id)
-    .eq("user_id", user.id)
-    .single<Pick<Story, "id" | "title" | "quiz">>();
+    .single<Pick<Story, "id" | "title" | "quiz" | "user_id" | "is_library">>();
 
   if (!story) notFound();
+  if (!story.is_library && story.user_id !== user.id) notFound();
 
-  // If already attempted, redirect back to the story reader.
   const { data: attempt } = await supabase
     .from("story_attempts")
     .select("id")
@@ -40,19 +39,19 @@ export default async function StoryQuizPage({ params }: Props) {
   if (attempt) redirect(`/stories/${id}`);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6">
-      <div className="mx-auto max-w-xl">
+    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-[#08080e] px-4 py-8 sm:px-6">
+      <div className="mx-auto w-full max-w-xl">
         <Link
           href={`/stories/${id}`}
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-slate-800"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-slate-500 transition hover:text-slate-200"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to story
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">Comprehension Quiz</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-bold text-slate-100">Comprehension Quiz</h1>
+          <p className="mt-1 text-sm text-slate-500">
             &ldquo;{story.title}&rdquo; · {story.quiz.length} questions
           </p>
         </div>

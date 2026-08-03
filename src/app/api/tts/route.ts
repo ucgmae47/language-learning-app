@@ -3,34 +3,74 @@
  *
  * Accepts { text, lang } in the request body, selects the right voice,
  * calls the ElevenLabs streaming endpoint, and pipes the MP3 bytes back to
- * the client.  Falls back cleanly with a 503 JSON error so the hook can
- * use browser speechSynthesis instead.
+ * the client. Requires an authenticated user. Set DISABLE_TTS=true to hard-off
+ * the route (recommended until Premium is live).
  *
  * Voice IDs can be overridden via env vars without code changes:
  *   ELEVENLABS_VOICE_ES  — Spanish tutor voice (default: Rachel)
  *   ELEVENLABS_VOICE_FR  — French tutor voice  (default: Rachel)
- *
- * The eleven_multilingual_v2 model speaks any language with any voice,
- * so the same voice ID works for both Spanish and French if you prefer.
  */
 
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
+
 // Rachel — warm, clear, works beautifully with eleven_multilingual_v2.
-// Users can swap this to any voice from their ElevenLabs account via env vars:
-//   ELEVENLABS_VOICE_ES  — voice ID for Spanish
-//   ELEVENLABS_VOICE_FR  — voice ID for French
 const DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM";
 
+/** Soft cap to stop a single request from burning the ElevenLabs quota. */
+const MAX_TTS_CHARS = 2_500;
+
+function classifyElevenLabsFailure(
+  status: number,
+  detail: string,
+): { code: string; httpStatus: number } {
+  let parsedCode: string | undefined;
+  try {
+    const parsed = JSON.parse(detail) as {
+      detail?: { code?: string; message?: string; status?: string };
+    };
+    parsedCode = parsed.detail?.code ?? parsed.detail?.status;
+  } catch {
+    // detail may be plain text
+  }
+
+  const haystack = `${parsedCode ?? ""} ${detail}`;
+  if (
+    status === 429 ||
+    /rate.?limit|quota_exceeded|too many requests/i.test(haystack)
+  ) {
+    return { code: "rate_limit", httpStatus: 429 };
+  }
+
+  if (parsedCode) return { code: parsedCode, httpStatus: status || 503 };
+  return { code: "tts_unavailable", httpStatus: status || 503 };
+}
+
 export async function POST(request: Request) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
+  if (process.env.DISABLE_TTS === "true") {
+    return new Response(
+      JSON.stringify({
+        error: "TTS is temporarily disabled.",
+        code: "tts_disabled",
+      }),
+      { status: 503, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const apiKey = process.env.ELEVENLABS_API_KEY;
 
-  // Read voice IDs inside the handler so they're always fresh (no module-level caching).
   const VOICE_BY_LANG: Record<string, string> = {
     es: process.env.ELEVENLABS_VOICE_ES ?? DEFAULT_VOICE_ID,
     fr: process.env.ELEVENLABS_VOICE_FR ?? DEFAULT_VOICE_ID,
   };
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "ELEVENLABS_API_KEY is not configured." }),
+      JSON.stringify({
+        error: "ELEVENLABS_API_KEY is not configured.",
+        code: "tts_unavailable",
+      }),
       { status: 503, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -55,9 +95,18 @@ export async function POST(request: Request) {
     });
   }
 
+  if (text.length > MAX_TTS_CHARS) {
+    return new Response(
+      JSON.stringify({
+        error: `Text exceeds ${MAX_TTS_CHARS} character limit.`,
+        code: "tts_too_long",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const voiceId = VOICE_BY_LANG[lang] ?? DEFAULT_VOICE_ID;
 
-  // output_format must be a query param, not a body field.
   const elRes = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?output_format=mp3_44100_128`,
     {
@@ -88,28 +137,21 @@ export async function POST(request: Request) {
       ? await elRes.text().catch(() => elRes.statusText)
       : "network error";
 
-    let code = "tts_unavailable";
-    try {
-      const parsed = JSON.parse(detail) as {
-        detail?: { code?: string; message?: string };
-      };
-      if (parsed.detail?.code) code = parsed.detail.code;
-    } catch {
-      // detail may be plain text
-    }
+    const { code, httpStatus } = classifyElevenLabsFailure(
+      elRes?.status ?? 0,
+      detail,
+    );
 
     console.error("[tts] ElevenLabs error:", detail);
     return new Response(
       JSON.stringify({ error: "TTS service unavailable.", code, detail }),
-      { status: 503, headers: { "Content-Type": "application/json" } },
+      { status: httpStatus, headers: { "Content-Type": "application/json" } },
     );
   }
 
-  // Pipe the ElevenLabs audio stream directly back to the client.
   return new Response(elRes.body, {
     headers: {
       "Content-Type": "audio/mpeg",
-      // Prevent the browser from caching TTS audio across sessions.
       "Cache-Control": "no-store",
     },
   });

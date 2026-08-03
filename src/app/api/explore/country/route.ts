@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { getCountryByAlpha2 } from "@/lib/explore/country-data";
+import type { Language } from "@/lib/supabase/types";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const CountryFactsSchema = z.object({
   fun_facts: z
@@ -44,55 +47,96 @@ export type CountryInfoResponse = {
   facts: CountryFacts;
 };
 
+type V5Country = {
+  names?: { common?: string };
+  codes?: { alpha_2?: string };
+  capital?: string[];
+  population?: number;
+  region?: string;
+  subregion?: string;
+  flag?: { emoji?: string };
+};
+
+function staticFallback(
+  alpha2: string,
+  name: string,
+  language: Language,
+): RestCountry {
+  const entry = getCountryByAlpha2(alpha2, language);
+  return {
+    name: entry?.name ?? name,
+    capital: "—",
+    population: 0,
+    region: "—",
+    subregion: "—",
+    flag: entry?.flag ?? "",
+    alpha2,
+  };
+}
+
+async function fetchRestCountry(
+  alpha2: string,
+  name: string,
+  language: Language,
+): Promise<RestCountry> {
+  const fallback = staticFallback(alpha2, name, language);
+  const apiKey = process.env.REST_COUNTRIES_API_KEY;
+
+  if (!apiKey) return fallback;
+
+  try {
+    const url = new URL("https://api.restcountries.com/countries/v5/code");
+    url.searchParams.set("q", alpha2);
+    url.searchParams.set(
+      "response_fields",
+      "names.common,capital,population,region,subregion,flag.emoji,codes.alpha_2",
+    );
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 86400 },
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!res.ok) {
+      console.warn("[explore/country] REST Countries v5 error:", res.status);
+      return fallback;
+    }
+
+    const json = (await res.json()) as { data?: V5Country[] };
+    const item = json.data?.[0];
+    if (!item) return fallback;
+
+    return {
+      name: item.names?.common ?? fallback.name,
+      capital: item.capital?.[0] ?? "—",
+      population: item.population ?? 0,
+      region: item.region ?? "—",
+      subregion: item.subregion ?? "—",
+      flag: item.flag?.emoji ?? fallback.flag,
+      alpha2: item.codes?.alpha_2 ?? alpha2,
+    };
+  } catch (err) {
+    console.warn("[explore/country] REST Countries fetch failed:", err);
+    return fallback;
+  }
+}
+
 export async function GET(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   const { searchParams } = new URL(request.url);
   const alpha2 = searchParams.get("alpha2");
   const name = searchParams.get("name");
-  const language = (searchParams.get("language") ?? "es") as "es" | "fr";
+  const language = (searchParams.get("language") ?? "es") as Language;
 
   if (!alpha2 || !name) {
     return NextResponse.json({ error: "Missing alpha2 or name" }, { status: 400 });
   }
 
   try {
-    // ── 1. REST Countries API ─────────────────────────────────────────────────
-    const restRes = await fetch(
-      `https://restcountries.com/v3.1/alpha/${alpha2}?fields=name,capital,population,region,subregion,flag`,
-      { next: { revalidate: 86400 } },
-    );
+    const restCountry = await fetchRestCountry(alpha2, name, language);
 
-    let restCountry: RestCountry;
-    if (restRes.ok) {
-      const data = await restRes.json() as {
-        name?: { common?: string };
-        capital?: string[];
-        population?: number;
-        region?: string;
-        subregion?: string;
-        flag?: string;
-      };
-      restCountry = {
-        name: data.name?.common ?? name,
-        capital: data.capital?.[0] ?? "—",
-        population: data.population ?? 0,
-        region: data.region ?? "—",
-        subregion: data.subregion ?? "—",
-        flag: data.flag ?? "",
-        alpha2,
-      };
-    } else {
-      restCountry = {
-        name,
-        capital: "—",
-        population: 0,
-        region: "—",
-        subregion: "—",
-        flag: "",
-        alpha2,
-      };
-    }
-
-    // ── 2. Gemini — cultural facts ────────────────────────────────────────────
     const langName = language === "es" ? "Spanish" : "French";
     const prompt = `You are a cultural guide writing for language learners.
 Country: ${name} (${alpha2})

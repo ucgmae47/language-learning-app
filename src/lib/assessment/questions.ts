@@ -270,9 +270,28 @@ export const QUESTIONS_ES: Question[] = [
   },
 ];
 
+/** Sentinel answer value for "Not sure" — never matches a correct key. */
+export const NOT_SURE = "NS";
+
+/**
+ * True when the learner got at least `numerator/denominator` of a band right.
+ * Uses integer arithmetic so a 3-question band with 2 correct passes a 2/3
+ * threshold (2/3 ≈ 0.666… used to fail a float compare against 0.67).
+ */
+function bandMeets(
+  correct: number,
+  total: number,
+  numerator: number,
+  denominator: number,
+): boolean {
+  if (total <= 0) return false;
+  return correct * denominator >= total * numerator;
+}
+
 /**
  * Calculate CEFR level from a set of answered questions.
- * Works for any question bank that uses the A2/B1/B2 band structure.
+ * Unanswered questions and "Not sure" count as incorrect.
+ * Works for any question bank that uses the A1–C2 band structure.
  */
 export function calculateCefrLevel(
   answers: Record<number, string>,
@@ -288,7 +307,7 @@ export function calculateCefrLevel(
 
   for (const q of questions) {
     const given = answers[q.id];
-    if (given === q.correct) {
+    if (given && given !== NOT_SURE && given === q.correct) {
       correct++;
       if (q.band === "A1") a1Correct++;
       else if (q.band === "A2") a2Correct++;
@@ -306,20 +325,28 @@ export function calculateCefrLevel(
   const c1Total = questions.filter((q) => q.band === "C1").length;
   const c2Total = questions.filter((q) => q.band === "C2").length;
 
-  const a1Pct = a1Total > 0 ? a1Correct / a1Total : 0;
-  const a2Pct = a2Total > 0 ? a2Correct / a2Total : 0;
-  const b1Pct = b1Total > 0 ? b1Correct / b1Total : 0;
-  const b2Pct = b2Total > 0 ? b2Correct / b2Total : 0;
-  const c1Pct = c1Total > 0 ? c1Correct / c1Total : 0;
-  const c2Pct = c2Total > 0 ? c2Correct / c2Total : 0;
   const overall = questions.length > 0 ? correct / questions.length : 0;
 
-  if (c2Pct >= 0.67 && c1Pct >= 0.67 && overall >= 0.78) return "C2";
-  if (c1Pct >= 0.67 && b2Pct >= 0.67 && overall >= 0.67) return "C1";
-  if (b2Pct >= 0.67 && overall >= 0.58) return "B2";
-  if (b1Pct >= 0.6 && overall >= 0.45) return "B1";
-  if (a2Pct >= 0.67 && overall >= 0.3) return "A2";
-  if (a1Pct >= 0.5) return "A1";
+  // Two-thirds of small bands = 2 of 3 (or 3 of 4). A single miss no longer
+  // skips an entire CEFR level via float rounding.
+  if (
+    bandMeets(c2Correct, c2Total, 2, 3) &&
+    bandMeets(c1Correct, c1Total, 2, 3) &&
+    overall >= 0.75
+  ) {
+    return "C2";
+  }
+  if (
+    bandMeets(c1Correct, c1Total, 2, 3) &&
+    bandMeets(b2Correct, b2Total, 2, 3) &&
+    overall >= 0.6
+  ) {
+    return "C1";
+  }
+  if (bandMeets(b2Correct, b2Total, 2, 3) && overall >= 0.5) return "B2";
+  if (bandMeets(b1Correct, b1Total, 3, 5) && overall >= 0.4) return "B1";
+  if (bandMeets(a2Correct, a2Total, 2, 3) && overall >= 0.25) return "A2";
+  if (bandMeets(a1Correct, a1Total, 1, 2)) return "A1";
   return "A1";
 }
 

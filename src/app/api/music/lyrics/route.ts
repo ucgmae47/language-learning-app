@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 export async function GET(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   const { searchParams } = new URL(request.url);
   const artist = searchParams.get("artist");
   const title = searchParams.get("title");

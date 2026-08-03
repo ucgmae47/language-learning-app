@@ -32,7 +32,7 @@ export default async function PhrasebookPage() {
 
   return (
     <div className="min-h-screen bg-[#07070f]">
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
+      <header className="sticky top-16 z-40 flex items-center justify-between border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard"

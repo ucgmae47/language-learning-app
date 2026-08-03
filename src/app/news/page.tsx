@@ -41,13 +41,14 @@ export default async function NewsPage() {
 
   return (
     <div className="min-h-screen bg-[#07070f]">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
+      {/* Sit below the global site header (h-16 / z-50) so Dashboard stays clickable */}
+      <header className="sticky top-16 z-40 border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
-              className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
+              prefetch
+              className="relative z-50 flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Dashboard
@@ -78,19 +79,19 @@ export default async function NewsPage() {
       <main className="mx-auto max-w-6xl px-4 py-10">
         {/* ── Error / no-key state ────────────────────────────────────────── */}
         {error && (
-          <div className="mb-8 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden="true" />
+          <div className="mb-8 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-12 text-center">
+            <AlertCircle className="h-8 w-8 text-slate-600" aria-hidden="true" />
             <div>
-              <p className="font-semibold text-amber-300">News unavailable</p>
-              <p className="mt-1 text-sm text-amber-200/70">{error}</p>
+              <p className="font-semibold text-slate-200">News unavailable</p>
+              <p className="mt-1 text-sm text-slate-400">{error}</p>
               {error.includes("NEWS_API_KEY") && (
-                <p className="mt-2 text-xs text-amber-200/50">
+                <p className="mt-3 text-xs text-slate-500">
                   Add your free key from{" "}
                   <a
                     href="https://newsapi.org/register"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline hover:text-amber-200"
+                    className="underline hover:text-slate-300"
                   >
                     newsapi.org/register
                   </a>{" "}
@@ -99,6 +100,12 @@ export default async function NewsPage() {
                 </p>
               )}
             </div>
+            <Link
+              href="/dashboard"
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+            >
+              Back to Dashboard
+            </Link>
           </div>
         )}
 

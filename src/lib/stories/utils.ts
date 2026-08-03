@@ -37,14 +37,15 @@ export function cleanWord(token: string): string {
 }
 
 /**
- * Extract unique content words from the story body for bulk translation.
- * Filters out tokens that are too short, numeric, or look like punctuation.
+ * Extract unique words from the story body for bulk translation.
+ * Includes articles and other short words; skips pure numbers and
+ * punctuation-only tokens.
  */
 export function extractContentWords(body: string): string[] {
   const seen = new Set<string>();
   body.split(/\s+/).forEach((raw) => {
     const word = cleanWord(raw);
-    if (word.length >= 3 && !/^\d+$/.test(word) && /\p{L}/u.test(word)) {
+    if (word.length >= 1 && !/^\d+$/.test(word) && /\p{L}/u.test(word)) {
       seen.add(word);
     }
   });

@@ -53,11 +53,20 @@ export function JournalClient({ language, cefrLevel, pastEntries }: Props) {
         body: JSON.stringify({ content: draft, language, cefrLevel }),
       });
       const json = (await res.json()) as { feedback?: JournalFeedback; error?: string };
-      if (!res.ok || json.error) throw new Error(json.error ?? "Evaluation failed.");
-      setFeedback(json.feedback!);
+      if (!res.ok || !json.feedback) {
+        setErrorMsg(
+          json.error ??
+            "We couldn't evaluate that entry right now. Please try again in a moment.",
+        );
+        setView("editor");
+        return;
+      }
+      setFeedback(json.feedback);
       setView("feedback");
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong.");
+    } catch {
+      setErrorMsg(
+        "We couldn't evaluate that entry right now. Check your connection and try again.",
+      );
       setView("editor");
     }
   }
@@ -162,10 +171,21 @@ export function JournalClient({ language, cefrLevel, pastEntries }: Props) {
         </button>
       </div>
 
-      {/* ── Error banner ──────────────────────────────────────────────────── */}
       {errorMsg && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-300">
-          {errorMsg}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-6 text-center">
+          <Sparkles className="mx-auto h-7 w-7 text-slate-600" aria-hidden="true" />
+          <p className="mt-3 text-sm font-medium text-slate-300">{errorMsg}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setErrorMsg(null);
+              if (draft.trim().length >= 10) void evaluate();
+            }}
+            disabled={draft.trim().length < 10 || view === "reviewing"}
+            className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-40"
+          >
+            Try again
+          </button>
         </div>
       )}
 

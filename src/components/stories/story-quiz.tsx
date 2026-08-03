@@ -72,7 +72,7 @@ export function StoryQuiz({ storyId, questions }: Props) {
   const question = questions[state.currentIndex];
   const selected = question ? state.answers[state.currentIndex] : undefined;
   const isLast = state.currentIndex === questions.length - 1;
-  const progress = ((state.currentIndex) / questions.length) * 100;
+  const progress = (state.currentIndex / questions.length) * 100;
 
   function handleReveal() {
     dispatch({ type: "REVEAL" });
@@ -105,8 +105,8 @@ export function StoryQuiz({ storyId, questions }: Props) {
   if (state.phase === "submitting") {
     return (
       <div className="flex min-h-[320px] flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
-        <p className="text-slate-600">Saving your results…</p>
+        <Loader2 className="h-10 w-10 animate-spin text-emerald-400" />
+        <p className="text-slate-400">Saving your results…</p>
       </div>
     );
   }
@@ -119,29 +119,33 @@ export function StoryQuiz({ storyId, questions }: Props) {
     return (
       <div className="mx-auto max-w-md text-center">
         <div
-          className={`mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full shadow-lg ${isGood ? "bg-gradient-to-br from-emerald-400 to-emerald-700" : "bg-gradient-to-br from-slate-400 to-slate-600"}`}
+          className={`mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full shadow-lg ${
+            isGood
+              ? "bg-gradient-to-br from-emerald-500 to-emerald-700 shadow-emerald-900/40"
+              : "bg-gradient-to-br from-slate-600 to-slate-800"
+          }`}
         >
           <Trophy className="h-12 w-12 text-white" aria-hidden="true" />
         </div>
 
-        <h2 className="text-2xl font-bold text-slate-900">
+        <h2 className="text-2xl font-bold text-slate-100">
           {state.score}/{questions.length} correct
         </h2>
-        <p className="mt-1 text-lg font-semibold text-emerald-700">{pct}%</p>
+        <p className="mt-1 text-lg font-semibold text-emerald-400">{pct}%</p>
         <p className="mt-2 text-slate-500">{msg}</p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button
             type="button"
             onClick={() => router.push(`/stories/${storyId}`)}
-            className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+            className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/8"
           >
             Review story
           </button>
           <button
             type="button"
             onClick={() => router.push("/stories")}
-            className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+            className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition hover:bg-emerald-500"
           >
             Read another story
           </button>
@@ -157,9 +161,11 @@ export function StoryQuiz({ storyId, questions }: Props) {
       {/* Progress */}
       <div className="mb-6">
         <div className="mb-1.5 flex justify-between text-xs text-slate-500">
-          <span>Question {state.currentIndex + 1} of {questions.length}</span>
+          <span>
+            Question {state.currentIndex + 1} of {questions.length}
+          </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
           <div
             className="h-full rounded-full bg-emerald-500 transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -167,8 +173,8 @@ export function StoryQuiz({ storyId, questions }: Props) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-base font-medium leading-7 text-slate-900">
+      <div className="rounded-2xl border border-white/10 bg-white/4 p-6">
+        <p className="text-base font-medium leading-7 text-slate-100">
           {question.question}
         </p>
 
@@ -185,20 +191,36 @@ export function StoryQuiz({ storyId, questions }: Props) {
                   type="button"
                   disabled={state.revealed}
                   onClick={() => dispatch({ type: "SELECT", value: opt.value })}
-                  className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition
-                    ${showCorrect ? "border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-500/20"
-                    : showWrong ? "border-red-400 bg-red-50 text-red-800"
-                    : isSelected ? "border-emerald-400 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-400/20"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-slate-50 disabled:hover:border-slate-200 disabled:hover:bg-white"}`}
+                  className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition disabled:cursor-default
+                    ${
+                      showCorrect
+                        ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-200 ring-2 ring-emerald-500/25"
+                        : showWrong
+                          ? "border-red-500/50 bg-red-500/10 text-red-300"
+                          : isSelected
+                            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-100 ring-2 ring-emerald-500/20"
+                            : "border-white/10 bg-white/3 text-slate-300 hover:border-emerald-500/30 hover:bg-white/6 disabled:hover:border-white/10 disabled:hover:bg-white/3"
+                    }`}
                 >
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-bold
-                      ${showCorrect ? "border-emerald-500 bg-emerald-500 text-white"
-                      : showWrong ? "border-red-400 bg-red-400 text-white"
-                      : isSelected ? "border-emerald-400 bg-emerald-400 text-white"
-                      : "border-slate-300 text-slate-400"}`}
+                      ${
+                        showCorrect
+                          ? "border-emerald-500 bg-emerald-500 text-white"
+                          : showWrong
+                            ? "border-red-500 bg-red-500 text-white"
+                            : isSelected
+                              ? "border-emerald-500 bg-emerald-500 text-white"
+                              : "border-white/20 text-slate-500"
+                      }`}
                   >
-                    {showCorrect ? <CheckCircle className="h-4 w-4" /> : showWrong ? <XCircle className="h-4 w-4" /> : opt.value}
+                    {showCorrect ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : showWrong ? (
+                      <XCircle className="h-4 w-4" />
+                    ) : (
+                      opt.value
+                    )}
                   </span>
                   {opt.label}
                 </button>
@@ -208,7 +230,7 @@ export function StoryQuiz({ storyId, questions }: Props) {
         </ul>
 
         {state.error && (
-          <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
             {state.error}
           </p>
         )}
@@ -218,7 +240,7 @@ export function StoryQuiz({ storyId, questions }: Props) {
             <button
               type="button"
               onClick={handleReveal}
-              className="flex-1 rounded-full border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+              className="flex-1 rounded-full border border-white/10 bg-white/5 py-2.5 text-sm font-semibold text-slate-200 transition hover:border-white/20 hover:bg-white/8"
             >
               Check answer
             </button>
@@ -227,7 +249,7 @@ export function StoryQuiz({ storyId, questions }: Props) {
             <button
               type="button"
               onClick={handleNext}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/30 transition hover:bg-emerald-500"
             >
               {isLast ? "See results" : "Next question"}
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
@@ -237,7 +259,7 @@ export function StoryQuiz({ storyId, questions }: Props) {
             <button
               type="button"
               disabled
-              className="flex-1 rounded-full bg-emerald-600 py-2.5 text-sm font-semibold text-white opacity-40"
+              className="flex-1 rounded-full bg-emerald-600 py-2.5 text-sm font-semibold text-white opacity-30"
             >
               Select an answer
             </button>

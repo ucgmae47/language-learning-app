@@ -34,7 +34,7 @@ export default async function JournalPage() {
   return (
     <div className="min-h-screen bg-[#07070f]">
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
+      <header className="sticky top-16 z-40 border-b border-white/8 bg-gradient-to-r from-[#0d0d1e] to-[#12122a] px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center gap-4">
           <Link
             href="/dashboard"

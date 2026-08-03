@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PronunciationEvalSchema = z.object({
   score: z.number().describe("Pronunciation accuracy score 0-100"),
@@ -16,6 +17,9 @@ const PronunciationEvalSchema = z.object({
 export type PronunciationEval = z.infer<typeof PronunciationEvalSchema>;
 
 export async function POST(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const body = (await request.json()) as {
       target: string;

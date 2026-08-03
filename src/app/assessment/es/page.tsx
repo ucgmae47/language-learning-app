@@ -41,7 +41,7 @@ export default async function SpanishAssessmentPage() {
           </div>
           <p className="text-sm text-slate-400">
             {QUESTIONS_ES.length} questions · A1 to C2 · takes about 5 minutes.
-            Answer honestly — there are no penalties for guessing.
+            Prefer &ldquo;Not sure&rdquo; over guessing, and finish early if it gets too hard.
           </p>
         </div>
 

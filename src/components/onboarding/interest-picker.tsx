@@ -4,20 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { saveInterests } from "@/app/actions/interests";
+import { INTEREST_TOPICS } from "@/lib/interests/topics";
 import type { InterestTopic } from "@/lib/supabase/types";
-
-const TOPICS: { id: InterestTopic; label: string; emoji: string }[] = [
-  { id: "food",       label: "Food",       emoji: "🍽️" },
-  { id: "travel",     label: "Travel",     emoji: "✈️" },
-  { id: "sports",     label: "Sports",     emoji: "⚽" },
-  { id: "technology", label: "Technology", emoji: "💻" },
-  { id: "culture",    label: "Culture",    emoji: "🎭" },
-  { id: "music",      label: "Music",      emoji: "🎵" },
-  { id: "film",       label: "Film",       emoji: "🎬" },
-  { id: "science",    label: "Science",    emoji: "🔬" },
-  { id: "business",   label: "Business",   emoji: "💼" },
-  { id: "history",    label: "History",    emoji: "📜" },
-];
 
 export function InterestPicker() {
   const [selected, setSelected] = useState<Set<InterestTopic>>(new Set());
@@ -61,7 +49,7 @@ export function InterestPicker() {
     <div className="flex flex-col gap-8">
       {/* Topic grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-        {TOPICS.map((topic) => {
+        {INTEREST_TOPICS.map((topic) => {
           const isSelected = selected.has(topic.id);
           return (
             <button

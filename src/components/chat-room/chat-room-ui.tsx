@@ -139,11 +139,8 @@ export function ChatRoomUI({ room, currentUser, initialMessages, isHost }: Props
   const router = useRouter();
   const [isPendingClose, startClose] = useTransition();
 
-  const { messages, onlineCount, send, isSending, isConnected } = useChatRoom(
-    room.id,
-    currentUser,
-    initialMessages,
-  );
+  const { messages, onlineCount, send, isSending, isConnected, sendError, clearSendError } =
+    useChatRoom(room.id, currentUser, initialMessages);
 
   const { secsLeft, label: countdownLabel, hasEnded } = useCountdown(room.expires_at);
   const isUrgent = secsLeft > 0 && secsLeft <= 300; // last 5 minutes
@@ -165,7 +162,8 @@ export function ChatRoomUI({ room, currentUser, initialMessages, isHost }: Props
 
   const handleSend = useCallback(async () => {
     if (!draft.trim() || hasEnded) return;
-    await send(draft);
+    const ok = await send(draft);
+    if (!ok) return;
     setDraft("");
     isAtBottomRef.current = true;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -312,6 +310,19 @@ export function ChatRoomUI({ room, currentUser, initialMessages, isHost }: Props
       {/* ── Input bar ───────────────────────────────────────────────────── */}
       {!hasEnded && (
         <div className="border-t border-white/8 bg-[#0d0d1e] px-4 py-4">
+          {sendError && (
+            <div className="mx-auto mb-3 flex max-w-3xl items-center justify-between gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-200">
+              <p>{sendError}</p>
+              <button
+                type="button"
+                onClick={clearSendError}
+                className="shrink-0 text-red-300/80 transition hover:text-red-100"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          )}
           <div className="mx-auto flex max-w-3xl items-end gap-2">
             <textarea
               value={draft}

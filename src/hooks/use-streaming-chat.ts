@@ -24,13 +24,15 @@ type UseStreamingChatOptions = {
   language?: Language;
   /** Called when a new session is created so the parent can add it to the list. */
   onSessionCreated?: (sessionId: string, title: string) => void;
+  /** Called when persisting messages to the database fails. */
+  onPersistError?: (message: string) => void;
 };
 
 export function useStreamingChat(
   api: string,
   options: UseStreamingChatOptions = {},
 ) {
-  const { initialMessages, initialSessionId, language = "es", onSessionCreated } = options;
+  const { initialMessages, initialSessionId, language = "es", onSessionCreated, onPersistError } = options;
 
   const [messages, setMessages] = useState<ChatMessage[]>(
     initialMessages ?? [],
@@ -162,11 +164,14 @@ export function useStreamingChat(
                 text.trim().slice(0, 60) + (text.trim().length > 60 ? "…" : ""),
               );
             }
+          } else if (error) {
+            console.error("[chat] saveMessagePair failed:", error);
+            onPersistError?.(error);
           }
         })();
       }
     },
-    [api, messages, isLoading, language, onSessionCreated],
+    [api, messages, isLoading, language, onSessionCreated, onPersistError],
   );
 
   const append = useCallback(

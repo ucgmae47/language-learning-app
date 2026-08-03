@@ -18,29 +18,31 @@ const REFRESH_INTERVAL_MS = 45 * 60 * 1000; // 45 minutes
  * Generates a fresh set of personalised starters and upserts them into
  * `queued_chat_starters` for the given user + language.
  *
- * Skips if a row already exists and is less than 45 minutes old — prevents
- * unnecessary AI calls when the user opens the chat multiple times in one
- * session.
+ * Skips if a row already exists and is less than 45 minutes old — unless
+ * `force` is true (used when CEFR level or interests change).
  */
 export async function generateAndQueueStarters(
   userId: string,
   language: Language,
   cefrLevel: CefrLevel,
   displayName: string,
+  options: { force?: boolean } = {},
 ): Promise<void> {
   const supabase = createServiceClient();
 
   // ── Guard: skip if we generated starters recently ─────────────────────────
-  const { data: existing } = await supabase
-    .from("queued_chat_starters")
-    .select("created_at")
-    .eq("user_id", userId)
-    .eq("language", language)
-    .maybeSingle<{ created_at: string }>();
+  if (!options.force) {
+    const { data: existing } = await supabase
+      .from("queued_chat_starters")
+      .select("created_at")
+      .eq("user_id", userId)
+      .eq("language", language)
+      .maybeSingle<{ created_at: string }>();
 
-  if (existing) {
-    const ageMs = Date.now() - new Date(existing.created_at).getTime();
-    if (ageMs < REFRESH_INTERVAL_MS) return;
+    if (existing) {
+      const ageMs = Date.now() - new Date(existing.created_at).getTime();
+      if (ageMs < REFRESH_INTERVAL_MS) return;
+    }
   }
 
   // ── Build full cross-app learner context (includes music, stories, genres) ─
@@ -76,7 +78,7 @@ export async function generateAndQueueStarters(
   );
 
   // ── Upsert (one row per user per language) ────────────────────────────────
-  await supabase
+  const { error: upsertError } = await supabase
     .from("queued_chat_starters")
     .upsert(
       {
@@ -87,4 +89,8 @@ export async function generateAndQueueStarters(
       },
       { onConflict: "user_id,language" },
     );
+
+  if (upsertError) {
+    console.error("[chat-queue] upsert starters failed:", upsertError.message);
+  }
 }

@@ -168,7 +168,8 @@ export type StoryQuizQuestion = {
 
 export type Story = {
   id: string;
-  user_id: string;
+  /** Null for shared free-library stories. */
+  user_id: string | null;
   title: string;
   body: string;
   cefr_level: CefrLevel;
@@ -184,6 +185,10 @@ export type Story = {
    *  has not yet been opened by the user. It is excluded from the story list
    *  and surfaced as a "ready for you" shortcut instead. */
   is_queued: boolean;
+  /** Shared catalog story for the free library (user_id is null). */
+  is_library: boolean;
+  /** Target language the story body is written in (es | fr). */
+  language: Language;
   created_at: string;
 };
 
@@ -278,6 +283,25 @@ export type QueuedChatStarters = {
   created_at: string;
 };
 
+export type IdiomLessonStatus = "studying" | "quiz" | "completed";
+
+export type IdiomDailyLesson = {
+  id: string;
+  user_id: string;
+  language: Language;
+  lesson_date: string;
+  card_ids: string[];
+  current_idx: number;
+  known_ids: string[];
+  review_ids: string[];
+  status: IdiomLessonStatus;
+  quiz_answers: Record<string, string>;
+  quiz_score: number | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type MusicLike = {
   id: string;
   user_id: string;
@@ -337,7 +361,7 @@ export type Database = {
       language_profiles: {
         Row: LanguageProfile;
         Insert: Omit<LanguageProfile, "id" | "created_at" | "updated_at"> &
-          Partial<Pick<LanguageProfile, "id">>;
+          Partial<Pick<LanguageProfile, "id" | "created_at" | "updated_at">>;
         Update: Partial<Omit<LanguageProfile, "id" | "user_id" | "created_at">>;
         Relationships: Rel;
       };
@@ -385,6 +409,39 @@ export type Database = {
         Update: Partial<QueuedChatStarters>;
         Relationships: Rel;
       };
+      idiom_daily_lessons: {
+        Row: IdiomDailyLesson;
+        Insert: Omit<
+          IdiomDailyLesson,
+          | "id"
+          | "created_at"
+          | "updated_at"
+          | "current_idx"
+          | "known_ids"
+          | "review_ids"
+          | "status"
+          | "quiz_answers"
+          | "quiz_score"
+          | "completed_at"
+        > &
+          Partial<
+            Pick<
+              IdiomDailyLesson,
+              | "id"
+              | "current_idx"
+              | "known_ids"
+              | "review_ids"
+              | "status"
+              | "quiz_answers"
+              | "quiz_score"
+              | "completed_at"
+            >
+          >;
+        Update: Partial<
+          Omit<IdiomDailyLesson, "id" | "user_id" | "created_at">
+        >;
+        Relationships: Rel;
+      };
       music_likes: {
         Row: MusicLike;
         Insert: Omit<MusicLike, "id" | "created_at"> & Partial<Pick<MusicLike, "id">>;
@@ -423,9 +480,9 @@ export type Database = {
       };
       stories: {
         Row: Story;
-        Insert: Omit<Story, "id" | "created_at" | "is_queued"> &
-          Partial<Pick<Story, "id" | "is_queued">>;
-        Update: Partial<Omit<Story, "id" | "user_id" | "created_at">>;
+        Insert: Omit<Story, "id" | "created_at" | "is_queued" | "is_library"> &
+          Partial<Pick<Story, "id" | "is_queued" | "is_library">>;
+        Update: Partial<Omit<Story, "id" | "created_at">>;
         Relationships: Rel;
       };
       story_attempts: {

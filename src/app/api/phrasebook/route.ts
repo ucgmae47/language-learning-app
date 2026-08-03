@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PhrasebookSchema = z.object({
   phrases_json: z.string().describe(
@@ -11,6 +12,9 @@ const PhrasebookSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") ?? "Greetings & Farewells";

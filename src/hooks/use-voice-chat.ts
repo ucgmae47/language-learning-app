@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useTts } from "@/hooks/use-tts";
 
 // Minimal Web Speech API type declarations — not in all TS lib.dom versions.
 interface SpeechRecognitionResultItem {
@@ -62,7 +63,12 @@ export type UseVoiceChatReturn = {
   /** Live interim transcript — empty when not listening. */
   interimText: string;
   /** Speak a string aloud via ElevenLabs, falling back to browser TTS. */
-  speak: (text: string) => void;
+  speak: (text: string) => Promise<void>;
+  /**
+   * Load TTS audio, call `onReady` once buffered, then play.
+   * Use this to reveal assistant messages in sync with speech.
+   */
+  speakWhenReady: (text: string, onReady: () => void) => Promise<void>;
   isSpeaking: boolean;
   stopSpeaking: () => void;
   /** Set when ElevenLabs failed and browser TTS was used instead. */
@@ -77,25 +83,24 @@ export function useVoiceChat({
   const [isSupported, setIsSupported] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [ttsFallbackReason, setTtsFallbackReason] = useState<string | null>(null);
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
-  // Accumulates the final portion of the transcript across result chunks.
   const finalRef = useRef("");
-  // Keep callback ref current without re-creating startListening on every render.
   const onFinalRef = useRef(onFinalTranscript);
   useEffect(() => {
     onFinalRef.current = onFinalTranscript;
   }, [onFinalTranscript]);
 
-  // Ref to the currently-playing HTMLAudioElement (ElevenLabs path).
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  // Tracks object URLs so we can revoke them after playback to avoid leaks.
-  const blobUrlRef = useRef<string | null>(null);
+  const {
+    speak,
+    speakWhenReady,
+    isSpeaking,
+    stopSpeaking,
+    ttsFallbackReason,
+    clearTtsFallback,
+  } = useTts({ lang });
 
   useEffect(() => {
-    // Defer to avoid calling setState synchronously inside an effect
     const id = setTimeout(() => {
       setIsSupported(
         typeof window !== "undefined" &&
@@ -104,101 +109,6 @@ export function useVoiceChat({
     }, 0);
     return () => clearTimeout(id);
   }, []);
-
-  const stopSpeaking = useCallback(() => {
-    // Stop ElevenLabs audio if playing.
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-    // Also cancel any browser speechSynthesis fallback that may be running.
-    if (typeof window !== "undefined" && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-    setIsSpeaking(false);
-  }, []);
-
-  /** Speak text via ElevenLabs (server route), falling back to browser TTS. */
-  const speak = useCallback(
-    async (text: string) => {
-      if (typeof window === "undefined") return;
-
-      // Stop anything already playing.
-      stopSpeaking();
-      setIsSpeaking(true);
-
-      // Extract the language code from the BCP-47 tag (e.g. "es-ES" → "es").
-      const langCode = lang.split("-")[0] ?? "es";
-
-      try {
-        const res = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, lang: langCode }),
-        });
-
-        if (!res.ok) {
-          let reason = "ElevenLabs unavailable";
-          try {
-            const json = (await res.json()) as { code?: string; detail?: string };
-            if (json.code === "paid_plan_required") {
-              reason =
-                "ElevenLabs free plan cannot use library voices via the API. Create a voice in Voice Lab, copy its ID, and set ELEVENLABS_VOICE_ES in .env.local.";
-            } else if (json.code) {
-              reason = `ElevenLabs error: ${json.code}`;
-            }
-          } catch {
-            // ignore parse errors
-          }
-          throw new Error(reason);
-        }
-
-        setTtsFallbackReason(null);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        blobUrlRef.current = url;
-
-        const audio = new Audio(url);
-        audioRef.current = audio;
-
-        audio.onended = () => {
-          setIsSpeaking(false);
-          if (blobUrlRef.current === url) {
-            URL.revokeObjectURL(url);
-            blobUrlRef.current = null;
-          }
-          audioRef.current = null;
-        };
-        audio.onerror = () => {
-          setIsSpeaking(false);
-          audioRef.current = null;
-        };
-
-        await audio.play();
-      } catch (err) {
-        const reason =
-          err instanceof Error ? err.message : "ElevenLabs unavailable";
-        setTtsFallbackReason(reason);
-        console.warn("[tts] falling back to browser voice:", reason);
-        if (!window.speechSynthesis) {
-          setIsSpeaking(false);
-          return;
-        }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = lang;
-        utterance.rate = 0.85;
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        window.speechSynthesis.speak(utterance);
-      }
-    },
-    [lang, stopSpeaking],
-  );
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
@@ -210,10 +120,8 @@ export function useVoiceChat({
       window.SpeechRecognition ?? window.webkitSpeechRecognition;
     if (!SpeechRecognitionClass) return;
 
-    // Interrupt any ongoing TTS so the mic doesn't pick it up.
     stopSpeaking();
 
-    // Tear down any previous recognition session.
     if (recognitionRef.current) {
       recognitionRef.current.abort();
       recognitionRef.current = null;
@@ -222,7 +130,6 @@ export function useVoiceChat({
     const recognition = new SpeechRecognitionClass();
     recognition.lang = lang;
     recognition.interimResults = true;
-    // continuous: false — browser auto-stops after a pause in speech.
     recognition.continuous = false;
     recognition.maxAlternatives = 1;
 
@@ -266,7 +173,6 @@ export function useVoiceChat({
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-      // 'no-speech' is normal — user just didn't say anything.
       if (event.error !== "no-speech") {
         console.error("[SpeechRecognition] error:", event.error);
       }
@@ -286,9 +192,10 @@ export function useVoiceChat({
     stopListening,
     interimText,
     speak,
+    speakWhenReady,
     isSpeaking,
     stopSpeaking,
     ttsFallbackReason,
-    clearTtsFallback: () => setTtsFallbackReason(null),
+    clearTtsFallback,
   };
 }

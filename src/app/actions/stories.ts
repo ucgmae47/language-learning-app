@@ -1,9 +1,11 @@
 "use server";
 
 import { after } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { generateQueuedStory } from "@/lib/stories/queue";
+import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enabled";
 import { insertEvent } from "@/lib/events/log-event";
 import { normalizeStoryGenre, WEIGHTS } from "@/lib/events/taxonomy";
 import { aggregateTopicScores } from "@/lib/events/aggregate";
@@ -103,6 +105,8 @@ export async function saveStoryAttempt(
  * Called from the StoryGenerator "Your story is ready!" card.
  */
 export async function consumeQueuedStory(storyId: string): Promise<void> {
+  if (!isPersonalStoryQueueEnabled()) return;
+
   const supabase = await createClient();
 
   const {
@@ -111,11 +115,20 @@ export async function consumeQueuedStory(storyId: string): Promise<void> {
 
   if (!user) return;
 
-  await supabase
+  const { error } = await supabase
     .from("stories")
     .update({ is_queued: false })
     .eq("id", storyId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("is_queued", true);
+
+  if (error) {
+    console.error("[consumeQueuedStory] Failed to mark consumed:", error.message);
+    return;
+  }
+
+  // So returning to /stories never shows this story as "ready" again.
+  revalidatePath("/stories");
 
   // Kick off the next pre-generation after this action completes.
   after(async () => {
@@ -128,6 +141,8 @@ export async function consumeQueuedStory(storyId: string): Promise<void> {
 
     if (profile) {
       await generateQueuedStory(user.id, profile.language, profile.cefr_level);
+      // New queued story is ready — refresh the list for the next visit.
+      revalidatePath("/stories");
     }
   });
 }

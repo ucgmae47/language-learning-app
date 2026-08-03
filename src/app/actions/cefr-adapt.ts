@@ -1,17 +1,18 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { schedulePresetRefresh } from "@/lib/personalization/refresh-presets";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 const LEVEL_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export type AdaptationSuggestion = {
-  suggestion: "upgrade" | "downgrade" | null;
+  suggestion: "upgrade" | "downgrade";
   avgScore: number; // 0–100
   attemptCount: number;
   currentLevel: CefrLevel;
-  suggestedLevel: CefrLevel | null;
+  suggestedLevel: CefrLevel;
   language: Language;
 };
 
@@ -64,7 +65,7 @@ export async function getCefrAdaptationSuggestion(): Promise<AdaptationSuggestio
       avgScore,
       attemptCount: rows.length,
       currentLevel,
-      suggestedLevel: LEVEL_ORDER[currentIdx - 1] ?? null,
+      suggestedLevel: LEVEL_ORDER[currentIdx - 1]!,
       language,
     };
   }
@@ -75,7 +76,7 @@ export async function getCefrAdaptationSuggestion(): Promise<AdaptationSuggestio
       avgScore,
       attemptCount: rows.length,
       currentLevel,
-      suggestedLevel: LEVEL_ORDER[currentIdx + 1] ?? null,
+      suggestedLevel: LEVEL_ORDER[currentIdx + 1]!,
       language,
     };
   }
@@ -89,28 +90,56 @@ export async function getCefrAdaptationSuggestion(): Promise<AdaptationSuggestio
 export async function applyCefrAdaptation(
   newLevel: CefrLevel,
   language: Language,
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; applied?: boolean }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
+  const now = new Date().toISOString();
+
   const [profileUpdate, langProfileUpdate] = await Promise.all([
     supabase
       .from("profiles")
-      .update({ cefr_level: newLevel })
+      .update({ cefr_level: newLevel, updated_at: now })
       .eq("id", user.id),
     supabase
       .from("language_profiles")
-      .update({ cefr_level: newLevel })
-      .eq("user_id", user.id)
-      .eq("language", language),
+      .upsert(
+        {
+          user_id: user.id,
+          language,
+          cefr_level: newLevel,
+          updated_at: now,
+        },
+        { onConflict: "user_id,language" },
+      ),
   ]);
 
   if (profileUpdate.error) return { error: profileUpdate.error.message };
   if (langProfileUpdate.error) return { error: langProfileUpdate.error.message };
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", user.id)
+    .maybeSingle<{ display_name: string | null }>();
+
+  schedulePresetRefresh({
+    userId: user.id,
+    language,
+    cefrLevel: newLevel,
+    displayName:
+      profile?.display_name?.trim() ||
+      (user.user_metadata?.display_name as string | undefined)?.trim() ||
+      "Learner",
+  });
+
+  revalidatePath("/", "layout");
   revalidatePath("/dashboard");
-  return {};
+  revalidatePath("/settings");
+  revalidatePath("/stories");
+  revalidatePath("/chat");
+  return { applied: true };
 }

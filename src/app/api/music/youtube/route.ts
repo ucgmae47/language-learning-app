@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 export async function GET(request: NextRequest) {
+  const authed = await requireUser();
+  if (isUnauthorized(authed)) return authed;
+
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ videoId: null });

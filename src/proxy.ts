@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createProxyClient } from "@/lib/supabase/proxy-client";
+import { isPathLockedInPreview } from "@/lib/features/preview-gate";
 
 // /assessment is intentionally PUBLIC so new visitors can take the placement
 // test before creating an account.  Auth is handled inside the page itself
 // (isAuthenticated prop) so the quiz still works for returning users too.
-const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore", "/vocabulary", "/progress", "/phrasebook", "/recipes", "/pronunciation", "/calendar", "/analyzer", "/achievements", "/leaderboard", "/planner"];
+const PROTECTED_PREFIXES = ["/dashboard", "/onboarding", "/stories", "/chat", "/crossword", "/drills", "/flashcards", "/settings", "/chat-room", "/journal", "/news", "/gameroom", "/sentence-builder", "/music", "/explore", "/vocabulary", "/phrasebook", "/recipes", "/pronunciation", "/calendar", "/dictionary", "/planner", "/progress", "/achievements", "/leaderboard"];
 const AUTH_ROUTES = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {
@@ -33,6 +34,13 @@ export async function proxy(request: NextRequest) {
 
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // Soft-launch: block gated feature pages (Stories remains open).
+  if (user && isPathLockedInPreview(pathname)) {
+    const dash = new URL("/dashboard", request.url);
+    dash.searchParams.set("preview", "locked");
+    return NextResponse.redirect(dash);
   }
 
   return response;
