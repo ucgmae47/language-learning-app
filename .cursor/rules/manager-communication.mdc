@@ -24,6 +24,13 @@ The user is the **product/business decision-maker**, not the engineer. Agents ar
 | “Does this feel right?” | “Here’s what changed and what I need you to decide” |
 | Approve / reject / redirect | Implement and verify |
 
+## When a feature is ready to try
+
+Prefer **interactive testing** over screenshots:
+- Start the practice app and ask them to open/take over the Cloud desktop to click around.
+- Tell them in plain language what to click and what “good” looks like.
+- Ask: “Does this feel right?” / “Want any changes before we save it to the shared project?”
+
 ## When you need approval
 
 Ask in business terms, for example:
