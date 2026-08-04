@@ -31,19 +31,18 @@ export default async function InterestsPage() {
     user.user_metadata?.display_name ?? user.email?.split("@")[0] ?? "there";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-16">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#07070f] px-4 py-16">
       <div className="w-full max-w-2xl">
-        {/* Header */}
         <div className="mb-10 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/15">
             <span className="text-2xl" role="img" aria-label="wave">
               👋
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">
             Welcome aboard, {displayName}!
           </h1>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-slate-400">
             Pick the topics you enjoy. We&apos;ll use them to personalise your
             stories, chat practice, and daily words.
           </p>
