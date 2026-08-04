@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { pickMusicRecommendation } from "@/lib/music/bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const MusicRecommendationSchema = z.object({
@@ -32,6 +34,23 @@ export async function POST(request: NextRequest) {
     };
 
     const { language, cefrLevel, likedSongs = [], seenSongs = [] } = body;
+
+    const seeded = pickMusicRecommendation(language, cefrLevel, [
+      ...seenSongs,
+      ...likedSongs,
+    ]);
+
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      if (!seeded) {
+        return NextResponse.json(
+          { error: "No preloaded songs available." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json(seeded, {
+        headers: { "X-Music-Source": "static" },
+      });
+    }
 
     const langName = language === "es" ? "Spanish" : "French";
     const langNote =
@@ -69,7 +88,9 @@ Return a complete JSON object with all required fields. The "featured_lyrics" mu
       prompt,
     });
 
-    return NextResponse.json(object);
+    return NextResponse.json(object, {
+      headers: { "X-Music-Source": "gemini" },
+    });
   } catch (err) {
     console.error("[music/recommend]", err);
     return NextResponse.json(

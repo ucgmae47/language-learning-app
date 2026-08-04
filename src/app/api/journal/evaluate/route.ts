@@ -4,6 +4,7 @@ import { createGroq } from "@ai-sdk/groq";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { isStoriesOnlyPreview } from "@/lib/features/preview-gate";
 import type { JournalFeedback, Language } from "@/lib/supabase/types";
 
 const CORRECTION_TYPES = [
@@ -162,6 +163,17 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Please sign in to evaluate your journal." },
       { status: 401 },
+    );
+  }
+
+  // Tier 3: Journal AI feedback stays Premium during soft launch.
+  if (isStoriesOnlyPreview()) {
+    return NextResponse.json(
+      {
+        error:
+          "AI journal feedback is a Premium feature and isn’t available in free preview yet.",
+      },
+      { status: 403 },
     );
   }
 

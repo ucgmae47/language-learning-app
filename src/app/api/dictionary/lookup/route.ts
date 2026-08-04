@@ -4,6 +4,7 @@ import { createGroq } from "@ai-sdk/groq";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { lookupStaticDictionary } from "@/lib/dictionary/static-entries";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import type { DictionaryLookup } from "@/lib/dictionary/types";
 import type { Language } from "@/lib/supabase/types";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
@@ -160,6 +161,28 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Free path: static bank first (no API cost).
+  const staticHit = lookupStaticDictionary(q, language);
+  if (staticHit) {
+    return NextResponse.json(staticHit, {
+      headers: {
+        "Cache-Control": "private, s-maxage=3600, stale-while-revalidate=86400",
+        "X-Dictionary-Source": "static",
+      },
+    });
+  }
+
+  // Premium AI only for misses when enabled.
+  if (!isPremiumAiEnabled()) {
+    return NextResponse.json(
+      {
+        error:
+          "That word isn’t in the free dictionary yet. Try a more common word, or unlock Premium lookups later.",
+      },
+      { status: 404 },
+    );
+  }
+
   const prompt = buildPrompt(q, language, cefrLevel);
   const attempts: Array<{
     name: string;
@@ -191,17 +214,6 @@ export async function GET(request: NextRequest) {
     } catch (err) {
       console.warn(`[dictionary/lookup] ${attempt.name} failed:`, err);
     }
-  }
-
-  // Offline / last-resort: common words so the feature never hard-fails
-  const staticHit = lookupStaticDictionary(q, language);
-  if (staticHit) {
-    return NextResponse.json(staticHit, {
-      headers: {
-        "Cache-Control": "private, s-maxage=3600, stale-while-revalidate=86400",
-        "X-Dictionary-Source": "static",
-      },
-    });
   }
 
   console.error("[dictionary/lookup] all providers failed for", q);

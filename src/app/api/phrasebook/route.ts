@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { getPhrasebook } from "@/lib/phrasebook/bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PhrasebookSchema = z.object({
@@ -18,8 +20,22 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") ?? "Greetings & Farewells";
-    const language = searchParams.get("language") ?? "es";
+    const language = (searchParams.get("language") ?? "es") as "es" | "fr";
     const cefrLevel = searchParams.get("cefrLevel") ?? "B1";
+
+    const seeded = getPhrasebook(category, language === "fr" ? "fr" : "es", cefrLevel);
+
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      if (!seeded) {
+        return NextResponse.json(
+          { error: "No preloaded phrases for this category yet." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json(seeded, {
+        headers: { "X-Phrasebook-Source": "static" },
+      });
+    }
 
     const langName = language === "es" ? "Spanish" : "French";
 
@@ -48,10 +64,13 @@ Also provide a helpful tip about using phrases in the "${category}" category.`;
     try {
       phrases = JSON.parse(object.phrases_json) as unknown[];
     } catch {
-      phrases = [];
+      phrases = seeded?.phrases ?? [];
     }
 
-    return NextResponse.json({ phrases, category_tip: object.category_tip });
+    return NextResponse.json(
+      { phrases, category_tip: object.category_tip },
+      { headers: { "X-Phrasebook-Source": "gemini" } },
+    );
   } catch (err) {
     console.error("[phrasebook]", err);
     return NextResponse.json({ error: "Failed to generate phrasebook" }, { status: 500 });
