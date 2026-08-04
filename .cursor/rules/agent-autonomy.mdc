@@ -21,10 +21,17 @@ When a task needs any of the following, **do it yourself** in this session (requ
 
 ## Database updates
 
+Never tell the user to open the Supabase SQL editor. Apply SQL yourself with:
+
+```bash
+npm run db:apply -- supabase/<migration-file>.sql          # practice (default; always)
+npm run db:apply -- supabase/<migration-file>.sql --live   # live (only with approval)
+```
+
 There are two databases. Treat them differently:
 
-1. **Practice database (Cloud local Supabase)** — always update this yourself whenever a feature needs schema/data changes. Apply the relevant `supabase/*.sql` (or bootstrap with `full-schema.sql`), fix grants if needed, seed if needed, and verify the app against it. Do not ask the user to run SQL for the practice DB.
-2. **Live / production Supabase** (hosted project used by the real app) — **do not** change it unless the user clearly asks to put the feature in production / update the live app / update the live database. When they do, and credentials exist (e.g. hosted URL + service role and/or `SUPABASE_DB_URL`), apply the same migrations there and confirm. If live credentials are missing, say in plain language that only the practice copy was updated and ask whether they want to add live-database access.
+1. **Practice database (Cloud local Supabase)** — always update this yourself whenever a feature needs schema/data changes. Use `npm run db:apply` (no `--live`). Ensure Docker/`supabase start` is up first. Seed if needed, then verify the app. Do not ask the user to run SQL for the practice DB.
+2. **Live / production Supabase** — **do not** change it unless the user clearly asks to put the feature in production / update the live app / update the live database. Then run the same file with `--live` (needs `SUPABASE_DB_URL` secret). If that secret is missing, say in plain language that only the practice copy was updated and ask them to add the live database connection string in Cursor Secrets.
 
 When speaking to the user, call these the “practice database” and “live database,” not Docker/psql jargon.
 
