@@ -14,11 +14,15 @@ export const StoryQuizQuestionSchema = z.object({
 });
 
 export const GeneratedStorySchema = z.object({
-  title: z.string().describe("A short, evocative title for the story in Spanish."),
+  title: z
+    .string()
+    .describe(
+      "A short, evocative title for the story in the target language (not English).",
+    ),
   body: z
     .string()
     .describe(
-      "The complete story text written entirely in Spanish, divided into 5–7 paragraphs separated by newlines.",
+      "The complete story text written entirely in the target language, divided into 5–7 paragraphs separated by newlines.",
     ),
   quiz: z
     .array(StoryQuizQuestionSchema)

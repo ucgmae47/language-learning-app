@@ -40,6 +40,27 @@ npm run generate:story-library  # batch-generate more library stories (needs GEM
 npm run generate:crosswords     # offline crossword bank generation
 ```
 
+### Daily library stories (cron)
+
+Vercel Cron hits `/api/cron/nightly` at **00:05 UTC** (see `vercel.json`). That job:
+
+1. Pre-creates tomorrow’s idiom decks (same as the old idiom cron)
+2. Generates **one shared Story Library story per language × CEFR level** (es/fr × A1–C2) via Gemini Flash-Lite
+
+The **08:00 UTC** WOTD cron also resumes the same library fill (idempotent) so leftover combos finish if midnight hit a short function timeout.
+
+Idempotent per UTC day — re-runs skip combos that already have a library story from today. Requires `CRON_SECRET`, `GEMINI_API_KEY`, and Supabase service role on Vercel. Disable with `ENABLE_DAILY_LIBRARY_STORIES=false`.
+
+Manual / local:
+
+```bash
+# Same logic as cron (skip if already created today)
+npx tsx scripts/generate-library-stories.ts --once-per-day
+
+# Force-generate (ignores today check), optionally narrow scope
+npx tsx scripts/generate-library-stories.ts --lang=es --level=B1
+```
+
 ### Soft-launch env flags
 
 See `.env.example` for:
@@ -47,6 +68,7 @@ See `.env.example` for:
 - `FREE_PREVIEW_STORIES_ONLY=true` — only Stories unlocked
 - `DISABLE_TTS=true` — ElevenLabs off
 - `ENABLE_PERSONAL_STORY_QUEUE=false` — no per-user AI story pre-generation
+- `ENABLE_DAILY_LIBRARY_STORIES=true` — nightly Gemini library fill
 
 ## License
 

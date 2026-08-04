@@ -22,6 +22,7 @@ Update it after every significant session.
 | Personality mirroring (chatbot) | ✅ | `profiles.personality_traits`, analyzed every 5th user message |
 | Unified learner context | ✅ | `getUserContext()` feeds stories, chat, starters |
 | Story pre-queuing | ✅ | Queued story + queued chat starters via `after()` |
+| Daily library cron | ✅ | Nightly + WOTD resume: 1 Gemini library story per lang × CEFR (UTC day) |
 | Story reader (paginated) | ✅ | One sentence at a time, EN translation below, word tooltips above |
 | ElevenLabs TTS (chatbot) | ⚠️ | Wired up; **free plan cannot use library voices via API** — needs custom Voice Lab IDs |
 | 20+ features (games, news, journal, etc.) | ✅ built | Many need API/quota testing — see Testing Queue below |
@@ -192,6 +193,12 @@ See `.env.example`. Key additions since Phase 1:
 - Full dark theme on story reader page (currently light card on dark app shell)
 - ElevenLabs Starter upgrade ($5/mo) unlocks library voices via API
 - Cron job for story/chat pre-queuing (currently uses `after()` on user actions)
+
+### Daily Story Library cron (done)
+
+- `/api/cron/nightly` at 00:05 UTC runs idiom precreate + `generateDailyLibraryStories()`
+- One Gemini library story per `es`/`fr` × A1–C2 per UTC day (`src/lib/stories/daily-library.ts`)
+- Kill switch: `ENABLE_DAILY_LIBRARY_STORIES=false`
 
 ---
 

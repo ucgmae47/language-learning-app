@@ -5,7 +5,7 @@
       "schedule": "0 8 * * *"
     },
     {
-      "path": "/api/cron/idiom-decks",
+      "path": "/api/cron/nightly",
       "schedule": "5 0 * * *"
     }
   ]

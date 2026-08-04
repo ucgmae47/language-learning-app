@@ -7,25 +7,18 @@
  *
  * Usage:
  *   npx tsx scripts/generate-library-stories.ts
- *   npx tsx scripts/generate-library-stories.ts --lang=es --level=A2 --count=2
+ *   npx tsx scripts/generate-library-stories.ts --lang=es --level=A2
+ *   npx tsx scripts/generate-library-stories.ts --once-per-day   # same idempotency as cron
  */
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createClient } from "@supabase/supabase-js";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateObject } from "ai";
-import { GeneratedStorySchema } from "../src/lib/stories/schema";
-import { generateStoryTranslations } from "../src/lib/stories/translations";
-import { allSentences } from "../src/lib/stories/utils";
+import {
+  generateDailyLibraryStories,
+  LIBRARY_CEFR_LEVELS,
+  LIBRARY_LANGUAGES,
+} from "../src/lib/stories/daily-library";
 import type { CefrLevel, Language } from "../src/lib/supabase/types";
-
-const DEFAULTS = {
-  languages: ["es", "fr"] as Language[],
-  levels: ["A1", "A2", "B1", "B2"] as CefrLevel[],
-  countPerCombo: 1,
-  topics: ["daily life", "travel", "food", "friendship"],
-};
 
 function loadEnvLocal() {
   for (const name of [".env.local", ".env"]) {
@@ -47,33 +40,21 @@ function loadEnvLocal() {
 }
 
 function parseArgs() {
-  const langs = [...DEFAULTS.languages];
-  const levels = [...DEFAULTS.levels];
-  let count = DEFAULTS.countPerCombo;
+  let langs = [...LIBRARY_LANGUAGES];
+  let levels = [...LIBRARY_CEFR_LEVELS];
+  let skipExistingToday = false;
 
   for (const arg of process.argv.slice(2)) {
     if (arg.startsWith("--lang=")) {
-      langs.splice(0, langs.length, arg.slice(7) as Language);
+      langs = [arg.slice(7) as Language];
     } else if (arg.startsWith("--level=")) {
-      levels.splice(0, levels.length, arg.slice(8) as CefrLevel);
-    } else if (arg.startsWith("--count=")) {
-      count = Number.parseInt(arg.slice(8), 10) || 1;
+      levels = [arg.slice(8) as CefrLevel];
+    } else if (arg === "--once-per-day") {
+      skipExistingToday = true;
     }
   }
 
-  return { langs, levels, count };
-}
-
-function buildPrompt(language: Language, cefrLevel: CefrLevel, topic: string): string {
-  const langName = language === "es" ? "Spanish" : "French";
-  return `Write an original graded reader story in ${langName} for CEFR ${cefrLevel} learners.
-Topic focus: ${topic}.
-Requirements:
-- Entire story body in ${langName} only (5–7 short paragraphs separated by blank lines)
-- Natural but level-appropriate vocabulary
-- Title in ${langName}
-- Exactly 5 English comprehension quiz questions with 4 options A–D
-Keep it engaging and culturally appropriate.`;
+  return { langs, levels, skipExistingToday };
 }
 
 async function main() {
@@ -83,74 +64,42 @@ async function main() {
     console.error("GEMINI_API_KEY is required");
     process.exit(1);
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
     console.error("Supabase URL + service role key required");
     process.exit(1);
   }
 
-  const { langs, levels, count } = parseArgs();
-  const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
-  const supabase = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+  const { langs, levels, skipExistingToday } = parseArgs();
+  console.log(
+    `Generating library stories for ${langs.join(",")} × ${levels.join(",")} (skipExistingToday=${skipExistingToday})…`,
+  );
+
+  const result = await generateDailyLibraryStories({
+    languages: langs,
+    levels,
+    skipExistingToday,
   });
 
-  let created = 0;
-
-  for (const language of langs) {
-    for (const cefrLevel of levels) {
-      for (let i = 0; i < count; i++) {
-        const topic =
-          DEFAULTS.topics[(created + i) % DEFAULTS.topics.length] ?? "daily life";
-        console.log(`Generating ${language}/${cefrLevel} (${topic})...`);
-
-        const { object } = await generateObject({
-          model: google("gemini-2.5-flash-lite"),
-          schema: GeneratedStorySchema,
-          prompt: buildPrompt(language, cefrLevel, topic),
-        });
-
-        const translations = await generateStoryTranslations(
-          object.body,
-          language,
-          "generate-library-stories",
-        );
-
-        if (allSentences(object.body).length !== translations.sentences.length) {
-          console.warn("  sentence mismatch — skipping");
-          continue;
-        }
-
-        const { error } = await supabase.from("stories").insert({
-          user_id: null,
-          is_library: true,
-          is_queued: false,
-          language,
-          cefr_level: cefrLevel,
-          title: object.title,
-          topics: [topic],
-          body: object.body,
-          word_count: object.body.split(/\s+/).filter(Boolean).length,
-          quiz: object.quiz,
-          sentence_translations: translations.sentences,
-          word_translations: translations.words,
-        });
-
-        if (error) {
-          console.error("  insert failed:", error.message);
-          continue;
-        }
-
-        console.log(`  ✓ ${object.title}`);
-        created++;
-        // Gentle pacing for free-tier API limits
-        await new Promise((r) => setTimeout(r, 1500));
-      }
-    }
+  for (const row of result.created) {
+    console.log(`  ✓ [${row.language}/${row.cefr_level}] ${row.title}`);
+  }
+  for (const row of result.skipped) {
+    console.log(`  · skip [${row.language}/${row.cefr_level}] ${row.reason}`);
+  }
+  for (const row of result.failed) {
+    console.error(`  ✗ [${row.language}/${row.cefr_level}] ${row.error}`);
   }
 
-  console.log(`\nCreated ${created} library stories.`);
+  console.log(
+    `\nDone ${result.date}: created=${result.created.length} skipped=${result.skipped.length} failed=${result.failed.length}`,
+  );
+
+  if (result.failed.length > 0 && result.created.length === 0) {
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
