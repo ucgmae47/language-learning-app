@@ -1,0 +1,62 @@
+---
+description: Cloud-first Mac/iPhone handoff with frequent GitHub pushes
+alwaysApply: true
+---
+
+# Cloud-first coding handoff
+
+Primary coding happens on **Cursor Cloud** (laptop set to Cloud, or iPhone). **GitHub is the sync point.** This Mac is only for occasional local edits or review.
+
+## Runtime defaults
+
+| Where | Use |
+| --- | --- |
+| iPhone / normal coding | **Cloud** |
+| Occasional hand-edits on Mac | **This Mac**, after pulling latest |
+
+Do not steer toward Remote Control of This Mac as the default phone workflow.
+
+## Branch model
+
+- Start Cloud sessions from latest remote **`main`** unless the user names another branch.
+- Do feature work on a Cloud branch / PR as needed.
+- Merge into `main` only when work should become the shared baseline.
+
+## Cloud: push to GitHub often (required)
+
+On Cloud (and any session editing this repo for the user), keep GitHub current so laptop and phone never depend on unpushed VM state.
+
+**During work**
+- After each meaningful chunk of progress (feature slice, fix, migration, docs the user relies on), **commit and push** the current branch.
+- Do not batch an entire long session into one push at the end if intermediate progress is already usable.
+- Prefer small, clear commits over one giant dump.
+
+**End of a task or session (mandatory)**
+When the user says a task is done, wraps up, switches devices, goes idle after completed work, or asks if things are synced:
+1. Ensure all intended changes are committed.
+2. **Push** the branch to `origin`.
+3. Open or update a PR when that helps handoff (unless the user asked not to).
+4. Tell the user the branch name / PR URL and whether `main` still needs a merge for the next session to start from `main`.
+
+**Never leave** completed or substantial in-progress work only on the Cloud VM disk.
+
+This project’s Cloud push habit overrides any general “don’t push unless asked” preference: **pushing here is expected** for cross-device continuity. Still avoid force-push and never skip hooks unless the user explicitly asks.
+
+## End of a MacBook / This Mac session
+
+If work happened locally:
+1. Commit (when appropriate) and **push**.
+2. If it should be the next shared baseline, merge (or PR) into `main` and push `main`.
+3. Confirm remote GitHub has the work before calling handoff done.
+
+## Start of a MacBook / This Mac session
+
+1. `git fetch` and update local `main` (and the working branch) from `origin`.
+2. If Cloud left a feature branch or PR, check it out or merge it so local files match remote.
+3. Only then make local edits.
+
+## Start of a Cloud / iPhone session
+
+- Start from latest remote `main` (or the branch the user specifies).
+- Fetch/pull before editing if the checkout might be stale.
+- If this conversation still has unpushed work, push before the user switches away.
