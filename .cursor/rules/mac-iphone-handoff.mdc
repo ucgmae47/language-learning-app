@@ -42,6 +42,8 @@ When the user says a task is done, wraps up, switches devices, goes idle after c
 
 This project’s Cloud push habit overrides any general “don’t push unless asked” preference: **pushing here is expected** for cross-device continuity. Still avoid force-push and never skip hooks unless the user explicitly asks.
 
+Also follow `.cursor/rules/agent-autonomy.mdc`: run commands, migrations, pushes, and PRs yourself—don’t hand those steps back to the user.
+
 ## End of a MacBook / This Mac session
 
 If work happened locally:
