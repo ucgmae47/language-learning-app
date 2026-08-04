@@ -26,10 +26,9 @@ The user is the **product/business decision-maker**, not the engineer. Agents ar
 
 ## When a feature is ready to try
 
-Prefer **interactive testing** over screenshots:
-- Start the practice app and ask them to open/take over the Cloud desktop to click around.
-- Tell them in plain language what to click and what “good” looks like.
-- Ask: “Does this feel right?” / “Want any changes before we save it to the shared project?”
+Prefer a **normal clickable preview link** (Vercel preview from the branch) so they can test on phone or laptop in a regular browser. Say something like: “Here’s a private preview link to try it.”  
+Fallback: Cloud desktop control of the practice app if no preview link is ready.  
+Always include a short “what to click” checklist and ask: “Does this feel right?” / “Want any changes before we save it to the shared project?”
 
 ## When you need approval
 
