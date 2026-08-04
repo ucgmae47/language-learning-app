@@ -3,7 +3,10 @@
     "language": "es",
     "cefr_level": "A1",
     "title": "Un café en Madrid",
-    "topics": ["daily life", "food"],
+    "topics": [
+      "daily life",
+      "food"
+    ],
     "body": "Me llamo Ana. Vivo en Madrid.\n\nPor la mañana, voy a un café cerca de mi casa. Pido un café con leche y un croissant.\n\nLa camarera es muy amable. Ella sonríe y dice: «Buenos días».\n\nMe siento junto a la ventana. Miro la calle y veo mucha gente.\n\nHoy es un buen día. Estoy contenta.",
     "sentence_translations": [
       "My name is Ana.",
@@ -67,50 +70,110 @@
       {
         "question": "Where does Ana live?",
         "options": [
-          { "label": "Barcelona", "value": "A" },
-          { "label": "Madrid", "value": "B" },
-          { "label": "Seville", "value": "C" },
-          { "label": "Valencia", "value": "D" }
+          {
+            "label": "Barcelona",
+            "value": "A"
+          },
+          {
+            "label": "Madrid",
+            "value": "B"
+          },
+          {
+            "label": "Seville",
+            "value": "C"
+          },
+          {
+            "label": "Valencia",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What does Ana order?",
         "options": [
-          { "label": "Tea and toast", "value": "A" },
-          { "label": "Coffee with milk and a croissant", "value": "B" },
-          { "label": "Orange juice only", "value": "C" },
-          { "label": "Nothing", "value": "D" }
+          {
+            "label": "Tea and toast",
+            "value": "A"
+          },
+          {
+            "label": "Coffee with milk and a croissant",
+            "value": "B"
+          },
+          {
+            "label": "Orange juice only",
+            "value": "C"
+          },
+          {
+            "label": "Nothing",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How is the waitress?",
         "options": [
-          { "label": "Rude", "value": "A" },
-          { "label": "Busy and quiet", "value": "B" },
-          { "label": "Very kind", "value": "C" },
-          { "label": "Angry", "value": "D" }
+          {
+            "label": "Rude",
+            "value": "A"
+          },
+          {
+            "label": "Busy and quiet",
+            "value": "B"
+          },
+          {
+            "label": "Very kind",
+            "value": "C"
+          },
+          {
+            "label": "Angry",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "Where does Ana sit?",
         "options": [
-          { "label": "At the bar", "value": "A" },
-          { "label": "Outside", "value": "B" },
-          { "label": "By the window", "value": "C" },
-          { "label": "In the kitchen", "value": "D" }
+          {
+            "label": "At the bar",
+            "value": "A"
+          },
+          {
+            "label": "Outside",
+            "value": "B"
+          },
+          {
+            "label": "By the window",
+            "value": "C"
+          },
+          {
+            "label": "In the kitchen",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "How does Ana feel today?",
         "options": [
-          { "label": "Sad", "value": "A" },
-          { "label": "Tired", "value": "B" },
-          { "label": "Happy", "value": "C" },
-          { "label": "Angry", "value": "D" }
+          {
+            "label": "Sad",
+            "value": "A"
+          },
+          {
+            "label": "Tired",
+            "value": "B"
+          },
+          {
+            "label": "Happy",
+            "value": "C"
+          },
+          {
+            "label": "Angry",
+            "value": "D"
+          }
         ],
         "correct": "C"
       }
@@ -120,7 +183,10 @@
     "language": "es",
     "cefr_level": "A1",
     "title": "Un paseo por el parque",
-    "topics": ["nature", "daily life"],
+    "topics": [
+      "nature",
+      "daily life"
+    ],
     "body": "Pablo camina por el parque. Hace sol y los pájaros cantan.\n\nCompra un helado de fresa. Se sienta en un banco de madera.\n\nUn perro pequeño corre cerca de él. Pablo sonríe y descansa.",
     "sentence_translations": [
       "Pablo walks through the park.",
@@ -164,50 +230,110 @@
       {
         "question": "Where is Pablo walking?",
         "options": [
-          { "label": "In the park", "value": "A" },
-          { "label": "At school", "value": "B" },
-          { "label": "In the supermarket", "value": "C" },
-          { "label": "On the beach", "value": "D" }
+          {
+            "label": "In the park",
+            "value": "A"
+          },
+          {
+            "label": "At school",
+            "value": "B"
+          },
+          {
+            "label": "In the supermarket",
+            "value": "C"
+          },
+          {
+            "label": "On the beach",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What flavor ice cream does he buy?",
         "options": [
-          { "label": "Chocolate", "value": "A" },
-          { "label": "Vanilla", "value": "B" },
-          { "label": "Strawberry", "value": "C" },
-          { "label": "Lemon", "value": "D" }
+          {
+            "label": "Chocolate",
+            "value": "A"
+          },
+          {
+            "label": "Vanilla",
+            "value": "B"
+          },
+          {
+            "label": "Strawberry",
+            "value": "C"
+          },
+          {
+            "label": "Lemon",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "Where does he sit?",
         "options": [
-          { "label": "On the grass", "value": "A" },
-          { "label": "On a wooden bench", "value": "B" },
-          { "label": "In a car", "value": "C" },
-          { "label": "On a chair", "value": "D" }
+          {
+            "label": "On the grass",
+            "value": "A"
+          },
+          {
+            "label": "On a wooden bench",
+            "value": "B"
+          },
+          {
+            "label": "In a car",
+            "value": "C"
+          },
+          {
+            "label": "On a chair",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What animal runs near Pablo?",
         "options": [
-          { "label": "A cat", "value": "A" },
-          { "label": "A small dog", "value": "B" },
-          { "label": "A rabbit", "value": "C" },
-          { "label": "A bird", "value": "D" }
+          {
+            "label": "A cat",
+            "value": "A"
+          },
+          {
+            "label": "A small dog",
+            "value": "B"
+          },
+          {
+            "label": "A rabbit",
+            "value": "C"
+          },
+          {
+            "label": "A bird",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is the weather like?",
         "options": [
-          { "label": "It is raining", "value": "A" },
-          { "label": "It is cold", "value": "B" },
-          { "label": "It is sunny", "value": "C" },
-          { "label": "It is windy", "value": "D" }
+          {
+            "label": "It is raining",
+            "value": "A"
+          },
+          {
+            "label": "It is cold",
+            "value": "B"
+          },
+          {
+            "label": "It is sunny",
+            "value": "C"
+          },
+          {
+            "label": "It is windy",
+            "value": "D"
+          }
         ],
         "correct": "C"
       }
@@ -217,7 +343,10 @@
     "language": "es",
     "cefr_level": "A2",
     "title": "Una visita al mercado",
-    "topics": ["shopping", "food"],
+    "topics": [
+      "shopping",
+      "food"
+    ],
     "body": "Marta va al mercado central los sábados. Le gusta comprar fruta fresca y verduras de temporada.\n\nHoy compra manzanas rojas y plátanos amarillos. Habla un momento con el vendedor, que es muy simpático.\n\nDespués, vuelve a casa para preparar una ensalada grande.",
     "sentence_translations": [
       "Marta goes to the central market on Saturdays.",
@@ -244,19 +373,28 @@
       "de": "of",
       "temporada": "season",
       "hoy": "today",
+      "compra": "purchase; buys",
       "manzanas": "apples",
       "rojas": "red",
       "plátanos": "bananas",
       "amarillos": "yellow",
       "habla": "speaks",
+      "un": "a; an",
       "momento": "moment",
+      "con": "with",
+      "el": "the",
       "vendedor": "seller",
+      "que": "that; which",
+      "es": "is",
+      "muy": "very",
       "simpático": "friendly",
       "después": "afterwards",
       "vuelve": "returns",
+      "a": "to; at",
       "casa": "home",
       "para": "to / in order to",
       "preparar": "to prepare",
+      "una": "a; an",
       "ensalada": "salad",
       "grande": "large"
     },
@@ -264,50 +402,110 @@
       {
         "question": "When does Marta go to the market?",
         "options": [
-          { "label": "On Mondays", "value": "A" },
-          { "label": "On Fridays", "value": "B" },
-          { "label": "On Saturdays", "value": "C" },
-          { "label": "On Sundays", "value": "D" }
+          {
+            "label": "On Mondays",
+            "value": "A"
+          },
+          {
+            "label": "On Fridays",
+            "value": "B"
+          },
+          {
+            "label": "On Saturdays",
+            "value": "C"
+          },
+          {
+            "label": "On Sundays",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What fruit does she buy today?",
         "options": [
-          { "label": "Oranges and grapes", "value": "A" },
-          { "label": "Red apples and yellow bananas", "value": "B" },
-          { "label": "Strawberries and lemons", "value": "C" },
-          { "label": "Pears and peaches", "value": "D" }
+          {
+            "label": "Oranges and grapes",
+            "value": "A"
+          },
+          {
+            "label": "Red apples and yellow bananas",
+            "value": "B"
+          },
+          {
+            "label": "Strawberries and lemons",
+            "value": "C"
+          },
+          {
+            "label": "Pears and peaches",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How is the seller described?",
         "options": [
-          { "label": "Very friendly", "value": "A" },
-          { "label": "Quiet", "value": "B" },
-          { "label": "Tired", "value": "C" },
-          { "label": "Impatient", "value": "D" }
+          {
+            "label": "Very friendly",
+            "value": "A"
+          },
+          {
+            "label": "Quiet",
+            "value": "B"
+          },
+          {
+            "label": "Tired",
+            "value": "C"
+          },
+          {
+            "label": "Impatient",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "Where does Marta go after buying fruit?",
         "options": [
-          { "label": "To work", "value": "A" },
-          { "label": "To home", "value": "B" },
-          { "label": "To a restaurant", "value": "C" },
-          { "label": "To the park", "value": "D" }
+          {
+            "label": "To work",
+            "value": "A"
+          },
+          {
+            "label": "To home",
+            "value": "B"
+          },
+          {
+            "label": "To a restaurant",
+            "value": "C"
+          },
+          {
+            "label": "To the park",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What will Marta prepare at home?",
         "options": [
-          { "label": "A cake", "value": "A" },
-          { "label": "A soup", "value": "B" },
-          { "label": "A large salad", "value": "C" },
-          { "label": "A pizza", "value": "D" }
+          {
+            "label": "A cake",
+            "value": "A"
+          },
+          {
+            "label": "A soup",
+            "value": "B"
+          },
+          {
+            "label": "A large salad",
+            "value": "C"
+          },
+          {
+            "label": "A pizza",
+            "value": "D"
+          }
         ],
         "correct": "C"
       }
@@ -317,7 +515,10 @@
     "language": "es",
     "cefr_level": "A2",
     "title": "El fin de semana en la playa",
-    "topics": ["travel", "leisure"],
+    "topics": [
+      "travel",
+      "leisure"
+    ],
     "body": "David viajó a la costa con sus hermanos el sábado pasado. El tiempo estaba muy despejado y la brisa era agradable.\n\nPasaron el día nadando en el mar y comiendo paella en un restaurante local.\n\nPor la tarde, contemplaron la puesta de sol antes de regresar a la ciudad.",
     "sentence_translations": [
       "David traveled to the coast with his siblings last Saturday.",
@@ -328,27 +529,38 @@
     "word_translations": {
       "david": "David",
       "viajó": "traveled",
+      "a": "to; at",
+      "la": "the",
       "costa": "coast",
       "con": "with",
       "sus": "his",
       "hermanos": "siblings / brothers",
+      "el": "the",
       "sábado": "Saturday",
       "pasado": "past / last",
       "tiempo": "weather",
+      "estaba": "was",
+      "muy": "very",
       "despejado": "clear",
+      "y": "and",
       "brisa": "breeze",
+      "era": "was",
       "agradable": "pleasant",
       "pasaron": "they spent",
       "día": "day",
       "nadando": "swimming",
+      "en": "in; on",
       "mar": "sea",
       "comiendo": "eating",
       "paella": "paella",
+      "un": "a; an",
       "restaurante": "restaurant",
       "local": "local",
+      "por": "by; for; through",
       "tarde": "afternoon",
       "contemplaron": "they watched",
       "puesta": "setting",
+      "de": "of; from",
       "sol": "sun",
       "antes": "before",
       "regresar": "to return",
@@ -358,50 +570,110 @@
       {
         "question": "Who did David travel with?",
         "options": [
-          { "label": "His friends", "value": "A" },
-          { "label": "His siblings", "value": "B" },
-          { "label": "His parents", "value": "C" },
-          { "label": "Alone", "value": "D" }
+          {
+            "label": "His friends",
+            "value": "A"
+          },
+          {
+            "label": "His siblings",
+            "value": "B"
+          },
+          {
+            "label": "His parents",
+            "value": "C"
+          },
+          {
+            "label": "Alone",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What was the weather like?",
         "options": [
-          { "label": "Rainy and cold", "value": "A" },
-          { "label": "Stormy", "value": "B" },
-          { "label": "Very clear with a pleasant breeze", "value": "C" },
-          { "label": "Foggy", "value": "D" }
+          {
+            "label": "Rainy and cold",
+            "value": "A"
+          },
+          {
+            "label": "Stormy",
+            "value": "B"
+          },
+          {
+            "label": "Very clear with a pleasant breeze",
+            "value": "C"
+          },
+          {
+            "label": "Foggy",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What food did they eat at the restaurant?",
         "options": [
-          { "label": "Tacos", "value": "A" },
-          { "label": "Paella", "value": "B" },
-          { "label": "Pizza", "value": "C" },
-          { "label": "Fish and chips", "value": "D" }
+          {
+            "label": "Tacos",
+            "value": "A"
+          },
+          {
+            "label": "Paella",
+            "value": "B"
+          },
+          {
+            "label": "Pizza",
+            "value": "C"
+          },
+          {
+            "label": "Fish and chips",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did they do in the afternoon?",
         "options": [
-          { "label": "Watched the sunset", "value": "A" },
-          { "label": "Went shopping", "value": "B" },
-          { "label": "Played football", "value": "C" },
-          { "label": "Slept", "value": "D" }
+          {
+            "label": "Watched the sunset",
+            "value": "A"
+          },
+          {
+            "label": "Went shopping",
+            "value": "B"
+          },
+          {
+            "label": "Played football",
+            "value": "C"
+          },
+          {
+            "label": "Slept",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "Where did they go at the end of the day?",
         "options": [
-          { "label": "To a hotel", "value": "A" },
-          { "label": "Returned to the city", "value": "B" },
-          { "label": "To another beach", "value": "C" },
-          { "label": "To a museum", "value": "D" }
+          {
+            "label": "To a hotel",
+            "value": "A"
+          },
+          {
+            "label": "Returned to the city",
+            "value": "B"
+          },
+          {
+            "label": "To another beach",
+            "value": "C"
+          },
+          {
+            "label": "To a museum",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -411,7 +683,10 @@
     "language": "es",
     "cefr_level": "B1",
     "title": "El tren a Valencia",
-    "topics": ["travel", "daily life"],
+    "topics": [
+      "travel",
+      "daily life"
+    ],
     "body": "Carlos llegó a la estación con veinte minutos de antelación. Quería asegurarse de encontrar su andén sin prisas.\n\nCompró un café y revisó el billete en el móvil. El tren salía a las diez y media hacia Valencia.\n\nCuando anunciaron el andén, caminó con calma entre la gente. Subió al vagón correcto y encontró su asiento junto a la ventana.\n\nDurante el viaje leyó un poco y miró el paisaje. Los campos verdes pasaban rápidamente.\n\nAl llegar, sonrió. El fin de semana con sus amigos había empezado bien.",
     "sentence_translations": [
       "Carlos arrived at the station twenty minutes early.",
@@ -428,21 +703,33 @@
     "word_translations": {
       "carlos": "Carlos",
       "llegó": "arrived",
+      "a": "to; at",
+      "la": "the",
       "estación": "station",
+      "con": "with",
       "veinte": "twenty",
       "minutos": "minutes",
+      "de": "of; from",
       "antelación": "advance / early",
       "quería": "he wanted",
       "asegurarse": "to make sure",
       "encontrar": "to find",
+      "su": "his; her; their",
       "andén": "platform",
+      "sin": "without",
       "prisas": "hurry",
       "compró": "bought",
+      "un": "a; an",
+      "café": "coffee; café",
+      "y": "and",
       "revisó": "checked",
+      "el": "the",
       "billete": "ticket",
+      "en": "in; on",
       "móvil": "mobile phone",
       "tren": "train",
       "salía": "was leaving",
+      "las": "the",
       "diez": "ten",
       "media": "half",
       "hacia": "toward",
@@ -454,10 +741,12 @@
       "entre": "among / between",
       "gente": "people",
       "subió": "got on / went up",
+      "al": "to the",
       "vagón": "train car",
       "correcto": "correct",
       "encontró": "found",
       "asiento": "seat",
+      "junto": "together; next to",
       "ventana": "window",
       "durante": "during",
       "viaje": "trip",
@@ -465,6 +754,7 @@
       "poco": "a little",
       "miró": "looked at",
       "paisaje": "landscape",
+      "los": "the",
       "campos": "fields",
       "verdes": "green",
       "pasaban": "were passing",
@@ -473,6 +763,7 @@
       "sonrió": "smiled",
       "fin": "end",
       "semana": "week",
+      "sus": "his; her; their",
       "amigos": "friends",
       "había": "had",
       "empezado": "started",
@@ -482,50 +773,110 @@
       {
         "question": "Why did Carlos arrive early?",
         "options": [
-          { "label": "He was lost", "value": "A" },
-          { "label": "To find his platform without rushing", "value": "B" },
-          { "label": "The train was delayed", "value": "C" },
-          { "label": "He missed breakfast", "value": "D" }
+          {
+            "label": "He was lost",
+            "value": "A"
+          },
+          {
+            "label": "To find his platform without rushing",
+            "value": "B"
+          },
+          {
+            "label": "The train was delayed",
+            "value": "C"
+          },
+          {
+            "label": "He missed breakfast",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Where was the train going?",
         "options": [
-          { "label": "Madrid", "value": "A" },
-          { "label": "Barcelona", "value": "B" },
-          { "label": "Valencia", "value": "C" },
-          { "label": "Seville", "value": "D" }
+          {
+            "label": "Madrid",
+            "value": "A"
+          },
+          {
+            "label": "Barcelona",
+            "value": "B"
+          },
+          {
+            "label": "Valencia",
+            "value": "C"
+          },
+          {
+            "label": "Seville",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What did Carlos do on the train?",
         "options": [
-          { "label": "Slept the whole way", "value": "A" },
-          { "label": "Read and looked at the scenery", "value": "B" },
-          { "label": "Worked on a laptop", "value": "C" },
-          { "label": "Talked to strangers", "value": "D" }
+          {
+            "label": "Slept the whole way",
+            "value": "A"
+          },
+          {
+            "label": "Read and looked at the scenery",
+            "value": "B"
+          },
+          {
+            "label": "Worked on a laptop",
+            "value": "C"
+          },
+          {
+            "label": "Talked to strangers",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Where was his seat?",
         "options": [
-          { "label": "In the dining car", "value": "A" },
-          { "label": "By the door", "value": "B" },
-          { "label": "By the window", "value": "C" },
-          { "label": "He had no seat", "value": "D" }
+          {
+            "label": "In the dining car",
+            "value": "A"
+          },
+          {
+            "label": "By the door",
+            "value": "B"
+          },
+          {
+            "label": "By the window",
+            "value": "C"
+          },
+          {
+            "label": "He had no seat",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "Who was he visiting?",
         "options": [
-          { "label": "His parents", "value": "A" },
-          { "label": "His friends", "value": "B" },
-          { "label": "His boss", "value": "C" },
-          { "label": "Nobody", "value": "D" }
+          {
+            "label": "His parents",
+            "value": "A"
+          },
+          {
+            "label": "His friends",
+            "value": "B"
+          },
+          {
+            "label": "His boss",
+            "value": "C"
+          },
+          {
+            "label": "Nobody",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -535,7 +886,10 @@
     "language": "es",
     "cefr_level": "B1",
     "title": "Una cena con viejos amigos",
-    "topics": ["social", "food"],
+    "topics": [
+      "social",
+      "food"
+    ],
     "body": "Lucía organizó una cena en su apartamento para reencontrarse con sus compañeros de la universidad.\n\nPrepararon una receta tradicional mientras recordaban anécdotas inolvidables de sus años de estudiantes.\n\nLa conversación se prolongó hasta medianoche en un ambiente lleno de risas y recuerdos.\n\nTodos prometieron volver a reunirse muy pronto.",
     "sentence_translations": [
       "Lucía organized a dinner at her apartment to reunite with her university classmates.",
@@ -546,10 +900,18 @@
     "word_translations": {
       "lucía": "Lucía",
       "organizó": "organized",
+      "una": "a; an",
       "cena": "dinner",
+      "en": "in; on",
+      "su": "his; her; their",
       "apartamento": "apartment",
+      "para": "for; to",
       "reencontrarse": "to reunite",
+      "con": "with",
+      "sus": "his; her; their",
       "compañeros": "classmates / companions",
+      "de": "of; from",
+      "la": "the",
       "universidad": "university",
       "prepararon": "they prepared",
       "receta": "recipe",
@@ -558,64 +920,135 @@
       "recordaban": "they remembered",
       "anécdotas": "anecdotes",
       "inolvidables": "unforgettable",
+      "años": "years",
+      "estudiantes": "students",
       "conversación": "conversation",
+      "se": "oneself; itself",
       "prolongó": "extended / continued",
+      "hasta": "until; even",
       "medianoche": "midnight",
+      "un": "a; an",
       "ambiente": "atmosphere",
+      "lleno": "full",
       "risas": "laughter",
+      "y": "and",
       "recuerdos": "memories",
+      "todos": "all; everyone",
       "prometieron": "promised",
+      "volver": "to return",
+      "a": "to; at",
       "reunirse": "to meet up",
+      "muy": "very",
       "pronto": "soon"
     },
     "quiz": [
       {
         "question": "Where was the dinner held?",
         "options": [
-          { "label": "In a restaurant", "value": "A" },
-          { "label": "In Lucía's apartment", "value": "B" },
-          { "label": "At the university", "value": "C" },
-          { "label": "In a park", "value": "D" }
+          {
+            "label": "In a restaurant",
+            "value": "A"
+          },
+          {
+            "label": "In Lucía's apartment",
+            "value": "B"
+          },
+          {
+            "label": "At the university",
+            "value": "C"
+          },
+          {
+            "label": "In a park",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who did Lucía invite?",
         "options": [
-          { "label": "Her family", "value": "A" },
-          { "label": "Her coworkers", "value": "B" },
-          { "label": "Her university classmates", "value": "C" },
-          { "label": "Her neighbors", "value": "D" }
+          {
+            "label": "Her family",
+            "value": "A"
+          },
+          {
+            "label": "Her coworkers",
+            "value": "B"
+          },
+          {
+            "label": "Her university classmates",
+            "value": "C"
+          },
+          {
+            "label": "Her neighbors",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What did they talk about while cooking?",
         "options": [
-          { "label": "Future jobs", "value": "A" },
-          { "label": "Politics", "value": "B" },
-          { "label": "Student anecdotes", "value": "C" },
-          { "label": "Sports", "value": "D" }
+          {
+            "label": "Future jobs",
+            "value": "A"
+          },
+          {
+            "label": "Politics",
+            "value": "B"
+          },
+          {
+            "label": "Student anecdotes",
+            "value": "C"
+          },
+          {
+            "label": "Sports",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "Until what time did the conversation last?",
         "options": [
-          { "label": "8:00 PM", "value": "A" },
-          { "label": "10:00 PM", "value": "B" },
-          { "label": "Midnight", "value": "C" },
-          { "label": "Sunrise", "value": "D" }
+          {
+            "label": "8:00 PM",
+            "value": "A"
+          },
+          {
+            "label": "10:00 PM",
+            "value": "B"
+          },
+          {
+            "label": "Midnight",
+            "value": "C"
+          },
+          {
+            "label": "Sunrise",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What did everyone promise at the end?",
         "options": [
-          { "label": "To travel together", "value": "A" },
-          { "label": "To meet up again soon", "value": "B" },
-          { "label": "To start a business", "value": "C" },
-          { "label": "To call every day", "value": "D" }
+          {
+            "label": "To travel together",
+            "value": "A"
+          },
+          {
+            "label": "To meet up again soon",
+            "value": "B"
+          },
+          {
+            "label": "To start a business",
+            "value": "C"
+          },
+          {
+            "label": "To call every day",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -625,7 +1058,10 @@
     "language": "es",
     "cefr_level": "B2",
     "title": "El misterio de la llave antigua",
-    "topics": ["mystery", "culture"],
+    "topics": [
+      "mystery",
+      "culture"
+    ],
     "body": "Mientras exploraba el desván de su casa solariega, Sofía encontró un manuscrito oculto tras unos libros vetustos.\n\nEl documento contenía trazos minuciosos y coordenadas que sugerían la existencia de un pasadizo subterráneo.\n\nIntrigada por el hallazgo, decidió investigar la historia de la estructura junto a un historiador local.\n\nDescubrieron que la propiedad había pertenecido a un célebre cartógrafo del siglo XVIII.",
     "sentence_translations": [
       "While exploring the attic of her ancestral home, Sofía found a manuscript hidden behind ancient books.",
@@ -634,77 +1070,164 @@
       "They discovered that the property had belonged to a famous 18th-century cartographer."
     ],
     "word_translations": {
+      "mientras": "while",
       "exploraba": "was exploring",
+      "el": "the",
       "desván": "attic",
+      "de": "of; from",
+      "su": "his; her; their",
+      "casa": "house; home",
       "solariega": "ancestral / manor",
       "sofía": "Sofía",
       "encontró": "found",
+      "un": "a; an",
       "manuscrito": "manuscript",
       "oculto": "hidden",
+      "tras": "after",
+      "unos": "some",
+      "libros": "books",
       "vetustos": "ancient / old",
+      "documento": "document",
+      "contenía": "contained",
       "trazos": "sketches / lines",
       "minuciosos": "meticulous",
+      "y": "and",
       "coordenadas": "coordinates",
+      "que": "that; which",
       "sugerían": "suggested",
+      "la": "the",
+      "existencia": "existence",
       "pasadizo": "passage",
       "subterráneo": "underground",
       "intrigada": "intrigued",
+      "por": "by; for; through",
       "hallazgo": "discovery / find",
+      "decidió": "decided",
       "investigar": "to investigate",
+      "historia": "history; story",
+      "estructura": "structure",
+      "junto": "together; next to",
+      "a": "to; at",
       "historiador": "historian",
+      "local": "local",
+      "descubrieron": "they discovered",
+      "propiedad": "property",
+      "había": "there was; had",
       "pertenecido": "belonged",
       "célebre": "famous",
       "cartógrafo": "cartographer",
-      "siglo": "century"
+      "del": "of the",
+      "siglo": "century",
+      "xviii": "eighteenth"
     },
     "quiz": [
       {
         "question": "Where did Sofía find the manuscript?",
         "options": [
-          { "label": "In the cellar", "value": "A" },
-          { "label": "In the attic behind old books", "value": "B" },
-          { "label": "Under her bed", "value": "C" },
-          { "label": "In a library", "value": "D" }
+          {
+            "label": "In the cellar",
+            "value": "A"
+          },
+          {
+            "label": "In the attic behind old books",
+            "value": "B"
+          },
+          {
+            "label": "Under her bed",
+            "value": "C"
+          },
+          {
+            "label": "In a library",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did the document suggest?",
         "options": [
-          { "label": "A hidden treasure of gold", "value": "A" },
-          { "label": "An underground passage", "value": "B" },
-          { "label": "A secret recipe", "value": "C" },
-          { "label": "A missing painting", "value": "D" }
+          {
+            "label": "A hidden treasure of gold",
+            "value": "A"
+          },
+          {
+            "label": "An underground passage",
+            "value": "B"
+          },
+          {
+            "label": "A secret recipe",
+            "value": "C"
+          },
+          {
+            "label": "A missing painting",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who helped Sofía investigate?",
         "options": [
-          { "label": "Her brother", "value": "A" },
-          { "label": "A local historian", "value": "B" },
-          { "label": "A detective", "value": "C" },
-          { "label": "Her teacher", "value": "D" }
+          {
+            "label": "Her brother",
+            "value": "A"
+          },
+          {
+            "label": "A local historian",
+            "value": "B"
+          },
+          {
+            "label": "A detective",
+            "value": "C"
+          },
+          {
+            "label": "Her teacher",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who owned the property in the 18th century?",
         "options": [
-          { "label": "A famous cartographer", "value": "A" },
-          { "label": "A royal prince", "value": "B" },
-          { "label": "A painter", "value": "C" },
-          { "label": "A sea captain", "value": "D" }
+          {
+            "label": "A famous cartographer",
+            "value": "A"
+          },
+          {
+            "label": "A royal prince",
+            "value": "B"
+          },
+          {
+            "label": "A painter",
+            "value": "C"
+          },
+          {
+            "label": "A sea captain",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What reaction did Sofía have to the discovery?",
         "options": [
-          { "label": "She was scared", "value": "A" },
-          { "label": "She was intrigued", "value": "B" },
-          { "label": "She was indifferent", "value": "C" },
-          { "label": "She was angry", "value": "D" }
+          {
+            "label": "She was scared",
+            "value": "A"
+          },
+          {
+            "label": "She was intrigued",
+            "value": "B"
+          },
+          {
+            "label": "She was indifferent",
+            "value": "C"
+          },
+          {
+            "label": "She was angry",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -714,7 +1237,10 @@
     "language": "es",
     "cefr_level": "B2",
     "title": "El impacto de la tecnología",
-    "topics": ["technology", "work"],
+    "topics": [
+      "technology",
+      "work"
+    ],
     "body": "El auge del trabajo remoto ha reconfigurado drásticamente la dinámica laboral en las metrópolis contemporáneas.\n\nMuchos profesionales han optado por trasladarse a zonas rurales buscando una mejor calidad de vida.\n\nEsta tendencia ha impulsado economías locales, aunque también plantea desafíos sobre la conectividad e infraestructura digital.\n\nLas empresas intentan adaptar sus políticas para equilibrar la flexibilidad con la cohesión de sus equipos.",
     "sentence_translations": [
       "The rise of remote work has drastically reconfigured work dynamics in contemporary metropolises.",
@@ -723,75 +1249,170 @@
       "Companies are trying to adapt their policies to balance flexibility with team cohesion."
     ],
     "word_translations": {
+      "el": "the",
       "auge": "rise / boom",
+      "del": "of the",
+      "trabajo": "work",
       "remoto": "remote",
+      "ha": "has",
       "reconfigurado": "reconfigured",
+      "drásticamente": "drastically",
+      "la": "the",
       "dinámica": "dynamics",
+      "laboral": "work-related",
+      "en": "in; on",
+      "las": "the",
       "metrópolis": "metropolises",
+      "contemporáneas": "contemporary",
+      "muchos": "many",
       "profesionales": "professionals",
+      "han": "have",
       "optado": "chosen / opted",
+      "por": "by; for; through",
       "trasladarse": "to move / relocate",
+      "a": "to; at",
+      "zonas": "areas; zones",
       "rurales": "rural",
+      "buscando": "looking for",
+      "una": "a; an",
+      "mejor": "better; best",
       "calidad": "quality",
+      "de": "of; from",
+      "vida": "life",
+      "esta": "this",
       "tendencia": "trend",
       "impulsado": "boosted / driven",
+      "economías": "economies",
+      "locales": "local",
+      "aunque": "although",
+      "también": "also",
+      "plantea": "raises; poses",
       "desafíos": "challenges",
+      "sobre": "about; on",
       "conectividad": "connectivity",
+      "e": "and",
       "infraestructura": "infrastructure",
+      "digital": "digital",
       "empresas": "companies",
+      "intentan": "they try",
+      "adaptar": "to adapt",
+      "sus": "his; her; their",
       "políticas": "policies",
+      "para": "for; to",
       "equilibrar": "to balance",
       "flexibilidad": "flexibility",
-      "cohesión": "cohesion"
+      "con": "with",
+      "cohesión": "cohesion",
+      "equipos": "teams"
     },
     "quiz": [
       {
         "question": "What has reconfigured work dynamics in cities?",
         "options": [
-          { "label": "New transport systems", "value": "A" },
-          { "label": "The rise of remote work", "value": "B" },
-          { "label": "Higher taxes", "value": "C" },
-          { "label": "Shorter working hours", "value": "D" }
+          {
+            "label": "New transport systems",
+            "value": "A"
+          },
+          {
+            "label": "The rise of remote work",
+            "value": "B"
+          },
+          {
+            "label": "Higher taxes",
+            "value": "C"
+          },
+          {
+            "label": "Shorter working hours",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Why are professionals moving to rural areas?",
         "options": [
-          { "label": "To find cheaper housing only", "value": "A" },
-          { "label": "Seeking a better quality of life", "value": "B" },
-          { "label": "Because cities are closed", "value": "C" },
-          { "label": "To work in agriculture", "value": "D" }
+          {
+            "label": "To find cheaper housing only",
+            "value": "A"
+          },
+          {
+            "label": "Seeking a better quality of life",
+            "value": "B"
+          },
+          {
+            "label": "Because cities are closed",
+            "value": "C"
+          },
+          {
+            "label": "To work in agriculture",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What positive effect has this trend had on rural areas?",
         "options": [
-          { "label": "Reduced traffic in rural areas", "value": "A" },
-          { "label": "Boosted local economies", "value": "B" },
-          { "label": "Lowered electricity prices", "value": "C" },
-          { "label": "Eliminated the need for internet", "value": "D" }
+          {
+            "label": "Reduced traffic in rural areas",
+            "value": "A"
+          },
+          {
+            "label": "Boosted local economies",
+            "value": "B"
+          },
+          {
+            "label": "Lowered electricity prices",
+            "value": "C"
+          },
+          {
+            "label": "Eliminated the need for internet",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What challenges does this trend pose?",
         "options": [
-          { "label": "Overpopulation of forests", "value": "A" },
-          { "label": "Connectivity and digital infrastructure", "value": "B" },
-          { "label": "Lack of food options", "value": "C" },
-          { "label": "Language barriers", "value": "D" }
+          {
+            "label": "Overpopulation of forests",
+            "value": "A"
+          },
+          {
+            "label": "Connectivity and digital infrastructure",
+            "value": "B"
+          },
+          {
+            "label": "Lack of food options",
+            "value": "C"
+          },
+          {
+            "label": "Language barriers",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What are companies striving to balance?",
         "options": [
-          { "label": "Salaries and taxes", "value": "A" },
-          { "label": "Flexibility with team cohesion", "value": "B" },
-          { "label": "Working hours and vacation time", "value": "C" },
-          { "label": "Software tools and hardware", "value": "D" }
+          {
+            "label": "Salaries and taxes",
+            "value": "A"
+          },
+          {
+            "label": "Flexibility with team cohesion",
+            "value": "B"
+          },
+          {
+            "label": "Working hours and vacation time",
+            "value": "C"
+          },
+          {
+            "label": "Software tools and hardware",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -801,7 +1422,11 @@
     "language": "es",
     "cefr_level": "C1",
     "title": "El arte de la arquitectura tradicional",
-    "topics": ["art", "architecture", "culture"],
+    "topics": [
+      "art",
+      "architecture",
+      "culture"
+    ],
     "body": "La coexistencia entre la modernización arquitectónica y el resguardo de la memoria histórica representa un dilema persistente en las urbes actuales.\n\nLos planes de ordenamiento territorial a menudo priorizan la densidad edificable en detrimento de estructuras centenarias de incalculable valor cultural.\n\nRestaurar vestigios antiguos requiere una inversión considerable y criterios multidisciplinarios rigurosos.\n\nSin un compromiso genuino por parte de las autoridades, corremos el riesgo de homogeneizar los espacios públicos a costa de su identidad.",
     "sentence_translations": [
       "The coexistence between architectural modernization and the preservation of historical memory represents a persistent dilemma in current cities.",
@@ -810,74 +1435,173 @@
       "Without a genuine commitment from authorities, we risk homogenizing public spaces at the expense of their identity."
     ],
     "word_translations": {
+      "la": "the",
       "coexistencia": "coexistence",
+      "entre": "between; among",
       "modernización": "modernization",
+      "arquitectónica": "architectural",
+      "y": "and",
+      "el": "the",
       "resguardo": "protection / preservation",
+      "de": "of; from",
+      "memoria": "memory",
+      "histórica": "historical",
+      "representa": "represents",
+      "un": "a; an",
       "dilema": "dilemma",
+      "persistente": "persistent",
+      "en": "in; on",
+      "las": "the",
       "urbes": "cities / metropolises",
+      "actuales": "current",
+      "los": "the",
+      "planes": "plans",
       "ordenamiento": "planning / ordering",
       "territorial": "territorial",
+      "a": "to; at",
+      "menudo": "often",
       "priorizan": "prioritize",
       "densidad": "density",
+      "edificable": "buildable",
       "detrimento": "detriment",
       "estructuras": "structures",
       "centenarias": "centuries-old",
+      "incalculable": "incalculable",
+      "valor": "value",
+      "cultural": "cultural",
+      "restaurar": "to restore",
       "vestigios": "remains / vestiges",
+      "antiguos": "ancient; old",
+      "requiere": "requires",
+      "una": "a; an",
       "inversión": "investment",
+      "considerable": "considerable",
       "criterios": "criteria",
       "multidisciplinarios": "multidisciplinary",
+      "rigurosos": "rigorous",
+      "sin": "without",
       "compromiso": "commitment",
+      "genuino": "genuine",
+      "por": "by; for; through",
+      "parte": "part",
+      "autoridades": "authorities",
+      "corremos": "we run",
+      "riesgo": "risk",
       "homogeneizar": "to homogenize",
+      "espacios": "spaces",
+      "públicos": "public",
+      "costa": "coast; cost",
+      "su": "his; her; their",
       "identidad": "identity"
     },
     "quiz": [
       {
         "question": "What dilemma exists in modern cities according to the text?",
         "options": [
-          { "label": "Between tourism and residential housing", "value": "A" },
-          { "label": "Between modernization and preserving historical memory", "value": "B" },
-          { "label": "Between public transit and private cars", "value": "C" },
-          { "label": "Between green spaces and industrial zones", "value": "D" }
+          {
+            "label": "Between tourism and residential housing",
+            "value": "A"
+          },
+          {
+            "label": "Between modernization and preserving historical memory",
+            "value": "B"
+          },
+          {
+            "label": "Between public transit and private cars",
+            "value": "C"
+          },
+          {
+            "label": "Between green spaces and industrial zones",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What do land-use plans often prioritize?",
         "options": [
-          { "label": "Parks and gardens", "value": "A" },
-          { "label": "Building density over historic structures", "value": "B" },
-          { "label": "Pedestrian zones", "value": "C" },
-          { "label": "Underground parking", "value": "D" }
+          {
+            "label": "Parks and gardens",
+            "value": "A"
+          },
+          {
+            "label": "Building density over historic structures",
+            "value": "B"
+          },
+          {
+            "label": "Pedestrian zones",
+            "value": "C"
+          },
+          {
+            "label": "Underground parking",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is needed to restore old structures?",
         "options": [
-          { "label": "Only volunteer labor", "value": "A" },
-          { "label": "Considerable investment and rigorous criteria", "value": "B" },
-          { "label": "Demolition permits", "value": "C" },
-          { "label": "International approval", "value": "D" }
+          {
+            "label": "Only volunteer labor",
+            "value": "A"
+          },
+          {
+            "label": "Considerable investment and rigorous criteria",
+            "value": "B"
+          },
+          {
+            "label": "Demolition permits",
+            "value": "C"
+          },
+          {
+            "label": "International approval",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What risk arises if authorities lack commitment?",
         "options": [
-          { "label": "Higher property taxes", "value": "A" },
-          { "label": "Homogenizing public spaces losing their identity", "value": "B" },
-          { "label": "Complete collapse of transportation", "value": "C" },
-          { "label": "Population decrease", "value": "D" }
+          {
+            "label": "Higher property taxes",
+            "value": "A"
+          },
+          {
+            "label": "Homogenizing public spaces losing their identity",
+            "value": "B"
+          },
+          {
+            "label": "Complete collapse of transportation",
+            "value": "C"
+          },
+          {
+            "label": "Population decrease",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What type of criteria is mentioned for restoration work?",
         "options": [
-          { "label": "Strictly commercial", "value": "A" },
-          { "label": "Multidisciplinary", "value": "B" },
-          { "label": "Politicized", "value": "C" },
-          { "label": "Random", "value": "D" }
+          {
+            "label": "Strictly commercial",
+            "value": "A"
+          },
+          {
+            "label": "Multidisciplinary",
+            "value": "B"
+          },
+          {
+            "label": "Politicized",
+            "value": "C"
+          },
+          {
+            "label": "Random",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -887,7 +1611,10 @@
     "language": "es",
     "cefr_level": "C1",
     "title": "Reflexiones sobre la literatura",
-    "topics": ["literature", "culture"],
+    "topics": [
+      "literature",
+      "culture"
+    ],
     "body": "El realismo mágico no constituye únicamente un recurso estilístico, sino una cosmovisión arraigada en las paradojas del continente.\n\nAl disolver las fronteras entre lo cotidiano y lo fantástico, autores señeros lograron visibilizar realidades complejas y silenciadas.\n\nEl análisis crítico contemporáneo reexamina estas obras bajo nuevas metodologías interdisciplinarias.\n\nAsí, se constata la vigencia de un legado que trasciende modas estéticas e imperativos comerciales.",
     "sentence_translations": [
       "Magical realism is not merely a stylistic device, but a worldview rooted in the paradoxes of the continent.",
@@ -896,74 +1623,172 @@
       "Thus, the enduring relevance of a legacy that transcends aesthetic trends and commercial imperatives is confirmed."
     ],
     "word_translations": {
+      "el": "the",
       "realismo": "realism",
       "mágico": "magical",
+      "no": "not; no",
+      "constituye": "constitutes",
       "únicamente": "solely / merely",
+      "un": "a; an",
       "recurso": "device / resource",
       "estilístico": "stylistic",
+      "sino": "but rather",
+      "una": "a; an",
       "cosmovisión": "worldview",
       "arraigada": "rooted",
+      "en": "in; on",
+      "las": "the",
       "paradojas": "paradoxes",
+      "del": "of the",
+      "continente": "continent",
+      "al": "to the",
       "disolver": "to dissolve",
       "fronteras": "boundaries / borders",
+      "entre": "between; among",
+      "lo": "it; the",
+      "cotidiano": "everyday",
+      "y": "and",
       "fantástico": "fantastic",
+      "autores": "authors",
       "señeros": "prominent / distinguished",
+      "lograron": "they achieved",
+      "visibilizar": "to make visible",
+      "realidades": "realities",
+      "complejas": "complex",
       "silenciadas": "silenced",
+      "análisis": "analysis",
+      "crítico": "critical",
+      "contemporáneo": "contemporary",
+      "reexamina": "reexamines",
+      "estas": "these",
+      "obras": "works",
+      "bajo": "under; low",
+      "nuevas": "new",
       "metodologías": "methodologies",
       "interdisciplinarias": "interdisciplinary",
+      "así": "like this; so",
+      "se": "oneself; itself",
       "constata": "confirms / verifies",
+      "la": "the",
       "vigencia": "relevance / validity",
+      "de": "of; from",
       "legado": "legacy",
-      "trasciende": "transcends"
+      "que": "that; which",
+      "trasciende": "transcends",
+      "modas": "fashions",
+      "estéticas": "aesthetics",
+      "e": "and",
+      "imperativos": "imperatives",
+      "comerciales": "commercial"
     },
     "quiz": [
       {
         "question": "How is magical realism defined in the text?",
         "options": [
-          { "label": "As a simple narrative trick", "value": "A" },
-          { "label": "As a worldview rooted in continental paradoxes", "value": "B" },
-          { "label": "As a European movement", "value": "C" },
-          { "label": "As popular folklore only", "value": "D" }
+          {
+            "label": "As a simple narrative trick",
+            "value": "A"
+          },
+          {
+            "label": "As a worldview rooted in continental paradoxes",
+            "value": "B"
+          },
+          {
+            "label": "As a European movement",
+            "value": "C"
+          },
+          {
+            "label": "As popular folklore only",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What boundaries do these authors dissolve?",
         "options": [
-          { "label": "Between poetry and prose", "value": "A" },
-          { "label": "Between the everyday and the fantastic", "value": "B" },
-          { "label": "Between languages", "value": "C" },
-          { "label": "Between past and future", "value": "D" }
+          {
+            "label": "Between poetry and prose",
+            "value": "A"
+          },
+          {
+            "label": "Between the everyday and the fantastic",
+            "value": "B"
+          },
+          {
+            "label": "Between languages",
+            "value": "C"
+          },
+          {
+            "label": "Between past and future",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What was made visible through this literary style?",
         "options": [
-          { "label": "Scientific discoveries", "value": "A" },
-          { "label": "Complex and silenced realities", "value": "B" },
-          { "label": "Fictional creatures only", "value": "C" },
-          { "label": "Biographies of kings", "value": "D" }
+          {
+            "label": "Scientific discoveries",
+            "value": "A"
+          },
+          {
+            "label": "Complex and silenced realities",
+            "value": "B"
+          },
+          {
+            "label": "Fictional creatures only",
+            "value": "C"
+          },
+          {
+            "label": "Biographies of kings",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How does contemporary analysis treat these works?",
         "options": [
-          { "label": "Reexamines them under new methodologies", "value": "A" },
-          { "label": "Rejects them completely", "value": "B" },
-          { "label": "Simplifies them for schools", "value": "C" },
-          { "label": "Translates them into dead languages", "value": "D" }
+          {
+            "label": "Reexamines them under new methodologies",
+            "value": "A"
+          },
+          {
+            "label": "Rejects them completely",
+            "value": "B"
+          },
+          {
+            "label": "Simplifies them for schools",
+            "value": "C"
+          },
+          {
+            "label": "Translates them into dead languages",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What does this literary legacy transcend?",
         "options": [
-          { "label": "Aesthetic trends and commercial imperatives", "value": "A" },
-          { "label": "Grammar and syntax", "value": "B" },
-          { "label": "Political censorship only", "value": "C" },
-          { "label": "Historical facts", "value": "D" }
+          {
+            "label": "Aesthetic trends and commercial imperatives",
+            "value": "A"
+          },
+          {
+            "label": "Grammar and syntax",
+            "value": "B"
+          },
+          {
+            "label": "Political censorship only",
+            "value": "C"
+          },
+          {
+            "label": "Historical facts",
+            "value": "D"
+          }
         ],
         "correct": "A"
       }
@@ -973,7 +1798,10 @@
     "language": "es",
     "cefr_level": "C2",
     "title": "La evolución sociolingüística peninsular",
-    "topics": ["linguistics", "society"],
+    "topics": [
+      "linguistics",
+      "society"
+    ],
     "body": "El análisis intrincado de la variación dialectal en la península ibérica devela procesos morfosintácticos sutiles pero reveladores.\n\nLa interferencia lingüística en zonas de bilingüismo pretérito genera fenómenos de hipercorrección e hibridación conceptual de alto interés filológico.\n\nDichos patrones refractan la tensión dialéctica entre la estandarización normativa y la resiliencia vernacular de las comunidades hablantes.\n\nPor consiguiente, la investigación sociolingüística contemporánea diseca estas dinámicas para desentrañar el entramado identitario que las subyace.",
     "sentence_translations": [
       "The intricate analysis of dialectal variation in the Iberian Peninsula reveals subtle yet revealing morphosyntactic processes.",
@@ -982,74 +1810,173 @@
       "Consequently, contemporary sociolinguistic research dissects these dynamics to unravel the underlying fabric of identity."
     ],
     "word_translations": {
+      "el": "the",
+      "análisis": "analysis",
       "intrincado": "intricate",
+      "de": "of; from",
+      "la": "the",
       "variación": "variation",
       "dialectal": "dialectal",
+      "en": "in; on",
+      "península": "peninsula",
+      "ibérica": "Iberian",
       "devela": "reveals / unveils",
+      "procesos": "processes",
       "morfosintácticos": "morphosyntactic",
+      "sutiles": "subtle",
+      "pero": "but",
+      "reveladores": "revealing",
       "interferencia": "interference",
+      "lingüística": "linguistics; linguistic",
+      "zonas": "areas; zones",
+      "bilingüismo": "bilingualism",
       "pretérito": "historical / past",
+      "genera": "generates",
+      "fenómenos": "phenomena",
       "hipercorrección": "hypercorrection",
+      "e": "and",
       "hibridación": "hybridization",
+      "conceptual": "conceptual",
+      "alto": "high; tall",
+      "interés": "interest",
       "filológico": "philological",
+      "dichos": "said; those",
       "patrones": "patterns",
       "refractan": "reflect / refract",
+      "tensión": "tension",
       "dialéctica": "dialectical",
+      "entre": "between; among",
       "estandarización": "standardization",
+      "normativa": "regulations",
+      "y": "and",
       "resiliencia": "resilience",
       "vernacular": "vernacular",
+      "las": "the",
+      "comunidades": "communities",
+      "hablantes": "speakers",
+      "por": "by; for; through",
+      "consiguiente": "consequent",
+      "investigación": "research",
+      "sociolingüística": "sociolinguistics",
+      "contemporánea": "contemporary",
       "diseca": "dissects",
+      "estas": "these",
+      "dinámicas": "dynamics",
+      "para": "for; to",
       "desentrañar": "to unravel",
-      "entramado": "fabric / framework"
+      "entramado": "fabric / framework",
+      "identitario": "identity-related",
+      "que": "that; which",
+      "subyace": "underlies"
     },
     "quiz": [
       {
         "question": "What does dialectal analysis in the Iberian Peninsula reveal?",
         "options": [
-          { "label": "Simplification of grammar", "value": "A" },
-          { "label": "Subtle morphosyntactic processes", "value": "B" },
-          { "label": "The disappearance of local accents", "value": "C" },
-          { "label": "Uniformity across regions", "value": "D" }
+          {
+            "label": "Simplification of grammar",
+            "value": "A"
+          },
+          {
+            "label": "Subtle morphosyntactic processes",
+            "value": "B"
+          },
+          {
+            "label": "The disappearance of local accents",
+            "value": "C"
+          },
+          {
+            "label": "Uniformity across regions",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What occurs in regions with historical bilingualism?",
         "options": [
-          { "label": "Complete loss of vocabulary", "value": "A" },
-          { "label": "Hypercorrection and conceptual hybridization", "value": "B" },
-          { "label": "Adoption of foreign languages", "value": "C" },
-          { "label": "Creation of new alphabets", "value": "D" }
+          {
+            "label": "Complete loss of vocabulary",
+            "value": "A"
+          },
+          {
+            "label": "Hypercorrection and conceptual hybridization",
+            "value": "B"
+          },
+          {
+            "label": "Adoption of foreign languages",
+            "value": "C"
+          },
+          {
+            "label": "Creation of new alphabets",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Between what two forces is tension reflected?",
         "options": [
-          { "label": "Urban and rural speech", "value": "A" },
-          { "label": "Normative standardization and vernacular resilience", "value": "B" },
-          { "label": "Written and spoken language", "value": "C" },
-          { "label": "Ancient and modern dialects", "value": "D" }
+          {
+            "label": "Urban and rural speech",
+            "value": "A"
+          },
+          {
+            "label": "Normative standardization and vernacular resilience",
+            "value": "B"
+          },
+          {
+            "label": "Written and spoken language",
+            "value": "C"
+          },
+          {
+            "label": "Ancient and modern dialects",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is the goal of sociolinguistic research in this context?",
         "options": [
-          { "label": "To standardize all dialects", "value": "A" },
-          { "label": "To unravel the underlying fabric of identity", "value": "B" },
-          { "label": "To eliminate vernacular speech", "value": "C" },
-          { "label": "To publish dictionaries only", "value": "D" }
+          {
+            "label": "To standardize all dialects",
+            "value": "A"
+          },
+          {
+            "label": "To unravel the underlying fabric of identity",
+            "value": "B"
+          },
+          {
+            "label": "To eliminate vernacular speech",
+            "value": "C"
+          },
+          {
+            "label": "To publish dictionaries only",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How are these processes characterized philologically?",
         "options": [
-          { "label": "As erroneous errors", "value": "A" },
-          { "label": "Of high interest and revealing nature", "value": "B" },
-          { "label": "As temporary trends", "value": "C" },
-          { "label": "As irrelevant anomalies", "value": "D" }
+          {
+            "label": "As erroneous errors",
+            "value": "A"
+          },
+          {
+            "label": "Of high interest and revealing nature",
+            "value": "B"
+          },
+          {
+            "label": "As temporary trends",
+            "value": "C"
+          },
+          {
+            "label": "As irrelevant anomalies",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1059,7 +1986,11 @@
     "language": "es",
     "cefr_level": "C2",
     "title": "El debate sobre la sostenibilidad urbana",
-    "topics": ["ethics", "technology", "society"],
+    "topics": [
+      "ethics",
+      "technology",
+      "society"
+    ],
     "body": "La eclosión incipiente de modelos algorítmicos generativos reconfigura ineluctablemente las premisas deontológicas de la creación intelectual.\n\nSuscita hondos dilemas epistémicos respecto a la autoría, la singularidad cognoscitiva y la atenuación de la agencia humana en la toma de decisiones críticas.\n\nResulta imperativo articular marcos regulatorios omnicomprensivos que disipen los sesgos inherentes sin cercenar la innovación pragmática.\n\nÚnicamente mediante un discernimiento ético riguroso lograremos encauzar este cambio paradigmático hacia el bien común.",
     "sentence_translations": [
       "The emerging rise of generative algorithmic models unavoidably reconfigures the deontological premises of intellectual creation.",
@@ -1068,73 +1999,176 @@
       "Only through rigorous ethical discernment will we succeed in channeling this paradigm shift toward the common good."
     ],
     "word_translations": {
+      "la": "the",
       "eclosión": "emergence / rise",
       "incipiente": "incipient / emerging",
+      "de": "of; from",
+      "modelos": "models",
       "algorítmicos": "algorithmic",
       "generativos": "generative",
+      "reconfigura": "reconfigures",
       "ineluctablemente": "unavoidably",
+      "las": "the",
+      "premisas": "premises",
       "deontológicas": "deontological / ethical",
+      "creación": "creation",
+      "intelectual": "intellectual",
+      "suscita": "raises; sparks",
+      "hondos": "deep",
+      "dilemas": "dilemmas",
       "epistémicos": "epistemic",
+      "respecto": "respect; regarding",
+      "a": "to; at",
       "autoría": "authorship",
+      "singularidad": "uniqueness",
       "cognoscitiva": "cognitive",
+      "y": "and",
       "atenuación": "attenuation / reduction",
       "agencia": "agency",
+      "humana": "human",
+      "en": "in; on",
+      "toma": "takes; taking",
+      "decisiones": "decisions",
+      "críticas": "critiques; critical",
+      "resulta": "turns out; results",
       "imperativo": "imperative",
+      "articular": "to articulate",
+      "marcos": "frameworks",
+      "regulatorios": "regulatory",
       "omnicomprensivos": "comprehensive",
+      "que": "that; which",
+      "disipen": "dispel",
+      "los": "the",
       "sesgos": "biases",
+      "inherentes": "inherent",
+      "sin": "without",
       "cercenar": "to curtail / cut back",
+      "innovación": "innovation",
+      "pragmática": "pragmatics; pragmatic",
+      "únicamente": "only; solely",
+      "mediante": "through; by means of",
+      "un": "a; an",
       "discernimiento": "discernment",
+      "ético": "ethical",
+      "riguroso": "rigorous",
+      "lograremos": "we will achieve",
       "encauzar": "to channel",
-      "paradigmático": "paradigmatic"
+      "este": "this",
+      "cambio": "change",
+      "paradigmático": "paradigmatic",
+      "hacia": "toward",
+      "el": "the",
+      "bien": "well; good",
+      "común": "common"
     },
     "quiz": [
       {
         "question": "What is reconfiguring the premises of intellectual creation?",
         "options": [
-          { "label": "Traditional academic publishing", "value": "A" },
-          { "label": "Generative algorithmic models", "value": "B" },
-          { "label": "Global economic shifts", "value": "C" },
-          { "label": "Changes in copyright law", "value": "D" }
+          {
+            "label": "Traditional academic publishing",
+            "value": "A"
+          },
+          {
+            "label": "Generative algorithmic models",
+            "value": "B"
+          },
+          {
+            "label": "Global economic shifts",
+            "value": "C"
+          },
+          {
+            "label": "Changes in copyright law",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What epistemic dilemma is specifically raised?",
         "options": [
-          { "label": "Cost of computing power", "value": "A" },
-          { "label": "Authorship and attenuation of human agency", "value": "B" },
-          { "label": "Loss of digital storage", "value": "C" },
-          { "label": "Language translation speed", "value": "D" }
+          {
+            "label": "Cost of computing power",
+            "value": "A"
+          },
+          {
+            "label": "Authorship and attenuation of human agency",
+            "value": "B"
+          },
+          {
+            "label": "Loss of digital storage",
+            "value": "C"
+          },
+          {
+            "label": "Language translation speed",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What type of frameworks need to be articulated?",
         "options": [
-          { "label": "Strict prohibitions", "value": "A" },
-          { "label": "Comprehensive regulatory frameworks", "value": "B" },
-          { "label": "Informal guidelines", "value": "C" },
-          { "label": "Monetary incentives", "value": "D" }
+          {
+            "label": "Strict prohibitions",
+            "value": "A"
+          },
+          {
+            "label": "Comprehensive regulatory frameworks",
+            "value": "B"
+          },
+          {
+            "label": "Informal guidelines",
+            "value": "C"
+          },
+          {
+            "label": "Monetary incentives",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What should regulations avoid doing?",
         "options": [
-          { "label": "Curtailing pragmatic innovation", "value": "A" },
-          { "label": "Addressing ethical biases", "value": "B" },
-          { "label": "Protecting consumers", "value": "C" },
-          { "label": "Involving human experts", "value": "D" }
+          {
+            "label": "Curtailing pragmatic innovation",
+            "value": "A"
+          },
+          {
+            "label": "Addressing ethical biases",
+            "value": "B"
+          },
+          {
+            "label": "Protecting consumers",
+            "value": "C"
+          },
+          {
+            "label": "Involving human experts",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "How can this paradigm shift be channeled toward the common good?",
         "options": [
-          { "label": "Through market competition alone", "value": "A" },
-          { "label": "Through rigorous ethical discernment", "value": "B" },
-          { "label": "By stopping all AI development", "value": "C" },
-          { "label": "Through public voting", "value": "D" }
+          {
+            "label": "Through market competition alone",
+            "value": "A"
+          },
+          {
+            "label": "Through rigorous ethical discernment",
+            "value": "B"
+          },
+          {
+            "label": "By stopping all AI development",
+            "value": "C"
+          },
+          {
+            "label": "Through public voting",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1144,7 +2178,10 @@
     "language": "fr",
     "cefr_level": "A1",
     "title": "Une matinée à Paris",
-    "topics": ["daily life", "food"],
+    "topics": [
+      "daily life",
+      "food"
+    ],
     "body": "Je m'appelle Lucas. J'habite à Paris.\n\nLe matin, je prends le métro. Je vais à l'université.\n\nAvant les cours, j'achète un pain au chocolat.\n\nEn classe, j'écoute le professeur et je prends des notes.\n\nÀ midi, je mange avec mes amis. C'est une bonne journée.",
     "sentence_translations": [
       "My name is Lucas.",
@@ -1198,50 +2235,110 @@
       {
         "question": "Where does Lucas live?",
         "options": [
-          { "label": "Lyon", "value": "A" },
-          { "label": "Paris", "value": "B" },
-          { "label": "Nice", "value": "C" },
-          { "label": "Marseille", "value": "D" }
+          {
+            "label": "Lyon",
+            "value": "A"
+          },
+          {
+            "label": "Paris",
+            "value": "B"
+          },
+          {
+            "label": "Nice",
+            "value": "C"
+          },
+          {
+            "label": "Marseille",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How does he get to university?",
         "options": [
-          { "label": "By bus", "value": "A" },
-          { "label": "By metro", "value": "B" },
-          { "label": "By bike", "value": "C" },
-          { "label": "On foot", "value": "D" }
+          {
+            "label": "By bus",
+            "value": "A"
+          },
+          {
+            "label": "By metro",
+            "value": "B"
+          },
+          {
+            "label": "By bike",
+            "value": "C"
+          },
+          {
+            "label": "On foot",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What does he buy before class?",
         "options": [
-          { "label": "A coffee", "value": "A" },
-          { "label": "A sandwich", "value": "B" },
-          { "label": "A pain au chocolat", "value": "C" },
-          { "label": "Nothing", "value": "D" }
+          {
+            "label": "A coffee",
+            "value": "A"
+          },
+          {
+            "label": "A sandwich",
+            "value": "B"
+          },
+          {
+            "label": "A pain au chocolat",
+            "value": "C"
+          },
+          {
+            "label": "Nothing",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What does he do in class?",
         "options": [
-          { "label": "Sleeps", "value": "A" },
-          { "label": "Listens and takes notes", "value": "B" },
-          { "label": "Leaves early", "value": "C" },
-          { "label": "Calls friends", "value": "D" }
+          {
+            "label": "Sleeps",
+            "value": "A"
+          },
+          {
+            "label": "Listens and takes notes",
+            "value": "B"
+          },
+          {
+            "label": "Leaves early",
+            "value": "C"
+          },
+          {
+            "label": "Calls friends",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who does he eat with at noon?",
         "options": [
-          { "label": "His parents", "value": "A" },
-          { "label": "His friends", "value": "B" },
-          { "label": "Alone", "value": "C" },
-          { "label": "His teacher", "value": "D" }
+          {
+            "label": "His parents",
+            "value": "A"
+          },
+          {
+            "label": "His friends",
+            "value": "B"
+          },
+          {
+            "label": "Alone",
+            "value": "C"
+          },
+          {
+            "label": "His teacher",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1251,7 +2348,10 @@
     "language": "fr",
     "cefr_level": "A1",
     "title": "Un après-midi au parc",
-    "topics": ["nature", "daily life"],
+    "topics": [
+      "nature",
+      "daily life"
+    ],
     "body": "Paul marche dans le parc. Le soleil brille et les oiseaux chantent.\n\nIl achète une glace à la fraise. Il s'assoit sur un banc en bois.\n\nUn petit chien court près de lui. Paul sourit et se repose.",
     "sentence_translations": [
       "Paul walks in the park.",
@@ -1273,69 +2373,137 @@
       "les": "the",
       "oiseaux": "birds",
       "chantent": "sing",
+      "il": "he; it",
       "achète": "buys",
       "une": "a",
       "glace": "ice cream",
+      "à": "to; at",
+      "la": "the",
       "fraise": "strawberry",
       "s'assoit": "sits down",
       "sur": "on",
+      "un": "a; an",
       "banc": "bench",
+      "en": "in; by",
       "bois": "wood",
-      "chien": "dog",
       "petit": "small",
+      "chien": "dog",
       "court": "runs",
       "près": "near",
+      "de": "of; from",
+      "lui": "him; her; it",
       "sourit": "smiles",
+      "se": "oneself",
       "repose": "rests"
     },
     "quiz": [
       {
         "question": "Where is Paul?",
         "options": [
-          { "label": "In the park", "value": "A" },
-          { "label": "At the station", "value": "B" },
-          { "label": "In a store", "value": "C" },
-          { "label": "At home", "value": "D" }
+          {
+            "label": "In the park",
+            "value": "A"
+          },
+          {
+            "label": "At the station",
+            "value": "B"
+          },
+          {
+            "label": "In a store",
+            "value": "C"
+          },
+          {
+            "label": "At home",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What flavor ice cream does he buy?",
         "options": [
-          { "label": "Vanilla", "value": "A" },
-          { "label": "Chocolate", "value": "B" },
-          { "label": "Strawberry", "value": "C" },
-          { "label": "Mint", "value": "D" }
+          {
+            "label": "Vanilla",
+            "value": "A"
+          },
+          {
+            "label": "Chocolate",
+            "value": "B"
+          },
+          {
+            "label": "Strawberry",
+            "value": "C"
+          },
+          {
+            "label": "Mint",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "Where does Paul sit down?",
         "options": [
-          { "label": "On a chair", "value": "A" },
-          { "label": "On a wooden bench", "value": "B" },
-          { "label": "On the grass", "value": "C" },
-          { "label": "In his car", "value": "D" }
+          {
+            "label": "On a chair",
+            "value": "A"
+          },
+          {
+            "label": "On a wooden bench",
+            "value": "B"
+          },
+          {
+            "label": "On the grass",
+            "value": "C"
+          },
+          {
+            "label": "In his car",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Which animal runs near Paul?",
         "options": [
-          { "label": "A cat", "value": "A" },
-          { "label": "A small dog", "value": "B" },
-          { "label": "A duck", "value": "C" },
-          { "label": "A rabbit", "value": "D" }
+          {
+            "label": "A cat",
+            "value": "A"
+          },
+          {
+            "label": "A small dog",
+            "value": "B"
+          },
+          {
+            "label": "A duck",
+            "value": "C"
+          },
+          {
+            "label": "A rabbit",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What are the birds doing?",
         "options": [
-          { "label": "Flying away", "value": "A" },
-          { "label": "Singing", "value": "B" },
-          { "label": "Eating bread", "value": "C" },
-          { "label": "Sleeping", "value": "D" }
+          {
+            "label": "Flying away",
+            "value": "A"
+          },
+          {
+            "label": "Singing",
+            "value": "B"
+          },
+          {
+            "label": "Eating bread",
+            "value": "C"
+          },
+          {
+            "label": "Sleeping",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1345,7 +2513,10 @@
     "language": "fr",
     "cefr_level": "A2",
     "title": "Faire les courses au marché",
-    "topics": ["shopping", "food"],
+    "topics": [
+      "shopping",
+      "food"
+    ],
     "body": "Marie va au marché le samedi matin. Elle aime acheter des fruits frais et des légumes de saison.\n\nAujourd'hui, elle achète des pommes rouges et des bananes. Elle parle avec le vendeur qui est très sympathique.\n\nEnsuite, elle rentre à la maison pour préparer une grande salade.",
     "sentence_translations": [
       "Marie goes to the market on Saturday morning.",
@@ -1356,76 +2527,153 @@
     ],
     "word_translations": {
       "marie": "Marie",
+      "va": "goes; is going",
+      "au": "to the; at the",
       "marché": "market",
+      "le": "the",
       "samedi": "Saturday",
       "matin": "morning",
+      "elle": "she; it",
       "aime": "likes",
       "acheter": "to buy",
+      "des": "of the; some",
       "fruits": "fruit",
       "frais": "fresh",
+      "et": "and",
       "légumes": "vegetables",
+      "de": "of; from",
       "saison": "season",
       "aujourd'hui": "today",
+      "achète": "buys",
       "pommes": "apples",
       "rouges": "red",
       "bananes": "bananas",
       "parle": "speaks",
+      "avec": "with",
       "vendeur": "seller",
+      "qui": "who; which",
+      "est": "is",
+      "très": "very",
       "sympathique": "friendly",
       "ensuite": "then",
       "rentre": "returns",
+      "à": "to; at",
+      "la": "the",
       "maison": "home",
+      "pour": "for",
       "préparer": "to prepare",
+      "une": "a; an",
+      "grande": "large; great",
       "salade": "salad"
     },
     "quiz": [
       {
         "question": "When does Marie go to the market?",
         "options": [
-          { "label": "Friday evening", "value": "A" },
-          { "label": "Saturday morning", "value": "B" },
-          { "label": "Sunday afternoon", "value": "C" },
-          { "label": "Wednesday noon", "value": "D" }
+          {
+            "label": "Friday evening",
+            "value": "A"
+          },
+          {
+            "label": "Saturday morning",
+            "value": "B"
+          },
+          {
+            "label": "Sunday afternoon",
+            "value": "C"
+          },
+          {
+            "label": "Wednesday noon",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What does Marie buy today?",
         "options": [
-          { "label": "Pears and oranges", "value": "A" },
-          { "label": "Red apples and bananas", "value": "B" },
-          { "label": "Bread and cheese", "value": "C" },
-          { "label": "Fish and meat", "value": "D" }
+          {
+            "label": "Pears and oranges",
+            "value": "A"
+          },
+          {
+            "label": "Red apples and bananas",
+            "value": "B"
+          },
+          {
+            "label": "Bread and cheese",
+            "value": "C"
+          },
+          {
+            "label": "Fish and meat",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How is the seller described?",
         "options": [
-          { "label": "Very friendly", "value": "A" },
-          { "label": "Rude", "value": "B" },
-          { "label": "Busy", "value": "C" },
-          { "label": "Old", "value": "D" }
+          {
+            "label": "Very friendly",
+            "value": "A"
+          },
+          {
+            "label": "Rude",
+            "value": "B"
+          },
+          {
+            "label": "Busy",
+            "value": "C"
+          },
+          {
+            "label": "Old",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "Where does Marie go after the market?",
         "options": [
-          { "label": "To a restaurant", "value": "A" },
-          { "label": "To work", "value": "B" },
-          { "label": "Home", "value": "C" },
-          { "label": "To a café", "value": "D" }
+          {
+            "label": "To a restaurant",
+            "value": "A"
+          },
+          {
+            "label": "To work",
+            "value": "B"
+          },
+          {
+            "label": "Home",
+            "value": "C"
+          },
+          {
+            "label": "To a café",
+            "value": "D"
+          }
         ],
         "correct": "C"
       },
       {
         "question": "What will she prepare?",
         "options": [
-          { "label": "A soup", "value": "A" },
-          { "label": "A pie", "value": "B" },
-          { "label": "A large salad", "value": "C" },
-          { "label": "A cake", "value": "D" }
+          {
+            "label": "A soup",
+            "value": "A"
+          },
+          {
+            "label": "A pie",
+            "value": "B"
+          },
+          {
+            "label": "A large salad",
+            "value": "C"
+          },
+          {
+            "label": "A cake",
+            "value": "D"
+          }
         ],
         "correct": "C"
       }
@@ -1435,7 +2683,10 @@
     "language": "fr",
     "cefr_level": "A2",
     "title": "Un week-end à la mer",
-    "topics": ["travel", "leisure"],
+    "topics": [
+      "travel",
+      "leisure"
+    ],
     "body": "Thomas est allé à la plage avec ses frères samedi dernier. Le ciel était très dégagé et la brise était agréable.\n\nIls ont passé la journée à nager et à manger dans un petit restaurant.\n\nLe soir, ils ont regardé le coucher de soleil avant de rentrer.",
     "sentence_translations": [
       "Thomas went to the beach with his brothers last Saturday.",
@@ -1445,21 +2696,38 @@
     ],
     "word_translations": {
       "thomas": "Thomas",
+      "est": "is",
+      "allé": "gone",
+      "à": "to; at",
+      "la": "the",
       "plage": "beach",
+      "avec": "with",
+      "ses": "his; her; its",
       "frères": "brothers",
+      "samedi": "Saturday",
       "dernier": "last",
+      "le": "the",
       "ciel": "sky",
+      "était": "was",
+      "très": "very",
       "dégagé": "clear",
+      "et": "and",
       "brise": "breeze",
       "agréable": "pleasant",
+      "ils": "they",
+      "ont": "have",
       "passé": "spent",
       "journée": "day",
       "nager": "to swim",
       "manger": "to eat",
+      "dans": "in",
+      "un": "a; an",
+      "petit": "small",
       "restaurant": "restaurant",
       "soir": "evening",
       "regardé": "watched",
       "coucher": "setting / sunset",
+      "de": "of; from",
       "soleil": "sun",
       "avant": "before",
       "rentrer": "to return"
@@ -1468,50 +2736,110 @@
       {
         "question": "Who went to the beach with Thomas?",
         "options": [
-          { "label": "His friends", "value": "A" },
-          { "label": "His brothers", "value": "B" },
-          { "label": "His parents", "value": "C" },
-          { "label": "His classmates", "value": "D" }
+          {
+            "label": "His friends",
+            "value": "A"
+          },
+          {
+            "label": "His brothers",
+            "value": "B"
+          },
+          {
+            "label": "His parents",
+            "value": "C"
+          },
+          {
+            "label": "His classmates",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What was the weather like?",
         "options": [
-          { "label": "Rainy and cold", "value": "A" },
-          { "label": "Clear sky with a pleasant breeze", "value": "B" },
-          { "label": "Stormy", "value": "C" },
-          { "label": "Cloudy", "value": "D" }
+          {
+            "label": "Rainy and cold",
+            "value": "A"
+          },
+          {
+            "label": "Clear sky with a pleasant breeze",
+            "value": "B"
+          },
+          {
+            "label": "Stormy",
+            "value": "C"
+          },
+          {
+            "label": "Cloudy",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Where did they eat?",
         "options": [
-          { "label": "On the beach grass", "value": "A" },
-          { "label": "In a small restaurant", "value": "B" },
-          { "label": "At home", "value": "C" },
-          { "label": "In their car", "value": "D" }
+          {
+            "label": "On the beach grass",
+            "value": "A"
+          },
+          {
+            "label": "In a small restaurant",
+            "value": "B"
+          },
+          {
+            "label": "At home",
+            "value": "C"
+          },
+          {
+            "label": "In their car",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did they watch in the evening?",
         "options": [
-          { "label": "A movie", "value": "A" },
-          { "label": "The sunset", "value": "B" },
-          { "label": "A concert", "value": "C" },
-          { "label": "The stars", "value": "D" }
+          {
+            "label": "A movie",
+            "value": "A"
+          },
+          {
+            "label": "The sunset",
+            "value": "B"
+          },
+          {
+            "label": "A concert",
+            "value": "C"
+          },
+          {
+            "label": "The stars",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "When did this trip happen?",
         "options": [
-          { "label": "Last Saturday", "value": "A" },
-          { "label": "Yesterday", "value": "B" },
-          { "label": "Last month", "value": "C" },
-          { "label": "Two weeks ago", "value": "D" }
+          {
+            "label": "Last Saturday",
+            "value": "A"
+          },
+          {
+            "label": "Yesterday",
+            "value": "B"
+          },
+          {
+            "label": "Last month",
+            "value": "C"
+          },
+          {
+            "label": "Two weeks ago",
+            "value": "D"
+          }
         ],
         "correct": "A"
       }
@@ -1521,7 +2849,10 @@
     "language": "fr",
     "cefr_level": "B1",
     "title": "Une soirée inattendue",
-    "topics": ["social", "daily life"],
+    "topics": [
+      "social",
+      "daily life"
+    ],
     "body": "Léa avait prévu une soirée tranquille chez elle. Elle voulait lire un roman et se coucher tôt.\n\nVers huit heures, son amie Camille a frappé à la porte. Elle apportait des croissants et une bonne nouvelle.\n\nCamille a dit qu'il y avait un concert gratuit près de la Seine ce soir. Elle a demandé à Léa de venir avec elle.\n\nLéa a hésité une seconde, puis elle a souri. Elle a pris sa veste et elles sont parties ensemble.\n\nLa musique était magnifique. Sur le chemin du retour, Léa pensait que les meilleures soirées sont parfois celles qu'on n'a pas planifiées.",
     "sentence_translations": [
       "Léa had planned a quiet evening at home.",
@@ -1539,12 +2870,14 @@
       "léa": "Léa",
       "avait": "had",
       "prévu": "planned",
+      "une": "a",
       "soirée": "evening",
       "tranquille": "quiet",
       "chez": "at the home of",
       "elle": "she / her",
       "voulait": "wanted",
       "lire": "to read",
+      "un": "a; an",
       "roman": "novel",
       "et": "and",
       "se": "oneself",
@@ -1556,30 +2889,29 @@
       "son": "her / his",
       "amie": "friend (f.)",
       "camille": "Camille",
+      "a": "has / is",
       "frappé": "knocked",
+      "à": "to; at",
+      "la": "the",
       "porte": "door",
       "apportait": "was bringing",
       "des": "some",
       "croissants": "croissants",
-      "une": "a",
       "bonne": "good",
       "nouvelle": "news",
-      "il": "it / he",
+      "dit": "said",
+      "qu'il": "that he",
       "y": "there",
-      "a": "has / is",
       "concert": "concert",
       "gratuit": "free",
       "près": "near",
       "de": "of / from",
-      "la": "the",
       "seine": "Seine",
       "ce": "this",
       "soir": "evening",
-      "dit": "said",
-      "tu": "you",
-      "viens": "come",
+      "demandé": "asked; requested",
+      "venir": "to come",
       "avec": "with",
-      "moi": "me",
       "hésité": "hesitated",
       "seconde": "second",
       "puis": "then",
@@ -1595,6 +2927,7 @@
       "était": "was",
       "magnifique": "magnificent",
       "sur": "on",
+      "le": "the",
       "chemin": "way / path",
       "du": "of the",
       "retour": "return",
@@ -1608,56 +2941,120 @@
       "qu'on": "that one / that we",
       "n'a": "has not",
       "pas": "not",
-      "planifiées": "planned"
+      "planifiées": "planned",
+      "il": "it / he",
+      "tu": "you",
+      "viens": "come",
+      "moi": "me"
     },
     "quiz": [
       {
         "question": "What had Léa planned?",
         "options": [
-          { "label": "A party", "value": "A" },
-          { "label": "A quiet evening at home", "value": "B" },
-          { "label": "A trip", "value": "C" },
-          { "label": "Dinner out", "value": "D" }
+          {
+            "label": "A party",
+            "value": "A"
+          },
+          {
+            "label": "A quiet evening at home",
+            "value": "B"
+          },
+          {
+            "label": "A trip",
+            "value": "C"
+          },
+          {
+            "label": "Dinner out",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who visited Léa?",
         "options": [
-          { "label": "Her brother", "value": "A" },
-          { "label": "Camille", "value": "B" },
-          { "label": "Her teacher", "value": "C" },
-          { "label": "A neighbor", "value": "D" }
+          {
+            "label": "Her brother",
+            "value": "A"
+          },
+          {
+            "label": "Camille",
+            "value": "B"
+          },
+          {
+            "label": "Her teacher",
+            "value": "C"
+          },
+          {
+            "label": "A neighbor",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What was the good news?",
         "options": [
-          { "label": "A free concert near the Seine", "value": "A" },
-          { "label": "A new job", "value": "B" },
-          { "label": "A surprise exam", "value": "C" },
-          { "label": "Rain was coming", "value": "D" }
+          {
+            "label": "A free concert near the Seine",
+            "value": "A"
+          },
+          {
+            "label": "A new job",
+            "value": "B"
+          },
+          {
+            "label": "A surprise exam",
+            "value": "C"
+          },
+          {
+            "label": "Rain was coming",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What did Léa think on the way back?",
         "options": [
-          { "label": "She regretted going", "value": "A" },
-          { "label": "The best evenings are sometimes unplanned", "value": "B" },
-          { "label": "She wanted to move", "value": "C" },
-          { "label": "The music was bad", "value": "D" }
+          {
+            "label": "She regretted going",
+            "value": "A"
+          },
+          {
+            "label": "The best evenings are sometimes unplanned",
+            "value": "B"
+          },
+          {
+            "label": "She wanted to move",
+            "value": "C"
+          },
+          {
+            "label": "The music was bad",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did Camille bring?",
         "options": [
-          { "label": "Pizza", "value": "A" },
-          { "label": "Croissants and news", "value": "B" },
-          { "label": "Books", "value": "C" },
-          { "label": "Nothing", "value": "D" }
+          {
+            "label": "Pizza",
+            "value": "A"
+          },
+          {
+            "label": "Croissants and news",
+            "value": "B"
+          },
+          {
+            "label": "Books",
+            "value": "C"
+          },
+          {
+            "label": "Nothing",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1667,7 +3064,10 @@
     "language": "fr",
     "cefr_level": "B1",
     "title": "La découverte du musée",
-    "topics": ["culture", "art"],
+    "topics": [
+      "culture",
+      "art"
+    ],
     "body": "Julien a décidé de visiter le musée d'art moderne samedi après-midi.\n\nIl a admiré de nombreux tableaux fascinants et a appris l'histoire des artistes.\n\nDans la dernière salle, il a rencontré une ancienne amie d'école qu'il n'avait pas vue depuis des années.\n\nIls ont pris un café ensemble pour discuter de leurs parcours respectifs.",
     "sentence_translations": [
       "Julien decided to visit the modern art museum on Saturday afternoon.",
@@ -1677,73 +3077,161 @@
     ],
     "word_translations": {
       "julien": "Julien",
+      "a": "has; to",
       "décidé": "decided",
+      "de": "of; from",
       "visiter": "to visit",
+      "le": "the",
       "musée": "museum",
+      "d'art": "of art",
       "moderne": "modern",
+      "samedi": "Saturday",
+      "après-midi": "afternoon",
+      "il": "he; it",
       "admiré": "admired",
+      "nombreux": "numerous",
       "tableaux": "paintings",
       "fascinants": "fascinating",
+      "et": "and",
       "appris": "learned",
+      "l'histoire": "history",
+      "des": "of the; some",
+      "artistes": "artists",
+      "dans": "in",
+      "la": "the",
       "dernière": "last",
       "salle": "room",
       "rencontré": "met / ran into",
+      "une": "a; an",
       "ancienne": "former / old",
       "amie": "friend",
+      "d'école": "of school",
+      "qu'il": "that he",
+      "n'avait": "did not have",
+      "pas": "not",
+      "vue": "view",
+      "depuis": "since; from",
       "années": "years",
+      "ils": "they",
+      "ont": "have",
       "pris": "took / had",
+      "un": "a; an",
       "café": "coffee",
       "ensemble": "together",
-      "parcours": "paths / lives"
+      "pour": "for",
+      "discuter": "to discuss",
+      "leurs": "their",
+      "parcours": "paths / lives",
+      "respectifs": "respective"
     },
     "quiz": [
       {
         "question": "Which museum did Julien visit?",
         "options": [
-          { "label": "History museum", "value": "A" },
-          { "label": "Modern art museum", "value": "B" },
-          { "label": "Science museum", "value": "C" },
-          { "label": "Natural history museum", "value": "D" }
+          {
+            "label": "History museum",
+            "value": "A"
+          },
+          {
+            "label": "Modern art museum",
+            "value": "B"
+          },
+          {
+            "label": "Science museum",
+            "value": "C"
+          },
+          {
+            "label": "Natural history museum",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did he admire in the museum?",
         "options": [
-          { "label": "Sculptures", "value": "A" },
-          { "label": "Fascinating paintings", "value": "B" },
-          { "label": "Old cars", "value": "C" },
-          { "label": "Jewelry", "value": "D" }
+          {
+            "label": "Sculptures",
+            "value": "A"
+          },
+          {
+            "label": "Fascinating paintings",
+            "value": "B"
+          },
+          {
+            "label": "Old cars",
+            "value": "C"
+          },
+          {
+            "label": "Jewelry",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Who did he meet in the last room?",
         "options": [
-          { "label": "A museum guide", "value": "A" },
-          { "label": "A former school friend", "value": "B" },
-          { "label": "His teacher", "value": "C" },
-          { "label": "A famous artist", "value": "D" }
+          {
+            "label": "A museum guide",
+            "value": "A"
+          },
+          {
+            "label": "A former school friend",
+            "value": "B"
+          },
+          {
+            "label": "His teacher",
+            "value": "C"
+          },
+          {
+            "label": "A famous artist",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How long had it been since he saw his friend?",
         "options": [
-          { "label": "A few weeks", "value": "A" },
-          { "label": "Years", "value": "B" },
-          { "label": "One day", "value": "C" },
-          { "label": "Since yesterday", "value": "D" }
+          {
+            "label": "A few weeks",
+            "value": "A"
+          },
+          {
+            "label": "Years",
+            "value": "B"
+          },
+          {
+            "label": "One day",
+            "value": "C"
+          },
+          {
+            "label": "Since yesterday",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did they do after meeting?",
         "options": [
-          { "label": "Left immediately", "value": "A" },
-          { "label": "Had a coffee together", "value": "B" },
-          { "label": "Bought tickets", "value": "C" },
-          { "label": "Took photos", "value": "D" }
+          {
+            "label": "Left immediately",
+            "value": "A"
+          },
+          {
+            "label": "Had a coffee together",
+            "value": "B"
+          },
+          {
+            "label": "Bought tickets",
+            "value": "C"
+          },
+          {
+            "label": "Took photos",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1753,7 +3241,10 @@
     "language": "fr",
     "cefr_level": "B2",
     "title": "Le secret de l'horloge ancienne",
-    "topics": ["mystery", "family"],
+    "topics": [
+      "mystery",
+      "family"
+    ],
     "body": "En explorant le grenier de la maison familiale, Sophie a découvert une horloge ancienne dissimulée sous un vieux drap.\n\nEn l'examinant de près, elle a remarqué un compartiment secret contenant une petite clé dorée.\n\nIntriguée par cette découverte, elle a entrepris de chercher le coffre correspondant avec l'aide de son grand-père.\n\nCette quête leur a permis de révéler un chapitre oublié de l'histoire de leur famille.",
     "sentence_translations": [
       "While exploring the attic of the family home, Sophie discovered an old clock hidden under a dusty sheet.",
@@ -1762,78 +3253,165 @@
       "This quest allowed them to reveal a forgotten chapter of their family history."
     ],
     "word_translations": {
+      "en": "in; by",
       "explorant": "exploring",
+      "le": "the",
       "grenier": "attic",
+      "de": "of; from",
+      "la": "the",
+      "maison": "house; home",
       "familiale": "family",
       "sophie": "Sophie",
+      "a": "has; to",
       "découvert": "discovered",
+      "une": "a; an",
       "horloge": "clock",
       "ancienne": "ancient / old",
       "dissimulée": "hidden / concealed",
+      "sous": "under",
+      "un": "a; an",
+      "vieux": "old",
       "drap": "sheet",
-      "examinant": "examining",
+      "l'examinant": "examining it",
+      "près": "near",
+      "elle": "she; it",
       "remarqué": "noticed",
       "compartiment": "compartment",
       "secret": "secret",
+      "contenant": "containing",
+      "petite": "small",
       "clé": "key",
       "dorée": "golden",
       "intriguée": "intrigued",
+      "par": "by; through",
+      "cette": "this",
+      "découverte": "discovery",
       "entrepris": "undertook / set out",
+      "chercher": "to seek",
       "coffre": "chest / box",
+      "correspondant": "corresponding",
+      "avec": "with",
+      "l'aide": "help",
+      "son": "his; her; its",
       "grand-père": "grandfather",
       "quête": "quest",
+      "leur": "their; them",
+      "permis": "allowed",
       "révéler": "to reveal",
       "chapitre": "chapter",
-      "oublié": "forgotten"
+      "oublié": "forgotten",
+      "l'histoire": "history",
+      "famille": "family",
+      "examinant": "examining"
     },
     "quiz": [
       {
         "question": "Where was the old clock hidden?",
         "options": [
-          { "label": "In the garden", "value": "A" },
-          { "label": "In the attic under an old sheet", "value": "B" },
-          { "label": "In the cellar", "value": "C" },
-          { "label": "In the living room", "value": "D" }
+          {
+            "label": "In the garden",
+            "value": "A"
+          },
+          {
+            "label": "In the attic under an old sheet",
+            "value": "B"
+          },
+          {
+            "label": "In the cellar",
+            "value": "C"
+          },
+          {
+            "label": "In the living room",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What was inside the secret compartment?",
         "options": [
-          { "label": "A small golden key", "value": "A" },
-          { "label": "An old coin", "value": "B" },
-          { "label": "A letter", "value": "C" },
-          { "label": "A map", "value": "D" }
+          {
+            "label": "A small golden key",
+            "value": "A"
+          },
+          {
+            "label": "An old coin",
+            "value": "B"
+          },
+          {
+            "label": "A letter",
+            "value": "C"
+          },
+          {
+            "label": "A map",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "Who helped Sophie search for the matching chest?",
         "options": [
-          { "label": "Her brother", "value": "A" },
-          { "label": "Her grandfather", "value": "B" },
-          { "label": "Her friend", "value": "C" },
-          { "label": "Her neighbor", "value": "D" }
+          {
+            "label": "Her brother",
+            "value": "A"
+          },
+          {
+            "label": "Her grandfather",
+            "value": "B"
+          },
+          {
+            "label": "Her friend",
+            "value": "C"
+          },
+          {
+            "label": "Her neighbor",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What did the quest allow them to reveal?",
         "options": [
-          { "label": "A hidden treasure", "value": "A" },
-          { "label": "A forgotten chapter of family history", "value": "B" },
-          { "label": "A crime secret", "value": "C" },
-          { "label": "An old house blueprint", "value": "D" }
+          {
+            "label": "A hidden treasure",
+            "value": "A"
+          },
+          {
+            "label": "A forgotten chapter of family history",
+            "value": "B"
+          },
+          {
+            "label": "A crime secret",
+            "value": "C"
+          },
+          {
+            "label": "An old house blueprint",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How did Sophie react when examining the clock?",
         "options": [
-          { "label": "She was indifferent", "value": "A" },
-          { "label": "She was intrigued", "value": "B" },
-          { "label": "She broke it", "value": "C" },
-          { "label": "She gave it away", "value": "D" }
+          {
+            "label": "She was indifferent",
+            "value": "A"
+          },
+          {
+            "label": "She was intrigued",
+            "value": "B"
+          },
+          {
+            "label": "She broke it",
+            "value": "C"
+          },
+          {
+            "label": "She gave it away",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -1843,7 +3421,10 @@
     "language": "fr",
     "cefr_level": "B2",
     "title": "L'impact du changement climatique",
-    "topics": ["environment", "society"],
+    "topics": [
+      "environment",
+      "society"
+    ],
     "body": "L'essor du télétravail a profondément modifié la vie quotidienne des habitants des grandes métropoles.\n\nDe nombreux professionnels ont choisi de s'installer à la campagne pour bénéficier d'un cadre de vie plus paisible.\n\nCette tendance stimule l'économie locale, bien qu'elle soulève des défis d'infrastructure numérique.\n\nLes entreprises cherchent désormais à concilier la flexibilité des salariés avec la cohésion d'équipe.",
     "sentence_translations": [
       "The rise of remote work has profoundly modified the daily life of residents in major metropolises.",
@@ -1852,77 +3433,165 @@
       "Companies now seek to reconcile employee flexibility with team cohesion."
     ],
     "word_translations": {
-      "essor": "rise / growth",
+      "l'essor": "the rise",
+      "du": "of the",
       "télétravail": "remote work",
+      "a": "has; to",
       "profondément": "profoundly",
       "modifié": "modified",
+      "la": "the",
+      "vie": "life",
       "quotidienne": "daily",
+      "des": "of the; some",
       "habitants": "inhabitants / residents",
+      "grandes": "large; great",
       "métropoles": "metropolises",
+      "de": "of; from",
+      "nombreux": "numerous",
       "professionnels": "professionals",
+      "ont": "have",
       "choisi": "chosen",
       "s'installer": "to settle",
+      "à": "to; at",
       "campagne": "countryside",
+      "pour": "for",
       "bénéficier": "to benefit",
+      "d'un": "of a",
+      "cadre": "framework; setting",
+      "plus": "more; no longer",
       "paisible": "peaceful",
+      "cette": "this",
       "tendance": "trend",
       "stimule": "boosts / stimulates",
-      "économie": "economy",
+      "l'économie": "the economy",
+      "locale": "local",
+      "bien": "well; good",
+      "qu'elle": "that she",
+      "soulève": "raises",
       "défis": "challenges",
+      "d'infrastructure": "of infrastructure",
       "numérique": "digital",
+      "les": "the",
       "entreprises": "companies",
+      "cherchent": "they seek",
+      "désormais": "from now on",
       "concilier": "to reconcile",
       "flexibilité": "flexibility",
-      "cohésion": "cohesion"
+      "salariés": "employees",
+      "avec": "with",
+      "cohésion": "cohesion",
+      "d'équipe": "of team",
+      "essor": "rise / growth",
+      "économie": "economy"
     },
     "quiz": [
       {
         "question": "What has altered daily life in large cities?",
         "options": [
-          { "label": "Public transport strikes", "value": "A" },
-          { "label": "The rise of remote work", "value": "B" },
-          { "label": "Higher housing costs", "value": "C" },
-          { "label": "New laws", "value": "D" }
+          {
+            "label": "Public transport strikes",
+            "value": "A"
+          },
+          {
+            "label": "The rise of remote work",
+            "value": "B"
+          },
+          {
+            "label": "Higher housing costs",
+            "value": "C"
+          },
+          {
+            "label": "New laws",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Why are professionals moving to the countryside?",
         "options": [
-          { "label": "To start farming", "value": "A" },
-          { "label": "To enjoy a more peaceful living environment", "value": "B" },
-          { "label": "Because city roads are closed", "value": "C" },
-          { "label": "To retire early", "value": "D" }
+          {
+            "label": "To start farming",
+            "value": "A"
+          },
+          {
+            "label": "To enjoy a more peaceful living environment",
+            "value": "B"
+          },
+          {
+            "label": "Because city roads are closed",
+            "value": "C"
+          },
+          {
+            "label": "To retire early",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is a positive outcome of this migration?",
         "options": [
-          { "label": "It boosts the local rural economy", "value": "A" },
-          { "label": "It removes internet fees", "value": "B" },
-          { "label": "It reduces taxes", "value": "C" },
-          { "label": "It builds new highways", "value": "D" }
+          {
+            "label": "It boosts the local rural economy",
+            "value": "A"
+          },
+          {
+            "label": "It removes internet fees",
+            "value": "B"
+          },
+          {
+            "label": "It reduces taxes",
+            "value": "C"
+          },
+          {
+            "label": "It builds new highways",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What challenge is created in rural regions?",
         "options": [
-          { "label": "Digital infrastructure demands", "value": "A" },
-          { "label": "Lack of water", "value": "B" },
-          { "label": "Noise pollution", "value": "C" },
-          { "label": "Overcrowded schools", "value": "D" }
+          {
+            "label": "Digital infrastructure demands",
+            "value": "A"
+          },
+          {
+            "label": "Lack of water",
+            "value": "B"
+          },
+          {
+            "label": "Noise pollution",
+            "value": "C"
+          },
+          {
+            "label": "Overcrowded schools",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What do companies try to reconcile?",
         "options": [
-          { "label": "Flexibility with team cohesion", "value": "A" },
-          { "label": "Wages with equipment costs", "value": "B" },
-          { "label": "Working hours with vacation days", "value": "C" },
-          { "label": "Local taxes with international sales", "value": "D" }
+          {
+            "label": "Flexibility with team cohesion",
+            "value": "A"
+          },
+          {
+            "label": "Wages with equipment costs",
+            "value": "B"
+          },
+          {
+            "label": "Working hours with vacation days",
+            "value": "C"
+          },
+          {
+            "label": "Local taxes with international sales",
+            "value": "D"
+          }
         ],
         "correct": "A"
       }
@@ -1932,7 +3601,10 @@
     "language": "fr",
     "cefr_level": "C1",
     "title": "L'influence de la philosophie moderne",
-    "topics": ["philosophy", "culture"],
+    "topics": [
+      "philosophy",
+      "culture"
+    ],
     "body": "La coexistence entre l'urbanisme contemporain et la sauvegarde de la mémoire historique constitue un enjeu majeur pour les villes modernes.\n\nLes projets d'aménagement privilégient parfois la densité bâtie au détriment d'édifices anciens d'une valeur culturelle inestimable.\n\nRénover ces monuments exige des investissements conséquents et une expertise multidisciplinaire rigoureuse.\n\nSans une réelle volonté politique, nous risquons d'uniformiser l'espace public tout en effaçant son identité.",
     "sentence_translations": [
       "The coexistence between contemporary urban planning and the preservation of historical memory constitutes a major challenge for modern cities.",
@@ -1941,74 +3613,176 @@
       "Without real political will, we risk standardizing public space while erasing its identity."
     ],
     "word_translations": {
+      "la": "the",
       "coexistence": "coexistence",
-      "urbanisme": "urban planning",
+      "entre": "between",
+      "l'urbanisme": "urban planning",
+      "contemporain": "contemporary",
+      "et": "and",
       "sauvegarde": "preservation / safeguarding",
+      "de": "of; from",
       "mémoire": "memory",
+      "historique": "historical",
+      "constitue": "constitutes",
+      "un": "a; an",
       "enjeu": "issue / challenge",
-      "aménagement": "development / planning",
+      "majeur": "major",
+      "pour": "for",
+      "les": "the",
+      "villes": "cities",
+      "modernes": "modern",
+      "projets": "projects",
+      "d'aménagement": "of planning",
       "privilégient": "prioritize",
+      "parfois": "sometimes",
       "densité": "density",
+      "bâtie": "built",
+      "au": "to the; at the",
       "détriment": "detriment",
-      "édifices": "buildings / edifices",
+      "d'édifices": "of buildings",
+      "anciens": "ancient; old",
+      "d'une": "of a",
+      "valeur": "value",
+      "culturelle": "cultural",
       "inestimable": "invaluable",
       "rénover": "to renovate",
+      "ces": "these",
+      "monuments": "monuments",
+      "exige": "requires",
+      "des": "of the; some",
+      "investissements": "investments",
       "conséquents": "substantial",
+      "une": "a; an",
       "expertise": "expertise",
       "multidisciplinaire": "multidisciplinary",
+      "rigoureuse": "rigorous",
+      "sans": "without",
+      "réelle": "real",
       "volonté": "will",
-      "uniformiser": "to standardize / homogenize",
+      "politique": "political; policy",
+      "nous": "we; us",
+      "risquons": "we risk",
+      "d'uniformiser": "to standardize",
+      "l'espace": "space",
+      "public": "public",
+      "tout": "all; everything",
+      "en": "in; by",
       "effaçant": "erasing",
-      "identité": "identity"
+      "son": "his; her; its",
+      "identité": "identity",
+      "urbanisme": "urban planning",
+      "aménagement": "development / planning",
+      "édifices": "buildings / edifices",
+      "uniformiser": "to standardize / homogenize"
     },
     "quiz": [
       {
         "question": "What is a major challenge for modern cities?",
         "options": [
-          { "label": "Expanding road networks", "value": "A" },
-          { "label": "Coexistence between urbanism and historical preservation", "value": "B" },
-          { "label": "Managing commercial parking spaces", "value": "C" },
-          { "label": "Building taller skyscrapers", "value": "D" }
+          {
+            "label": "Expanding road networks",
+            "value": "A"
+          },
+          {
+            "label": "Coexistence between urbanism and historical preservation",
+            "value": "B"
+          },
+          {
+            "label": "Managing commercial parking spaces",
+            "value": "C"
+          },
+          {
+            "label": "Building taller skyscrapers",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What do development projects sometimes prioritize?",
         "options": [
-          { "label": "Pedestrian walkways", "value": "A" },
-          { "label": "Built density over ancient buildings", "value": "B" },
-          { "label": "Public parks", "value": "C" },
-          { "label": "Solar panels", "value": "D" }
+          {
+            "label": "Pedestrian walkways",
+            "value": "A"
+          },
+          {
+            "label": "Built density over ancient buildings",
+            "value": "B"
+          },
+          {
+            "label": "Public parks",
+            "value": "C"
+          },
+          {
+            "label": "Solar panels",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What does renovating historical monuments require?",
         "options": [
-          { "label": "Minimal funding", "value": "A" },
-          { "label": "Substantial investments and multidisciplinary expertise", "value": "B" },
-          { "label": "Foreign labor only", "value": "C" },
-          { "label": "Rapid execution without oversight", "value": "D" }
+          {
+            "label": "Minimal funding",
+            "value": "A"
+          },
+          {
+            "label": "Substantial investments and multidisciplinary expertise",
+            "value": "B"
+          },
+          {
+            "label": "Foreign labor only",
+            "value": "C"
+          },
+          {
+            "label": "Rapid execution without oversight",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is the risk without political will?",
         "options": [
-          { "label": "Increased traffic density", "value": "A" },
-          { "label": "Standardizing public space while erasing its identity", "value": "B" },
-          { "label": "Rising cost of living", "value": "C" },
-          { "label": "Decreased city funding", "value": "D" }
+          {
+            "label": "Increased traffic density",
+            "value": "A"
+          },
+          {
+            "label": "Standardizing public space while erasing its identity",
+            "value": "B"
+          },
+          {
+            "label": "Rising cost of living",
+            "value": "C"
+          },
+          {
+            "label": "Decreased city funding",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "How are the ancient buildings described culturally?",
         "options": [
-          { "label": "Outdated and useless", "value": "A" },
-          { "label": "Of invaluable cultural value", "value": "B" },
-          { "label": "Expensive to demolish", "value": "C" },
-          { "label": "Purely commercial assets", "value": "D" }
+          {
+            "label": "Outdated and useless",
+            "value": "A"
+          },
+          {
+            "label": "Of invaluable cultural value",
+            "value": "B"
+          },
+          {
+            "label": "Expensive to demolish",
+            "value": "C"
+          },
+          {
+            "label": "Purely commercial assets",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -2018,7 +3792,10 @@
     "language": "fr",
     "cefr_level": "C1",
     "title": "La préservation du patrimoine littéraire",
-    "topics": ["literature", "culture"],
+    "topics": [
+      "literature",
+      "culture"
+    ],
     "body": "La littérature francophone contemporaine se caractérise par une foisonnante pluralité de voix et de perspectives interculturelles.\n\nEn déconstruisant les récits monolithiques, ces auteurs enrichissent la langue française de sonorités et d'imaginaires inédits.\n\nL'analyse critique explore désormais ces œuvres à travers des approches postcoloniales et comparatistes.\n\nCette dynamique témoigne de la vitalité d'un patrimoine en perpétuelle mutation.",
     "sentence_translations": [
       "Contemporary Francophone literature is characterized by an abundant plurality of intercultural voices and perspectives.",
@@ -2027,75 +3804,164 @@
       "This dynamic testifies to the vitality of a heritage in perpetual mutation."
     ],
     "word_translations": {
+      "la": "the",
       "littérature": "literature",
       "francophone": "Francophone",
       "contemporaine": "contemporary",
+      "se": "oneself",
+      "caractérise": "characterizes",
+      "par": "by; through",
+      "une": "a; an",
       "foisonnante": "abundant / thriving",
       "pluralité": "plurality",
+      "de": "of; from",
+      "voix": "voice",
+      "et": "and",
       "perspectives": "perspectives",
+      "interculturelles": "intercultural",
+      "en": "in; by",
       "déconstruisant": "deconstructing",
+      "les": "the",
       "récits": "narratives",
       "monolithiques": "monolithic",
+      "ces": "these",
+      "auteurs": "authors",
       "enrichissent": "enrich",
+      "langue": "language",
+      "française": "French",
       "sonorités": "sounds / sonorities",
-      "imaginaires": "imagery / imaginations",
+      "d'imaginaires": "of imaginaries",
       "inédits": "unprecedented / novel",
-      "analyse": "analysis",
+      "l'analyse": "the analysis",
+      "critique": "critical; critique",
+      "explore": "explores",
+      "désormais": "from now on",
+      "œuvres": "works",
+      "à": "to; at",
+      "travers": "through",
+      "des": "of the; some",
+      "approches": "approaches",
       "postcoloniales": "postcolonial",
       "comparatistes": "comparative",
+      "cette": "this",
       "dynamique": "dynamic",
       "témoigne": "testifies / reflects",
+      "vitalité": "vitality",
+      "d'un": "of a",
       "patrimoine": "heritage",
-      "mutation": "mutation / change"
+      "perpétuelle": "perpetual",
+      "mutation": "mutation / change",
+      "imaginaires": "imagery / imaginations",
+      "analyse": "analysis"
     },
     "quiz": [
       {
         "question": "How is contemporary Francophone literature characterized?",
         "options": [
-          { "label": "By strict adherence to traditional rules", "value": "A" },
-          { "label": "By an abundant plurality of voices and perspectives", "value": "B" },
-          { "label": "By a decline in interest", "value": "C" },
-          { "label": "By repetitive themes", "value": "D" }
+          {
+            "label": "By strict adherence to traditional rules",
+            "value": "A"
+          },
+          {
+            "label": "By an abundant plurality of voices and perspectives",
+            "value": "B"
+          },
+          {
+            "label": "By a decline in interest",
+            "value": "C"
+          },
+          {
+            "label": "By repetitive themes",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What do these authors deconstruct?",
         "options": [
-          { "label": "Monolithic narratives", "value": "A" },
-          { "label": "Grammar rules", "value": "B" },
-          { "label": "Historical facts", "value": "C" },
-          { "label": "Poetic rhythms", "value": "D" }
+          {
+            "label": "Monolithic narratives",
+            "value": "A"
+          },
+          {
+            "label": "Grammar rules",
+            "value": "B"
+          },
+          {
+            "label": "Historical facts",
+            "value": "C"
+          },
+          {
+            "label": "Poetic rhythms",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "How do these works enrich the French language?",
         "options": [
-          { "label": "With simplified vocabulary", "value": "A" },
-          { "label": "With unprecedented sounds and imagery", "value": "B" },
-          { "label": "By removing archaic terms", "value": "C" },
-          { "label": "By introducing English syntax", "value": "D" }
+          {
+            "label": "With simplified vocabulary",
+            "value": "A"
+          },
+          {
+            "label": "With unprecedented sounds and imagery",
+            "value": "B"
+          },
+          {
+            "label": "By removing archaic terms",
+            "value": "C"
+          },
+          {
+            "label": "By introducing English syntax",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Which approaches are used in critical analysis today?",
         "options": [
-          { "label": "Postcolonial and comparative approaches", "value": "A" },
-          { "label": "Strictly biographical methods", "value": "B" },
-          { "label": "Quantitative statistical models", "value": "C" },
-          { "label": "Political censorship criteria", "value": "D" }
+          {
+            "label": "Postcolonial and comparative approaches",
+            "value": "A"
+          },
+          {
+            "label": "Strictly biographical methods",
+            "value": "B"
+          },
+          {
+            "label": "Quantitative statistical models",
+            "value": "C"
+          },
+          {
+            "label": "Political censorship criteria",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What does this literary dynamic demonstrate?",
         "options": [
-          { "label": "The demise of classical French", "value": "A" },
-          { "label": "The vitality of a heritage in perpetual mutation", "value": "B" },
-          { "label": "The commercial superiority of novels", "value": "C" },
-          { "label": "The isolation of writers", "value": "D" }
+          {
+            "label": "The demise of classical French",
+            "value": "A"
+          },
+          {
+            "label": "The vitality of a heritage in perpetual mutation",
+            "value": "B"
+          },
+          {
+            "label": "The commercial superiority of novels",
+            "value": "C"
+          },
+          {
+            "label": "The isolation of writers",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -2105,7 +3971,11 @@
     "language": "fr",
     "cefr_level": "C2",
     "title": "Les mutations socioculturelles contemporaines",
-    "topics": ["ethics", "technology", "society"],
+    "topics": [
+      "ethics",
+      "technology",
+      "society"
+    ],
     "body": "L'émergence fulgurante des modèles génératifs reconfigure inéluctablement les fondements déontologiques de la création intellectuelle.\n\nElle suscite de profonds dilemmes quant à l'altérité, l'originalité cognitive et la dilution de la responsabilité humaine dans la prise de décision.\n\nIl s'avère primordial d'élaborer des cadres régulateurs exhaustifs capables d'atténuer les biais algorithmiques sans entraver l'innovation.\n\nSeule une réflexion éthique exigeante permettra d'orienter cette mutation paradigmatique vers le bien commun.",
     "sentence_translations": [
       "The rapid emergence of generative models inevitably reconfigures the deontological foundations of intellectual creation.",
@@ -2114,75 +3984,176 @@
       "Only demanding ethical reflection will allow this paradigm shift to be directed toward the common good."
     ],
     "word_translations": {
-      "émergence": "emergence",
+      "l'émergence": "the emergence",
       "fulgurante": "dazzling / rapid",
+      "des": "of the; some",
+      "modèles": "models",
       "génératifs": "generative",
       "reconfigure": "reconfigures",
       "inéluctablement": "inevitably",
+      "les": "the",
       "fondements": "foundations",
       "déontologiques": "deontological / ethical",
+      "de": "of; from",
+      "la": "the",
       "création": "creation",
       "intellectuelle": "intellectual",
-      "altérité": "alterity / otherness",
-      "originalité": "originality",
+      "elle": "she; it",
+      "suscite": "sparks; raises",
+      "profonds": "deep",
+      "dilemmes": "dilemmas",
+      "quant": "as for",
+      "à": "to; at",
+      "l'altérité": "otherness",
+      "l'originalité": "originality",
+      "cognitive": "cognitive",
+      "et": "and",
       "dilution": "dilution",
       "responsabilité": "responsibility",
+      "humaine": "human",
+      "dans": "in",
+      "prise": "taking; grasp",
+      "décision": "decision",
+      "il": "he; it",
+      "s'avère": "turns out",
       "primordial": "essential / paramount",
+      "d'élaborer": "to develop",
       "cadres": "frameworks",
       "régulateurs": "regulatory",
+      "exhaustifs": "exhaustive",
+      "capables": "capable",
+      "d'atténuer": "to mitigate",
       "biais": "biases",
+      "algorithmiques": "algorithmic",
+      "sans": "without",
       "entraver": "to hinder / hamper",
+      "l'innovation": "innovation",
+      "seule": "only; alone",
+      "une": "a; an",
+      "réflexion": "reflection",
+      "éthique": "ethical; ethics",
       "exigeante": "demanding",
-      "paradigmatique": "paradigmatic"
+      "permettra": "will allow",
+      "d'orienter": "to guide",
+      "cette": "this",
+      "mutation": "change; shift",
+      "paradigmatique": "paradigmatic",
+      "vers": "toward",
+      "le": "the",
+      "bien": "well; good",
+      "commun": "common",
+      "émergence": "emergence",
+      "altérité": "alterity / otherness",
+      "originalité": "originality"
     },
     "quiz": [
       {
         "question": "What is reconfiguring the ethical foundations of intellectual creation?",
         "options": [
-          { "label": "Globalization of markets", "value": "A" },
-          { "label": "The emergence of generative models", "value": "B" },
-          { "label": "New educational systems", "value": "C" },
-          { "label": "Social media expansion", "value": "D" }
+          {
+            "label": "Globalization of markets",
+            "value": "A"
+          },
+          {
+            "label": "The emergence of generative models",
+            "value": "B"
+          },
+          {
+            "label": "New educational systems",
+            "value": "C"
+          },
+          {
+            "label": "Social media expansion",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "Which specific dilemma is highlighted regarding human decision-making?",
         "options": [
-          { "label": "The speed of execution", "value": "A" },
-          { "label": "The dilution of human responsibility", "value": "B" },
-          { "label": "The cost of technology", "value": "C" },
-          { "label": "Access to hardware", "value": "D" }
+          {
+            "label": "The speed of execution",
+            "value": "A"
+          },
+          {
+            "label": "The dilution of human responsibility",
+            "value": "B"
+          },
+          {
+            "label": "The cost of technology",
+            "value": "C"
+          },
+          {
+            "label": "Access to hardware",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What kind of regulatory frameworks are needed?",
         "options": [
-          { "label": "Prohibitive frameworks", "value": "A" },
-          { "label": "Exhaustive regulatory frameworks", "value": "B" },
-          { "label": "Voluntary corporate guidelines", "value": "C" },
-          { "label": "Temporary bans", "value": "D" }
+          {
+            "label": "Prohibitive frameworks",
+            "value": "A"
+          },
+          {
+            "label": "Exhaustive regulatory frameworks",
+            "value": "B"
+          },
+          {
+            "label": "Voluntary corporate guidelines",
+            "value": "C"
+          },
+          {
+            "label": "Temporary bans",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What should these regulations mitigate without hindering innovation?",
         "options": [
-          { "label": "Algorithmic biases", "value": "A" },
-          { "label": "Corporate profits", "value": "B" },
-          { "label": "User growth", "value": "C" },
-          { "label": "Data storage capacity", "value": "D" }
+          {
+            "label": "Algorithmic biases",
+            "value": "A"
+          },
+          {
+            "label": "Corporate profits",
+            "value": "B"
+          },
+          {
+            "label": "User growth",
+            "value": "C"
+          },
+          {
+            "label": "Data storage capacity",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "What is necessary to guide this shift toward the common good?",
         "options": [
-          { "label": "Market forces alone", "value": "A" },
-          { "label": "Demanding ethical reflection", "value": "B" },
-          { "label": "Technological acceleration", "value": "C" },
-          { "label": "Government ownership", "value": "D" }
+          {
+            "label": "Market forces alone",
+            "value": "A"
+          },
+          {
+            "label": "Demanding ethical reflection",
+            "value": "B"
+          },
+          {
+            "label": "Technological acceleration",
+            "value": "C"
+          },
+          {
+            "label": "Government ownership",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }
@@ -2192,7 +4163,11 @@
     "language": "fr",
     "cefr_level": "C2",
     "title": "L'analyse des politiques écologiques",
-    "topics": ["environment", "politics", "society"],
+    "topics": [
+      "environment",
+      "politics",
+      "society"
+    ],
     "body": "La mise en œuvre des politiques de transition écologique se heurte fréquemment à des résistances socio-économiques prévisibles.\n\nL'arbitrage entre l'urgence environnementale et l'équité sociale requiert une concertation démocratique approfondie et pérenne.\n\nOcculter ces tiraillements risquerait d'accentuer le ressentiment populaire et de fragiliser le pacte républicain.\n\nAinsi, la durabilité ne saurait être pleinement effective sans une refonte concertée des modèles de gouvernance.",
     "sentence_translations": [
       "The implementation of ecological transition policies frequently encounters predictable socio-economic resistance.",
@@ -2201,76 +4176,170 @@
       "Thus, sustainability cannot be fully effective without a concerted overhaul of governance models."
     ],
     "word_translations": {
+      "la": "the",
+      "mise": "putting; setting",
+      "en": "in; by",
       "œuvre": "implementation / execution",
+      "des": "of the; some",
+      "politiques": "policies; political",
+      "de": "of; from",
       "transition": "transition",
       "écologique": "ecological",
+      "se": "oneself",
       "heurte": "encounters / collides with",
       "fréquemment": "frequently",
+      "à": "to; at",
       "résistances": "resistance",
+      "socio-économiques": "socioeconomic",
       "prévisibles": "predictable",
-      "arbitrage": "trade-off / arbitration",
-      "urgence": "urgency",
-      "équité": "equity / fairness",
+      "l'arbitrage": "the trade-off",
+      "entre": "between",
+      "l'urgence": "urgency",
+      "environnementale": "environmental",
+      "et": "and",
+      "l'équité": "equity",
+      "sociale": "social",
       "requiert": "requires",
+      "une": "a; an",
       "concertation": "consultation",
       "démocratique": "democratic",
+      "approfondie": "in-depth",
       "pérenne": "lasting / sustainable",
       "occulter": "to conceal / gloss over",
+      "ces": "these",
       "tiraillements": "tensions / friction",
+      "risquerait": "would risk",
+      "d'accentuer": "to heighten",
+      "le": "the",
       "ressentiment": "resentment",
+      "populaire": "popular",
       "fragiliser": "to weaken",
+      "pacte": "pact",
+      "républicain": "republican",
+      "ainsi": "thus; so",
       "durabilité": "sustainability",
+      "ne": "not",
+      "saurait": "would know",
+      "être": "to be",
+      "pleinement": "fully",
+      "effective": "effective",
+      "sans": "without",
       "refonte": "overhaul / redesign",
-      "gouvernance": "governance"
+      "concertée": "coordinated",
+      "modèles": "models",
+      "gouvernance": "governance",
+      "arbitrage": "trade-off / arbitration",
+      "urgence": "urgency",
+      "équité": "equity / fairness"
     },
     "quiz": [
       {
         "question": "What do ecological transition policies frequently encounter?",
         "options": [
-          { "label": "Unanimous public support", "value": "A" },
-          { "label": "Predictable socio-economic resistance", "value": "B" },
-          { "label": "Immediate funding", "value": "C" },
-          { "label": "Technical perfection", "value": "D" }
+          {
+            "label": "Unanimous public support",
+            "value": "A"
+          },
+          {
+            "label": "Predictable socio-economic resistance",
+            "value": "B"
+          },
+          {
+            "label": "Immediate funding",
+            "value": "C"
+          },
+          {
+            "label": "Technical perfection",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What trade-off requires in-depth democratic consultation?",
         "options": [
-          { "label": "Between tax cuts and spending", "value": "A" },
-          { "label": "Between environmental urgency and social equity", "value": "B" },
-          { "label": "Between urban and rural investments", "value": "C" },
-          { "label": "Between national and international laws", "value": "D" }
+          {
+            "label": "Between tax cuts and spending",
+            "value": "A"
+          },
+          {
+            "label": "Between environmental urgency and social equity",
+            "value": "B"
+          },
+          {
+            "label": "Between urban and rural investments",
+            "value": "C"
+          },
+          {
+            "label": "Between national and international laws",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is the danger of concealing social tensions?",
         "options": [
-          { "label": "Economic inflation", "value": "A" },
-          { "label": "Heightening popular resentment and weakening cohesion", "value": "B" },
-          { "label": "Slower technological development", "value": "C" },
-          { "label": "Loss of international trade", "value": "D" }
+          {
+            "label": "Economic inflation",
+            "value": "A"
+          },
+          {
+            "label": "Heightening popular resentment and weakening cohesion",
+            "value": "B"
+          },
+          {
+            "label": "Slower technological development",
+            "value": "C"
+          },
+          {
+            "label": "Loss of international trade",
+            "value": "D"
+          }
         ],
         "correct": "B"
       },
       {
         "question": "What is necessary for sustainability to be fully effective?",
         "options": [
-          { "label": "A concerted overhaul of governance models", "value": "A" },
-          { "label": "Strict fines for individuals", "value": "B" },
-          { "label": "Privatization of natural resources", "value": "C" },
-          { "label": "Complete industrial shutdown", "value": "D" }
+          {
+            "label": "A concerted overhaul of governance models",
+            "value": "A"
+          },
+          {
+            "label": "Strict fines for individuals",
+            "value": "B"
+          },
+          {
+            "label": "Privatization of natural resources",
+            "value": "C"
+          },
+          {
+            "label": "Complete industrial shutdown",
+            "value": "D"
+          }
         ],
         "correct": "A"
       },
       {
         "question": "How is the required democratic consultation described?",
         "options": [
-          { "label": "Brief and superficial", "value": "A" },
-          { "label": "In-depth and lasting (pérenne)", "value": "B" },
-          { "label": "Optional", "value": "C" },
-          { "label": "Strictly online", "value": "D" }
+          {
+            "label": "Brief and superficial",
+            "value": "A"
+          },
+          {
+            "label": "In-depth and lasting (pérenne)",
+            "value": "B"
+          },
+          {
+            "label": "Optional",
+            "value": "C"
+          },
+          {
+            "label": "Strictly online",
+            "value": "D"
+          }
         ],
         "correct": "B"
       }

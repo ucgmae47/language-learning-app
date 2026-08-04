@@ -46,8 +46,9 @@ export function StoryReaderClient({
   );
   const wordFillTriggered = useRef(false);
 
-  // Older stories may lack short-word meanings (articles, etc.). Fill those in
-  // silently — never surface translation backfill UI to the reader.
+  // Older / incomplete stories may lack some word meanings. Fill those in
+  // silently — library rows get free closed-class glosses; personal stories
+  // may also call Gemini for remaining content words.
   useEffect(() => {
     if (!translations?.sentences?.length) return;
     if (!hasMissingWordTranslations(body, translations.words)) return;
@@ -75,7 +76,7 @@ export function StoryReaderClient({
               : prev,
         );
       } catch {
-        // Non-fatal: longer words still work; short ones stay untappable.
+        // Non-fatal: words that already have glosses stay tappable.
       }
     })();
 

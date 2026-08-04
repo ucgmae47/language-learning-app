@@ -4,6 +4,7 @@
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
+import { ensureCompleteWordTranslations } from "@/lib/stories/complete-word-translations";
 import { allSentences, extractContentWords } from "@/lib/stories/utils";
 import { withAiRetries } from "@/lib/stories/retry";
 import type { Language } from "@/lib/supabase/types";
@@ -16,6 +17,8 @@ export type StoryTranslations = {
 /**
  * Generate sentence + word translations for a story body.
  * Throws if the model fails or returns an incomplete sentence list.
+ * Word glosses are post-processed so every content word gets a meaning
+ * (Gemini often omits short / common words).
  */
 export async function generateStoryTranslations(
   body: string,
@@ -89,8 +92,19 @@ ${words.join(", ")}`;
     throw new Error("Translation response missing words map");
   }
 
+  const { words: completeWords, stillMissing } =
+    await ensureCompleteWordTranslations(body, parsed.words, language, {
+      label: `${label}/words`,
+    });
+
+  if (stillMissing.length > 0) {
+    throw new Error(
+      `Incomplete word translations after fill (${stillMissing.length} missing): ${stillMissing.slice(0, 12).join(", ")}`,
+    );
+  }
+
   return {
     sentences: parsed.sentences,
-    words: parsed.words,
+    words: completeWords,
   };
 }
