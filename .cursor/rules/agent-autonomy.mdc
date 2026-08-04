@@ -23,9 +23,10 @@ When a task needs any of the following, **do it yourself** in this session (requ
 
 1. **Act first.** If you can run it, run it.
 2. **Close the loop.** After code changes: typecheck/lint/tests that fit the change, apply needed migrations, commit, push, open/update a PR when appropriate.
-3. **Report outcomes**, not homework. Say what you ran, what passed/failed, branch/PR links, and any migration you applied.
-4. **Ask only for true blockers:** missing API keys/secrets, destructive production decisions, or ambiguous product choices—not for routine commands.
-5. **Don’t dump runbooks** as the deliverable. If the user must click something only they can (e.g. add a dashboard secret, merge with admin rights you lack), give the single blocked step after you’ve done everything else.
+3. **When the user confirms it works — land on `main`.** If they say the feature works, looks good, approve it, ship it, merge it, or otherwise confirm success: merge the PR (or merge the feature branch) into `main`, push `main`, and report the result. Do not leave a confirmed-good feature sitting only on a side branch unless they explicitly ask to keep the PR open.
+4. **Report outcomes**, not homework. Say what you ran, what passed/failed, branch/PR links, merge status, and any migration you applied.
+5. **Ask only for true blockers:** missing API keys/secrets, destructive production decisions, or ambiguous product choices—not for routine commands.
+6. **Don’t dump runbooks** as the deliverable. If the user must click something only they can (e.g. add a dashboard secret, merge with admin rights you lack), give the single blocked step after you’ve done everything else.
 
 ## Safety still applies
 

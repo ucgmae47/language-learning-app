@@ -36,7 +36,8 @@ When the user says a task is done, wraps up, switches devices, goes idle after c
 1. Ensure all intended changes are committed.
 2. **Push** the branch to `origin`.
 3. Open or update a PR when that helps handoff (unless the user asked not to).
-4. Tell the user the branch name / PR URL and whether `main` still needs a merge for the next session to start from `main`.
+4. If they **confirmed the feature works** (or equivalent approval to ship), **merge into `main` and push `main`** so the next Cloud/iPhone session can start from an up-to-date `main`. Otherwise tell them the PR URL and that `main` still needs a merge.
+5. Tell the user the branch name / PR URL and final `main` status.
 
 **Never leave** completed or substantial in-progress work only on the Cloud VM disk.
 
