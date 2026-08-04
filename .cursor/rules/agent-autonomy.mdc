@@ -1,0 +1,40 @@
+---
+description: Agents execute end-to-end without handing work back to the user
+alwaysApply: true
+---
+
+# Do the work yourself (Cloud-first)
+
+The user vibe-codes and almost never runs terminal commands, git, GitHub, or SQL by hand—especially on Cloud/iPhone. **Prefer action over instructions.**
+
+## Default: execute, don’t delegate
+
+When a task needs any of the following, **do it yourself** in this session (request permissions if needed). Do not stop with “run this yourself” or a copy-paste checklist unless something truly blocks you (missing secret, explicit user refusal, or no access).
+
+- Shell / package / build / lint / test / dev-server commands
+- Git commit, **push**, fetch, pull, branch management
+- Opening or updating **pull requests** (`gh pr create` / update) when work is ready for review or handoff
+- Applying **Supabase / Postgres schema** changes: run the relevant `supabase/*.sql` migration (or `full-schema.sql` bootstrap) against the Cloud local Supabase DB via `psql` / `docker exec`, then verify
+- Seeding or one-off data scripts already in the repo (`npm run …`)
+- Installing deps, starting Docker / `supabase start`, fixing broken env setup required for the task
+- CI-oriented follow-ups you can fix from the repo (failing checks caused by your change)
+
+## How to behave
+
+1. **Act first.** If you can run it, run it.
+2. **Close the loop.** After code changes: typecheck/lint/tests that fit the change, apply needed migrations, commit, push, open/update a PR when appropriate.
+3. **Report outcomes**, not homework. Say what you ran, what passed/failed, branch/PR links, and any migration you applied.
+4. **Ask only for true blockers:** missing API keys/secrets, destructive production decisions, or ambiguous product choices—not for routine commands.
+5. **Don’t dump runbooks** as the deliverable. If the user must click something only they can (e.g. add a dashboard secret, merge with admin rights you lack), give the single blocked step after you’ve done everything else.
+
+## Safety still applies
+
+- No force-push to `main`/`master`; no destructive git resets unless the user explicitly asks.
+- No skipping hooks unless explicitly asked.
+- Don’t put secrets into the repo; use existing env/Secrets.
+- Prefer idempotent migrations; don’t drop user data unless asked.
+- Production/hosted Supabase: apply migrations there only when the user clearly wants that environment updated; on Cloud, always apply to the **local Cloud Supabase** stack needed to run/verify the app.
+
+## Conflict with cautious defaults
+
+If a general habit says “ask before pushing/committing/running,” **this project overrides it**: commit, push, PR, migrate, and run commands by default so the user never has to. The handoff rule still governs when/how often to push.
