@@ -12,9 +12,21 @@ import {
 } from "@/components/stories/story-library-client";
 import { generateQueuedStory } from "@/lib/stories/queue";
 import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enabled";
-import type { CefrLevel, Language, Story } from "@/lib/supabase/types";
+import { pickNextRecommendedStory } from "@/lib/stories/next-recommendation";
+import type {
+  CefrLevel,
+  Language,
+  Story,
+  StoryAttempt,
+  StoryProgress,
+} from "@/lib/supabase/types";
 
 type QueuedStory = Pick<Story, "id" | "title" | "topics">;
+
+type LibraryRow = Pick<
+  Story,
+  "id" | "title" | "cefr_level" | "topics" | "word_count" | "created_at"
+>;
 
 export const metadata: Metadata = {
   title: "Stories | LinguaPath",
@@ -49,7 +61,60 @@ export default async function StoriesPage() {
     .order("cefr_level", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(100)
-    .returns<LibraryStoryCard[]>();
+    .returns<LibraryRow[]>();
+
+  const libraryRows = libraryStories ?? [];
+  const storyIds = libraryRows.map((s) => s.id);
+
+  const [progressRes, attemptsRes] = storyIds.length
+    ? await Promise.all([
+        supabase
+          .from("story_progress")
+          .select("story_id, percent_read, finished, updated_at")
+          .eq("user_id", user.id)
+          .in("story_id", storyIds)
+          .returns<
+            Pick<
+              StoryProgress,
+              "story_id" | "percent_read" | "finished" | "updated_at"
+            >[]
+          >(),
+        supabase
+          .from("story_attempts")
+          .select("story_id, score")
+          .eq("user_id", user.id)
+          .in("story_id", storyIds)
+          .returns<Pick<StoryAttempt, "story_id" | "score">[]>(),
+      ])
+    : [{ data: [] }, { data: [] }];
+
+  const progressByStory = new Map(
+    (progressRes.data ?? []).map((p) => [p.story_id, p]),
+  );
+  const attemptByStory = new Map(
+    (attemptsRes.data ?? []).map((a) => [a.story_id, a]),
+  );
+
+  const stories: LibraryStoryCard[] = libraryRows.map((story) => {
+    const progress = progressByStory.get(story.id);
+    const attempt = attemptByStory.get(story.id);
+    return {
+      ...story,
+      percent_read:
+        progress && progress.percent_read > 0 ? progress.percent_read : null,
+      quiz_percent:
+        attempt != null ? Math.round((attempt.score / 5) * 100) : null,
+    };
+  });
+
+  // Free plan (and anytime the personal queue isn't the primary CTA): nudge
+  // toward one clear next library story so learners don't stall on choice.
+  const recommended = pickNextRecommendedStory(
+    libraryRows,
+    progressByStory,
+    attemptByStory,
+    cefrLevel,
+  );
 
   let queuedReady: QueuedStory | null = null;
   let isPreparingNext = false;
@@ -98,7 +163,9 @@ export default async function StoriesPage() {
     });
   }
 
-  const stories = libraryStories ?? [];
+  // When a personal queued story is ready, that is the primary CTA — still
+  // keep library progress badges, but skip the flashing library recommend.
+  const showLibraryRecommend = !queuedReady;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#07070f] px-3 py-6 sm:px-6 sm:py-10">
@@ -133,7 +200,11 @@ export default async function StoriesPage() {
           )}
         </div>
 
-        <StoryLibraryClient stories={stories} userCefrLevel={cefrLevel} />
+        <StoryLibraryClient
+          stories={stories}
+          userCefrLevel={cefrLevel}
+          recommended={showLibraryRecommend ? recommended : null}
+        />
       </div>
     </div>
   );

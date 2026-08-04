@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { useTts } from "@/hooks/use-tts";
+import { saveStoryProgress } from "@/app/actions/stories";
 import { allSentences, cleanWord } from "@/lib/stories/utils";
 import type { Language } from "@/lib/supabase/types";
 
@@ -40,6 +41,10 @@ type Props = {
   translationError?: string | null;
   storyId: string;
   attemptScore: number | null;
+  /** Resume position from story_progress (0-based sentence index). */
+  initialSentenceIndex?: number;
+  /** Whether the reader previously reached the end screen. */
+  initialFinished?: boolean;
 };
 
 const VOICE_LANG: Record<Language, string> = {
@@ -118,20 +123,30 @@ export function StoryReader({
   translationError,
   storyId,
   attemptScore,
+  initialSentenceIndex = 0,
+  initialFinished = false,
 }: Props) {
   useScrollLock();
 
   const sentences = allSentences(body);
   const total = sentences.length;
 
-  const [index, setIndex] = useState(0);
-  const [finished, setFinished] = useState(false);
+  const clampedInitial = Math.max(
+    0,
+    Math.min(initialSentenceIndex, Math.max(total - 1, 0)),
+  );
+
+  const [index, setIndex] = useState(clampedInitial);
+  const [finished, setFinished] = useState(Boolean(initialFinished) && total > 0);
   const [showEnglish, setShowEnglish] = useState(true);
   const [activeWord, setActiveWord] = useState<string | null>(null);
   const [slideKey, setSlideKey] = useState(0);
 
   const lockRef = useRef(false);
   const touchStartY = useRef<number | null>(null);
+  const progressSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedKey = useRef<string>("");
+  const progressSnapshot = useRef({ percent: 0, index: 0, finished: false });
 
   const {
     speak,
@@ -148,6 +163,46 @@ export function StoryReader({
   const english = translations?.sentences[index];
   const hasWords = !!translations?.words && Object.keys(translations.words).length > 0;
   const progress = total > 0 ? ((finished ? total : index + 1) / total) * 100 : 0;
+
+  // Keep a snapshot for unmount flush without writing refs during render.
+  useEffect(() => {
+    progressSnapshot.current = {
+      percent: Math.round(progress),
+      index,
+      finished,
+    };
+  }, [progress, index, finished]);
+
+  // Persist reading progress (debounced) for library badges + next-story nudge.
+  useEffect(() => {
+    if (total === 0) return;
+
+    const percent = Math.round(progress);
+    const key = `${storyId}:${percent}:${index}:${finished}`;
+    if (key === lastSavedKey.current) return;
+
+    if (progressSaveTimer.current) clearTimeout(progressSaveTimer.current);
+    progressSaveTimer.current = setTimeout(() => {
+      lastSavedKey.current = key;
+      void saveStoryProgress(storyId, percent, index, finished);
+    }, 400);
+
+    return () => {
+      if (progressSaveTimer.current) clearTimeout(progressSaveTimer.current);
+    };
+  }, [storyId, progress, index, finished, total]);
+
+  // Flush latest progress when leaving the reader so badges stay accurate.
+  useEffect(() => {
+    return () => {
+      if (total === 0) return;
+      const snap = progressSnapshot.current;
+      const key = `${storyId}:${snap.percent}:${snap.index}:${snap.finished}`;
+      if (key === lastSavedKey.current) return;
+      lastSavedKey.current = key;
+      void saveStoryProgress(storyId, snap.percent, snap.index, snap.finished);
+    };
+  }, [storyId, total]);
 
   const navigate = useCallback(
     (delta: number) => {

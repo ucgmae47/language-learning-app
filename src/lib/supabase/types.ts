@@ -201,6 +201,17 @@ export type StoryAttempt = {
   completed_at: string;
 };
 
+/** Per-user reading progress for a story (library or personal). */
+export type StoryProgress = {
+  id: string;
+  user_id: string;
+  story_id: string;
+  percent_read: number;
+  sentence_index: number;
+  finished: boolean;
+  updated_at: string;
+};
+
 export type CorrectionType = "spelling" | "conjugation" | "word_choice" | "grammar" | "accent";
 
 export type JournalCorrection = {
@@ -490,6 +501,13 @@ export type Database = {
         Insert: Omit<StoryAttempt, "id" | "completed_at"> &
           Partial<Pick<StoryAttempt, "id">>;
         Update: never;
+        Relationships: Rel;
+      };
+      story_progress: {
+        Row: StoryProgress;
+        Insert: Omit<StoryProgress, "id" | "updated_at"> &
+          Partial<Pick<StoryProgress, "id" | "updated_at">>;
+        Update: Partial<Omit<StoryProgress, "id" | "user_id" | "story_id">>;
         Relationships: Rel;
       };
       sentence_attempts: {
