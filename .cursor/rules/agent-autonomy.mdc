@@ -14,10 +14,19 @@ When a task needs any of the following, **do it yourself** in this session (requ
 - Shell / package / build / lint / test / dev-server commands
 - Git commit, **push**, fetch, pull, branch management
 - Opening or updating **pull requests** (`gh pr create` / update) when work is ready for review or handoff
-- Applying **Supabase / Postgres schema** changes: run the relevant `supabase/*.sql` migration (or `full-schema.sql` bootstrap) against the Cloud local Supabase DB via `psql` / `docker exec`, then verify
+- Applying **database / schema** changes (see “Database updates” below)
 - Seeding or one-off data scripts already in the repo (`npm run …`)
 - Installing deps, starting Docker / `supabase start`, fixing broken env setup required for the task
 - CI-oriented follow-ups you can fix from the repo (failing checks caused by your change)
+
+## Database updates
+
+There are two databases. Treat them differently:
+
+1. **Practice database (Cloud local Supabase)** — always update this yourself whenever a feature needs schema/data changes. Apply the relevant `supabase/*.sql` (or bootstrap with `full-schema.sql`), fix grants if needed, seed if needed, and verify the app against it. Do not ask the user to run SQL for the practice DB.
+2. **Live / production Supabase** (hosted project used by the real app) — **do not** change it unless the user clearly asks to put the feature in production / update the live app / update the live database. When they do, and credentials exist (e.g. hosted URL + service role and/or `SUPABASE_DB_URL`), apply the same migrations there and confirm. If live credentials are missing, say in plain language that only the practice copy was updated and ask whether they want to add live-database access.
+
+When speaking to the user, call these the “practice database” and “live database,” not Docker/psql jargon.
 
 ## How to behave
 
@@ -34,7 +43,7 @@ When a task needs any of the following, **do it yourself** in this session (requ
 - No skipping hooks unless explicitly asked.
 - Don’t put secrets into the repo; use existing env/Secrets.
 - Prefer idempotent migrations; don’t drop user data unless asked.
-- Production/hosted Supabase: apply migrations there only when the user clearly wants that environment updated; on Cloud, always apply to the **local Cloud Supabase** stack needed to run/verify the app.
+- Follow “Database updates” above: practice DB always; live DB only after explicit go-ahead.
 
 ## Conflict with cautious defaults
 

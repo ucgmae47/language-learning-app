@@ -30,5 +30,8 @@ Ask in business terms, for example:
 - “Want me to put this in the shared project everyone starts from next time?”
 - “Should this go live for real users, or stay as a private draft?”
 - “Are we done with this feature, or keep polishing?”
+- “I updated the practice database. Should I also update the live database for real users?”
 
 After they confirm it’s good / done / ship it, land it on `main` per the autonomy and handoff rules—still describe that as “saved to the shared project” / “ready for your next session,” not as a merge lecture.
+
+Database work: always keep the **practice** copy current yourself; only touch the **live** database after they approve.
