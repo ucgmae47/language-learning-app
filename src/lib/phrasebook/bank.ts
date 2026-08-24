@@ -1,0 +1,327 @@
+export type Phrase = {
+  native: string;
+  english: string;
+  pronunciation: string;
+  context: string;
+};
+
+export type PhrasebookResult = { phrases: Phrase[]; category_tip: string };
+
+type CatBank = Record<string, { tip: string; phrases: Phrase[] }>;
+
+const ES: CatBank = {
+  "Greetings & Farewells": {
+    tip: "In Spanish, greetings change by time of day — buenos días until midday, then buenas tardes, and buenas noches after dark.",
+    phrases: [
+      { native: "¡Hola!", english: "Hello!", pronunciation: "OH-lah", context: "Anytime informal greeting" },
+      { native: "Buenos días", english: "Good morning", pronunciation: "BWEH-nohs DEE-ahs", context: "Until around midday" },
+      { native: "Buenas tardes", english: "Good afternoon", pronunciation: "BWEH-nahs TAR-dehs", context: "Afternoon until evening" },
+      { native: "Buenas noches", english: "Good evening / good night", pronunciation: "BWEH-nahs NO-chehs", context: "Greeting at night or goodbye before bed" },
+      { native: "¿Cómo estás?", english: "How are you?", pronunciation: "KOH-moh ehs-TAHS", context: "Informal with friends" },
+      { native: "¿Cómo está usted?", english: "How are you? (formal)", pronunciation: "KOH-moh ehs-TAH oo-STEHD", context: "With strangers or elders" },
+      { native: "Mucho gusto", english: "Nice to meet you", pronunciation: "MOO-choh GOOS-toh", context: "When meeting someone" },
+      { native: "Hasta luego", english: "See you later", pronunciation: "AHS-tah LWEH-goh", context: "Casual goodbye" },
+      { native: "Adiós", english: "Goodbye", pronunciation: "ah-DYOHS", context: "General farewell" },
+      { native: "Nos vemos", english: "See you", pronunciation: "nohs VEH-mohs", context: "Friendly see-you" },
+    ],
+  },
+  "Daily Conversations": {
+    tip: "Qué tal and cómo estás are both friendly; qué tal is slightly more casual.",
+    phrases: [
+      { native: "¿Qué tal?", english: "How's it going?", pronunciation: "keh TAHL", context: "Casual check-in" },
+      { native: "Estoy bien, gracias", english: "I'm fine, thanks", pronunciation: "ehs-TOY byehn GRAH-syahs", context: "Standard reply" },
+      { native: "¿Qué haces?", english: "What are you doing?", pronunciation: "keh AH-sehs", context: "Informal chat" },
+      { native: "No entiendo", english: "I don't understand", pronunciation: "noh ehn-TYEHN-doh", context: "Clarify meaning" },
+      { native: "¿Puedes repetir?", english: "Can you repeat?", pronunciation: "PWEH-dehs reh-peh-TEER", context: "Ask for repetition" },
+      { native: "Más despacio, por favor", english: "More slowly, please", pronunciation: "mahs dehs-PAH-syoh por fah-VOR", context: "Slow someone down" },
+      { native: "¿De dónde eres?", english: "Where are you from?", pronunciation: "deh DOHN-deh EH-rehs", context: "Getting to know someone" },
+      { native: "Yo soy de…", english: "I am from…", pronunciation: "yoh soy deh", context: "Introduce origin" },
+      { native: "¿Hablas inglés?", english: "Do you speak English?", pronunciation: "AH-blahs een-GLEHS", context: "Language check" },
+      { native: "Claro / Por supuesto", english: "Sure / Of course", pronunciation: "KLAH-roh / por soo-PWEHS-toh", context: "Agreeing" },
+    ],
+  },
+  "Food & Dining": {
+    tip: "In restaurants, use por favor and favor de when asking for things; la cuenta is how you ask for the bill.",
+    phrases: [
+      { native: "Tengo hambre", english: "I'm hungry", pronunciation: "TEHN-goh AHM-breh", context: "Before a meal" },
+      { native: "Una mesa para dos", english: "A table for two", pronunciation: "OO-nah MEH-sah PAH-rah dohs", context: "At a restaurant" },
+      { native: "La carta, por favor", english: "The menu, please", pronunciation: "lah KAR-tah por fah-VOR", context: "Ask for menu" },
+      { native: "Quisiera pedir…", english: "I would like to order…", pronunciation: "kee-SYEH-rah peh-DEER", context: "Polite ordering" },
+      { native: "¿Qué recomienda?", english: "What do you recommend?", pronunciation: "keh reh-koh-MYEHN-dah", context: "Ask server" },
+      { native: "Sin picante, por favor", english: "Not spicy, please", pronunciation: "seen pee-KAHN-teh", context: "Dietary preference" },
+      { native: "La cuenta, por favor", english: "The check, please", pronunciation: "lah KWEHN-tah", context: "Paying" },
+      { native: "Está delicioso", english: "It's delicious", pronunciation: "ehs-TAH deh-lee-SYOH-soh", context: "Compliment food" },
+      { native: "Soy vegetariano/a", english: "I'm vegetarian", pronunciation: "soy beh-heh-tah-RYAH-noh", context: "Dietary need" },
+      { native: "¿Incluye propina?", english: "Does it include tip?", pronunciation: "een-KLOO-yeh pro-PEE-nah", context: "Bill questions" },
+    ],
+  },
+  "Travel & Transport": {
+    tip: "Use dónde está for locations and cómo llego for directions; tú/usted depends on formality.",
+    phrases: [
+      { native: "¿Dónde está la estación?", english: "Where is the station?", pronunciation: "DOHN-deh ehs-TAH lah ehs-tah-SYOHN", context: "Finding transit" },
+      { native: "Un boleto de ida", english: "A one-way ticket", pronunciation: "oon boh-LEH-toh deh EE-dah", context: "Buying tickets" },
+      { native: "¿A qué hora sale?", english: "What time does it leave?", pronunciation: "ah keh OH-rah SAH-leh", context: "Schedules" },
+      { native: "¿Cómo llego a…?", english: "How do I get to…?", pronunciation: "KOH-moh YEH-goh ah", context: "Directions" },
+      { native: "Está lejos / cerca", english: "It's far / near", pronunciation: "ehs-TAH LEH-hohs / SEHR-kah", context: "Distance" },
+      { native: "Gire a la derecha", english: "Turn right", pronunciation: "HEE-reh ah lah deh-REH-chah", context: "Directions" },
+      { native: "Siga derecho", english: "Go straight", pronunciation: "SEE-gah deh-REH-choh", context: "Directions" },
+      { native: "¿Cuánto tarda?", english: "How long does it take?", pronunciation: "KWAN-toh TAR-dah", context: "Travel time" },
+      { native: "Necesito un taxi", english: "I need a taxi", pronunciation: "neh-seh-SEE-toh oon TAK-see", context: "Transport" },
+      { native: "Aquí está bien", english: "Here is fine", pronunciation: "ah-KEE ehs-TAH byehn", context: "Tell driver to stop" },
+    ],
+  },
+  "Shopping": {
+    tip: "¿Cuánto cuesta? is essential; regatear is common in markets but not in malls.",
+    phrases: [
+      { native: "¿Cuánto cuesta?", english: "How much does it cost?", pronunciation: "KWAN-toh KWES-tah", context: "Price check" },
+      { native: "Estoy buscando…", english: "I'm looking for…", pronunciation: "ehs-TOY boos-KAHN-doh", context: "In a store" },
+      { native: "¿Tiene talla mediana?", english: "Do you have medium size?", pronunciation: "TYEH-neh TAH-yah meh-DYAH-nah", context: "Clothing" },
+      { native: "¿Puedo probarme esto?", english: "Can I try this on?", pronunciation: "PWEH-doh pro-BAR-meh EHS-toh", context: "Fitting room" },
+      { native: "Es demasiado caro", english: "It's too expensive", pronunciation: "ehs deh-mah-SYAH-doh KAH-roh", context: "Bargaining/decline" },
+      { native: "¿Hay descuento?", english: "Is there a discount?", pronunciation: "eye dehs-KWEHN-toh", context: "Price negotiation" },
+      { native: "Me lo llevo", english: "I'll take it", pronunciation: "meh loh YEH-voh", context: "Buying" },
+      { native: "¿Aceptan tarjeta?", english: "Do you accept cards?", pronunciation: "ah-SEHP-tahn tar-HEH-tah", context: "Payment" },
+      { native: "Solo estoy mirando", english: "I'm just looking", pronunciation: "SOH-loh ehs-TOY mee-RAHN-doh", context: "Browse politely" },
+      { native: "¿Dónde está el probador?", english: "Where is the fitting room?", pronunciation: "DOHN-deh ehs-TAH el pro-bah-DOR", context: "Clothes shopping" },
+    ],
+  },
+  "Emergency & Health": {
+    tip: "Learn ayuda and emergency numbers early; soy alérgico/a can be lifesaving.",
+    phrases: [
+      { native: "¡Ayuda!", english: "Help!", pronunciation: "ah-YOO-dah", context: "Emergency" },
+      { native: "Necesito un médico", english: "I need a doctor", pronunciation: "neh-seh-SEE-toh oon MEH-dee-koh", context: "Health emergency" },
+      { native: "Llame a una ambulancia", english: "Call an ambulance", pronunciation: "YAH-meh ah OO-nah ahm-boo-LAHN-syah", context: "Urgent" },
+      { native: "Me duele aquí", english: "It hurts here", pronunciation: "meh DWEH-leh ah-KEE", context: "At clinic" },
+      { native: "Soy alérgico/a a…", english: "I'm allergic to…", pronunciation: "soy ah-LEHR-hee-koh ah", context: "Safety" },
+      { native: "¿Dónde está el hospital?", english: "Where is the hospital?", pronunciation: "DOHN-deh ehs-TAH el os-pee-TAHL", context: "Directions" },
+      { native: "Perdí mi pasaporte", english: "I lost my passport", pronunciation: "pehr-DEE mee pah-sah-POR-teh", context: "Travel emergency" },
+      { native: "Necesito ayuda de la policía", english: "I need police help", pronunciation: "neh-seh-SEE-toh ah-YOO-dah deh lah po-lee-SEE-ah", context: "Safety" },
+      { native: "No me siento bien", english: "I don't feel well", pronunciation: "noh meh SYEHN-toh byehn", context: "Illness" },
+      { native: "¿Habla inglés?", english: "Do you speak English?", pronunciation: "AH-blah een-GLEHS", context: "Language bridge" },
+    ],
+  },
+  "Numbers & Time": {
+    tip: "Spanish uses es la una but son las for other hours; media and cuarto are key.",
+    phrases: [
+      { native: "¿Qué hora es?", english: "What time is it?", pronunciation: "keh OH-rah ehs", context: "Ask time" },
+      { native: "Es la una", english: "It's one o'clock", pronunciation: "ehs lah OO-nah", context: "1:00" },
+      { native: "Son las tres y media", english: "It's 3:30", pronunciation: "sohn lahs trehs ee MEH-dyah", context: "Half hour" },
+      { native: "A las cinco en punto", english: "At five sharp", pronunciation: "ah lahs SEEN-koh ehn POON-toh", context: "Exact time" },
+      { native: "Hoy / mañana / ayer", english: "Today / tomorrow / yesterday", pronunciation: "oy / mah-NYAH-nah / ah-YEHR", context: "Relative days" },
+      { native: "El lunes", english: "Monday", pronunciation: "el LOO-nehs", context: "Weekdays" },
+      { native: "¿Cuántos años tienes?", english: "How old are you?", pronunciation: "KWAN-tohs AH-nyohs TYEH-nehs", context: "Age" },
+      { native: "Primero / segundo", english: "First / second", pronunciation: "pree-MEH-roh / seh-GOON-doh", context: "Ordinals" },
+      { native: "Media hora", english: "Half an hour", pronunciation: "MEH-dyah OH-rah", context: "Duration" },
+      { native: "Hasta las diez", english: "Until ten", pronunciation: "AHS-tah lahs dyehs", context: "Deadline" },
+    ],
+  },
+  "Compliments & Polite Phrases": {
+    tip: "Por favor, gracias, and de nada go far; compliments on food are always welcome.",
+    phrases: [
+      { native: "Por favor", english: "Please", pronunciation: "por fah-VOR", context: "Politeness" },
+      { native: "Gracias", english: "Thank you", pronunciation: "GRAH-syahs", context: "Thanks" },
+      { native: "Muchas gracias", english: "Thank you very much", pronunciation: "MOO-chahs GRAH-syahs", context: "Stronger thanks" },
+      { native: "De nada", english: "You're welcome", pronunciation: "deh NAH-dah", context: "Reply to thanks" },
+      { native: "Perdón / Disculpe", english: "Sorry / Excuse me", pronunciation: "pehr-DOHN / dees-KOOL-peh", context: "Apology / attention" },
+      { native: "Con permiso", english: "Excuse me (passing)", pronunciation: "kohn pehr-MEE-soh", context: "Moving past someone" },
+      { native: "Qué amable", english: "How kind", pronunciation: "keh ah-MAH-bleh", context: "Compliment manners" },
+      { native: "Me gusta mucho", english: "I like it a lot", pronunciation: "meh GOOS-tah MOO-choh", context: "Positive feedback" },
+      { native: "Qué bonito/a", english: "How beautiful/nice", pronunciation: "keh boh-NEE-toh", context: "Compliment thing/person" },
+      { native: "Felicitaciones", english: "Congratulations", pronunciation: "feh-lee-see-tah-SYOH-nehs", context: "Celebrate success" },
+    ],
+  },
+  "Making Friends": {
+    tip: "¿Te gustaría…? is a soft way to invite; tú form builds closeness.",
+    phrases: [
+      { native: "¿Quieres tomar un café?", english: "Want to get a coffee?", pronunciation: "KYEH-rehs toh-MAR oon kah-FEH", context: "Casual invite" },
+      { native: "¿Te gustaría salir?", english: "Would you like to go out?", pronunciation: "teh goos-tah-REE-ah sah-LEER", context: "Softer invite" },
+      { native: "¿Cuál es tu nombre?", english: "What's your name?", pronunciation: "kwahl ehs too NOHM-breh", context: "Introductions" },
+      { native: "Encantado/a de conocerte", english: "Glad to meet you", pronunciation: "ehn-kahn-TAH-doh deh koh-noh-SEHR-teh", context: "Warm intro" },
+      { native: "¿Qué te gusta hacer?", english: "What do you like to do?", pronunciation: "keh teh GOOS-tah ah-SEHR", context: "Interests" },
+      { native: "Somos amigos", english: "We're friends", pronunciation: "SOH-mohs ah-MEE-gohs", context: "Friendship" },
+      { native: "Mantengamos el contacto", english: "Let's keep in touch", pronunciation: "mahn-tehn-GAH-mohs el kohn-TAHK-toh", context: "After meeting" },
+      { native: "¿Me das tu número?", english: "Can I get your number?", pronunciation: "meh dahs too NOO-meh-roh", context: "Contact" },
+      { native: "Fue un placer", english: "It was a pleasure", pronunciation: "fweh oon plah-SEHR", context: "Closing chat" },
+      { native: "Hasta pronto", english: "See you soon", pronunciation: "AHS-tah PROHN-toh", context: "Friendly goodbye" },
+    ],
+  },
+  "Business & Formal": {
+    tip: "Use usted and full greetings in emails; estimado/a opens formal messages.",
+    phrases: [
+      { native: "Buenos días, señor/señora", english: "Good morning, sir/madam", pronunciation: "BWEH-nohs DEE-ahs seh-NYOR", context: "Formal greeting" },
+      { native: "Mucho gusto en conocerle", english: "Pleased to meet you", pronunciation: "MOO-choh GOOS-toh ehn koh-noh-SEHR-leh", context: "Formal intro" },
+      { native: "Le agradezco su tiempo", english: "I appreciate your time", pronunciation: "leh ah-grah-DEHS-koh soo TYEHM-poh", context: "Meetings" },
+      { native: "Quisiera programar una reunión", english: "I'd like to schedule a meeting", pronunciation: "kee-SYEH-rah pro-grah-MAR OO-nah reh-oo-NYOHN", context: "Scheduling" },
+      { native: "Adjunto el documento", english: "I attach the document", pronunciation: "ahd-HOON-toh el doh-koo-MEHN-toh", context: "Email" },
+      { native: "Quedo a la espera de su respuesta", english: "I look forward to your reply", pronunciation: "KEH-doh ah lah ehs-PEH-rah", context: "Email close" },
+      { native: "¿Podría firmar aquí?", english: "Could you sign here?", pronunciation: "poh-DREE-ah feer-MAR ah-KEE", context: "Paperwork" },
+      { native: "Estoy de acuerdo", english: "I agree", pronunciation: "ehs-TOY deh ah-KWEHR-doh", context: "Agreement" },
+      { native: "Permítame aclarar", english: "Allow me to clarify", pronunciation: "pehr-MEE-tah-meh ah-klah-RAR", context: "Discussion" },
+      { native: "Gracias por su atención", english: "Thank you for your attention", pronunciation: "GRAH-syahs por soo ah-tehn-SYOHN", context: "Formal thanks" },
+    ],
+  },
+};
+
+const FR: CatBank = {
+  "Greetings & Farewells": {
+    tip: "Always greet before asking a question in French shops — a quick bonjour matters.",
+    phrases: [
+      { native: "Bonjour", english: "Hello / Good morning", pronunciation: "bohn-ZHOOR", context: "Daytime greeting" },
+      { native: "Bonsoir", english: "Good evening", pronunciation: "bohn-SWAHR", context: "After late afternoon" },
+      { native: "Salut", english: "Hi / Bye", pronunciation: "sah-LOO", context: "Informal" },
+      { native: "Comment allez-vous ?", english: "How are you? (formal)", pronunciation: "koh-mahn tah-lay VOO", context: "Formal" },
+      { native: "Ça va ?", english: "How's it going?", pronunciation: "sah VAH", context: "Casual" },
+      { native: "Enchanté(e)", english: "Nice to meet you", pronunciation: "ahn-shahn-TAY", context: "Introductions" },
+      { native: "Au revoir", english: "Goodbye", pronunciation: "oh ruh-VWAHR", context: "Standard farewell" },
+      { native: "À bientôt", english: "See you soon", pronunciation: "ah byan-TOH", context: "Friendly goodbye" },
+      { native: "Bonne journée", english: "Have a good day", pronunciation: "bun zhoor-NAY", context: "Leaving politely" },
+      { native: "Bonne nuit", english: "Good night", pronunciation: "bun NWEE", context: "Before sleep" },
+    ],
+  },
+  "Daily Conversations": {
+    tip: "Ça va ? can be both question and answer; tone carries a lot of meaning.",
+    phrases: [
+      { native: "Comment ça va ?", english: "How are you?", pronunciation: "koh-mahn sah VAH", context: "Everyday" },
+      { native: "Ça va bien, merci", english: "I'm fine, thanks", pronunciation: "sah vah byan mehr-SEE", context: "Reply" },
+      { native: "Je ne comprends pas", english: "I don't understand", pronunciation: "zhuh nuh kohm-PRAHN pah", context: "Clarify" },
+      { native: "Vous pouvez répéter ?", english: "Can you repeat?", pronunciation: "voo poo-VAY ray-pay-TAY", context: "Ask again" },
+      { native: "Plus lentement, s'il vous plaît", english: "More slowly, please", pronunciation: "ploo lahnt-MAHN seel voo PLAY", context: "Pace" },
+      { native: "D'où venez-vous ?", english: "Where are you from?", pronunciation: "doo vuh-nay VOO", context: "Origin" },
+      { native: "Je suis de…", english: "I am from…", pronunciation: "zhuh swee duh", context: "Origin reply" },
+      { native: "Parlez-vous anglais ?", english: "Do you speak English?", pronunciation: "par-lay VOO ahn-GLEH", context: "Language" },
+      { native: "Bien sûr", english: "Of course", pronunciation: "byan SOOR", context: "Agree" },
+      { native: "Pas de problème", english: "No problem", pronunciation: "pah duh pro-BLEM", context: "Reassure" },
+    ],
+  },
+  "Food & Dining": {
+    tip: "Say s'il vous plaît when ordering; l'addition, s'il vous plaît gets the bill.",
+    phrases: [
+      { native: "J'ai faim", english: "I'm hungry", pronunciation: "zhay FAM", context: "Before meal" },
+      { native: "Une table pour deux", english: "A table for two", pronunciation: "oon TAHBL poor DUH", context: "Restaurant" },
+      { native: "La carte, s'il vous plaît", english: "The menu, please", pronunciation: "lah KART seel voo PLAY", context: "Ask menu" },
+      { native: "Je voudrais…", english: "I would like…", pronunciation: "zhuh voo-DRAY", context: "Ordering" },
+      { native: "Qu'est-ce que vous recommandez ?", english: "What do you recommend?", pronunciation: "kess-kuh voo ruh-koh-mahn-DAY", context: "Ask server" },
+      { native: "Sans gluten, s'il vous plaît", english: "Gluten-free, please", pronunciation: "sahn gloo-TAHN", context: "Diet" },
+      { native: "L'addition, s'il vous plaît", english: "The check, please", pronunciation: "lah-dee-SYOHN", context: "Paying" },
+      { native: "C'est délicieux", english: "It's delicious", pronunciation: "seh day-lee-SYUH", context: "Compliment" },
+      { native: "Je suis végétarien(ne)", english: "I'm vegetarian", pronunciation: "zhuh swee vay-zhay-tah-RYAN", context: "Diet" },
+      { native: "Le service est compris ?", english: "Is service included?", pronunciation: "luh sehr-VEES eh kohm-PREE", context: "Bill" },
+    ],
+  },
+  "Travel & Transport": {
+    tip: "Use excusez-moi to interrupt politely; où est… is your map phrase.",
+    phrases: [
+      { native: "Où est la gare ?", english: "Where is the station?", pronunciation: "oo eh lah GAR", context: "Transit" },
+      { native: "Un billet aller simple", english: "A one-way ticket", pronunciation: "uhn bee-YAY ah-lay SAMPL", context: "Tickets" },
+      { native: "À quelle heure part le train ?", english: "What time does the train leave?", pronunciation: "ah kel UHR par luh TRAN", context: "Schedule" },
+      { native: "Comment aller à… ?", english: "How do I get to…?", pronunciation: "koh-mahn tah-lay ah", context: "Directions" },
+      { native: "C'est loin / près", english: "It's far / near", pronunciation: "seh LWAN / PRAY", context: "Distance" },
+      { native: "Tournez à droite", english: "Turn right", pronunciation: "toor-NAY ah DRWAT", context: "Directions" },
+      { native: "Allez tout droit", english: "Go straight", pronunciation: "ah-lay too DRWAH", context: "Directions" },
+      { native: "Ça prend combien de temps ?", english: "How long does it take?", pronunciation: "sah prahn kohm-BYAN duh tahn", context: "Duration" },
+      { native: "J'ai besoin d'un taxi", english: "I need a taxi", pronunciation: "zhay buh-ZWAN duhn tak-SEE", context: "Transport" },
+      { native: "Ici, ça va", english: "Here is fine", pronunciation: "ee-SEE sah vah", context: "Stop here" },
+    ],
+  },
+  "Shopping": {
+    tip: "C'est combien ? and je peux essayer ? are high-frequency shopping phrases.",
+    phrases: [
+      { native: "C'est combien ?", english: "How much is it?", pronunciation: "seh kohm-BYAN", context: "Price" },
+      { native: "Je cherche…", english: "I'm looking for…", pronunciation: "zhuh SHEHRSH", context: "In store" },
+      { native: "Vous avez la taille M ?", english: "Do you have size M?", pronunciation: "voo zah-VAY lah tahy EM", context: "Clothing" },
+      { native: "Je peux essayer ?", english: "Can I try it on?", pronunciation: "zhuh puh eh-say-YAY", context: "Fitting" },
+      { native: "C'est trop cher", english: "It's too expensive", pronunciation: "seh tro SHEHR", context: "Decline/bargain" },
+      { native: "Il y a une réduction ?", english: "Is there a discount?", pronunciation: "eel ee ah oon ray-dook-SYOHN", context: "Price" },
+      { native: "Je le prends", english: "I'll take it", pronunciation: "zhuh luh PRAHN", context: "Buy" },
+      { native: "Vous acceptez la carte ?", english: "Do you take cards?", pronunciation: "voo zak-sep-TAY lah KART", context: "Payment" },
+      { native: "Je regarde seulement", english: "I'm just looking", pronunciation: "zhuh ruh-GARD suhl-MAHN", context: "Browse" },
+      { native: "Où sont les cabines ?", english: "Where are the fitting rooms?", pronunciation: "oo sohn lay kah-BEEN", context: "Clothes" },
+    ],
+  },
+  "Emergency & Health": {
+    tip: "Au secours ! and j'ai besoin d'un médecin are essential emergency lines.",
+    phrases: [
+      { native: "Au secours !", english: "Help!", pronunciation: "oh suh-KOOR", context: "Emergency" },
+      { native: "J'ai besoin d'un médecin", english: "I need a doctor", pronunciation: "zhay buh-ZWAN duhn mayd-SAN", context: "Health" },
+      { native: "Appelez une ambulance", english: "Call an ambulance", pronunciation: "ah-play oon ahn-boo-LAHNS", context: "Urgent" },
+      { native: "J'ai mal ici", english: "It hurts here", pronunciation: "zhay mal ee-SEE", context: "Clinic" },
+      { native: "Je suis allergique à…", english: "I'm allergic to…", pronunciation: "zhuh swee zah-lehr-ZHEEK ah", context: "Safety" },
+      { native: "Où est l'hôpital ?", english: "Where is the hospital?", pronunciation: "oo eh lo-pee-TAL", context: "Directions" },
+      { native: "J'ai perdu mon passeport", english: "I lost my passport", pronunciation: "zhay pehr-doo mohn pahs-POR", context: "Travel emergency" },
+      { native: "Appelez la police", english: "Call the police", pronunciation: "ah-play lah po-LEES", context: "Safety" },
+      { native: "Je ne me sens pas bien", english: "I don't feel well", pronunciation: "zhuh nuh muh sahn pah byan", context: "Illness" },
+      { native: "Parlez-vous anglais ?", english: "Do you speak English?", pronunciation: "par-lay VOO ahn-GLEH", context: "Language bridge" },
+    ],
+  },
+  "Numbers & Time": {
+    tip: "French time uses et demie and moins le quart; 70–99 have special forms in France.",
+    phrases: [
+      { native: "Quelle heure est-il ?", english: "What time is it?", pronunciation: "kel UHR eh-TEEL", context: "Ask time" },
+      { native: "Il est une heure", english: "It's one o'clock", pronunciation: "eel eh oon UHR", context: "1:00" },
+      { native: "Il est trois heures et demie", english: "It's 3:30", pronunciation: "eel eh trwahz UHR eh duh-MEE", context: "Half past" },
+      { native: "À cinq heures précises", english: "At five sharp", pronunciation: "ah sank UHR pray-SEEZ", context: "Exact" },
+      { native: "Aujourd'hui / demain / hier", english: "Today / tomorrow / yesterday", pronunciation: "oh-zhoor-DWEE / duh-MAN / ee-EHR", context: "Days" },
+      { native: "Lundi", english: "Monday", pronunciation: "luhn-DEE", context: "Weekday" },
+      { native: "Quel âge avez-vous ?", english: "How old are you?", pronunciation: "kel AHZH ah-vay VOO", context: "Age" },
+      { native: "Premier / deuxième", english: "First / second", pronunciation: "pruh-MYAY / duh-ZYEM", context: "Ordinals" },
+      { native: "Une demi-heure", english: "Half an hour", pronunciation: "oon duh-mee UHR", context: "Duration" },
+      { native: "Jusqu'à dix heures", english: "Until ten", pronunciation: "zhus-KAH deez UHR", context: "Deadline" },
+    ],
+  },
+  "Compliments & Polite Phrases": {
+    tip: "Merci beaucoup and je vous en prie keep interactions smooth.",
+    phrases: [
+      { native: "S'il vous plaît", english: "Please", pronunciation: "seel voo PLAY", context: "Polite request" },
+      { native: "Merci", english: "Thank you", pronunciation: "mehr-SEE", context: "Thanks" },
+      { native: "Merci beaucoup", english: "Thank you very much", pronunciation: "mehr-SEE boh-KOO", context: "Stronger thanks" },
+      { native: "Je vous en prie / De rien", english: "You're welcome", pronunciation: "zhuh voo zahn PREE", context: "Reply" },
+      { native: "Pardon / Excusez-moi", english: "Sorry / Excuse me", pronunciation: "par-DOHN / ek-skew-zay MWAH", context: "Apology" },
+      { native: "Après vous", english: "After you", pronunciation: "ah-PREH voo", context: "Polite gesture" },
+      { native: "C'est gentil", english: "That's kind", pronunciation: "seh zhahn-TEEL", context: "Compliment" },
+      { native: "J'aime beaucoup", english: "I like it a lot", pronunciation: "zhem boh-KOO", context: "Positive" },
+      { native: "C'est beau", english: "It's beautiful", pronunciation: "seh BOH", context: "Compliment" },
+      { native: "Félicitations", english: "Congratulations", pronunciation: "fay-lee-see-tah-SYOHN", context: "Celebrate" },
+    ],
+  },
+  "Making Friends": {
+    tip: "On se tutoye ? asks to switch to tu; inviting with si on… feels natural.",
+    phrases: [
+      { native: "On prend un café ?", english: "Shall we get a coffee?", pronunciation: "ohn prahn uhn kah-FAY", context: "Invite" },
+      { native: "Ça te dit de sortir ?", english: "Want to go out?", pronunciation: "sah tuh dee duh sor-TEER", context: "Casual invite" },
+      { native: "Comment tu t'appelles ?", english: "What's your name?", pronunciation: "koh-mahn too tah-PELL", context: "Intro" },
+      { native: "Ravi(e) de te rencontrer", english: "Glad to meet you", pronunciation: "rah-VEE duh tuh rahn-kon-TRAY", context: "Warm intro" },
+      { native: "Qu'est-ce que tu aimes faire ?", english: "What do you like to do?", pronunciation: "kess-kuh too em FAIR", context: "Interests" },
+      { native: "On est amis", english: "We're friends", pronunciation: "ohn eh zah-MEE", context: "Friendship" },
+      { native: "Restons en contact", english: "Let's keep in touch", pronunciation: "reh-stohn ahn kohn-TAKT", context: "Follow-up" },
+      { native: "Tu me donnes ton numéro ?", english: "Can I get your number?", pronunciation: "too muh dun tohn new-may-ROH", context: "Contact" },
+      { native: "C'était un plaisir", english: "It was a pleasure", pronunciation: "say-teh uhn play-ZEER", context: "Close" },
+      { native: "À tout à l'heure", english: "See you in a bit", pronunciation: "ah too tah LUHR", context: "Soon" },
+    ],
+  },
+  "Business & Formal": {
+    tip: "Start emails with Madame, Monsieur and close with cordialement or respectueusement.",
+    phrases: [
+      { native: "Bonjour, Madame / Monsieur", english: "Good morning, ma'am/sir", pronunciation: "bohn-ZHOOR", context: "Formal greeting" },
+      { native: "Enchanté(e) de faire votre connaissance", english: "Pleased to meet you", pronunciation: "ahn-shahn-TAY", context: "Formal intro" },
+      { native: "Je vous remercie de votre temps", english: "Thank you for your time", pronunciation: "zhuh voo ruh-mehr-SEE", context: "Meetings" },
+      { native: "Je souhaiterais fixer un rendez-vous", english: "I'd like to schedule a meeting", pronunciation: "zhuh sweh-teh-RAY feek-SAY", context: "Scheduling" },
+      { native: "Veuillez trouver ci-joint le document", english: "Please find the document attached", pronunciation: "vuh-YAY troo-VAY see-ZHWAN", context: "Email" },
+      { native: "Dans l'attente de votre réponse", english: "Looking forward to your reply", pronunciation: "dahn lah-TAHNT", context: "Email close" },
+      { native: "Pourriez-vous signer ici ?", english: "Could you sign here?", pronunciation: "poo-RYAY voo seen-YAY ee-SEE", context: "Paperwork" },
+      { native: "Je suis d'accord", english: "I agree", pronunciation: "zhuh swee dah-KOR", context: "Agreement" },
+      { native: "Permettez-moi de préciser", english: "Allow me to clarify", pronunciation: "pehr-may-TAY mwah", context: "Discussion" },
+      { native: "Cordialement", english: "Kind regards", pronunciation: "kor-dyahl-MAHN", context: "Email sign-off" },
+    ],
+  },
+};
+
+export function getPhrasebook(
+  category: string,
+  language: "es" | "fr",
+  _cefrLevel?: string,
+): PhrasebookResult | null {
+  const bank = language === "fr" ? FR : ES;
+  const entry = bank[category];
+  if (!entry) return null;
+  return { phrases: entry.phrases, category_tip: entry.tip };
+}

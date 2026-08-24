@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { StoryPageShell } from "@/components/stories/story-page-shell";
-import type { Story, StoryAttempt } from "@/lib/supabase/types";
+import type { Story, StoryAttempt, StoryProgress } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -43,12 +43,22 @@ export default async function StoryPage({ params }: Props) {
     redirect("/stories");
   }
 
-  const { data: attempt } = await supabase
-    .from("story_attempts")
-    .select("score")
-    .eq("story_id", id)
-    .eq("user_id", user.id)
-    .single<Pick<StoryAttempt, "score">>();
+  const [{ data: attempt }, { data: progress }] = await Promise.all([
+    supabase
+      .from("story_attempts")
+      .select("score")
+      .eq("story_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle<Pick<StoryAttempt, "score">>(),
+    supabase
+      .from("story_progress")
+      .select("sentence_index, finished, percent_read")
+      .eq("story_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle<
+        Pick<StoryProgress, "sentence_index" | "finished" | "percent_read">
+      >(),
+  ]);
 
   const readingMins = story.word_count
     ? Math.max(1, Math.round(story.word_count / 180))
@@ -72,6 +82,8 @@ export default async function StoryPage({ params }: Props) {
       }
       storyId={story.id}
       attemptScore={attempt?.score ?? null}
+      initialSentenceIndex={progress?.sentence_index ?? 0}
+      initialFinished={progress?.finished ?? false}
     />
   );
 }

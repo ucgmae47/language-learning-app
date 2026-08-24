@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DrillSessionClient } from "@/components/drills/drill-session-client";
 import { QUESTIONS_ES } from "@/lib/drills/questions-es";
 import { QUESTIONS_FR } from "@/lib/drills/questions-fr";
-import type { Language, GrammarWeakness } from "@/lib/supabase/types";
+import type { Language, GrammarWeakness, LanguageProfile } from "@/lib/supabase/types";
 
 export const metadata = { title: "Grammar Drills — LinguaPath" };
 
@@ -18,12 +18,18 @@ export default async function DrillsPage() {
 
   if (!user) redirect("/login?next=/drills");
 
-  const [profileResult, weaknessResult] = await Promise.all([
+  const [profileResult, langProfileResult, weaknessResult] = await Promise.all([
     supabase
       .from("profiles")
       .select("language, cefr_level, display_name")
       .eq("id", user.id)
       .single(),
+    supabase
+      .from("language_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .limit(1)
+      .returns<LanguageProfile[]>(),
     supabase
       .from("grammar_weaknesses")
       .select("*")
@@ -37,7 +43,8 @@ export default async function DrillsPage() {
     profileResult.data?.display_name ??
     user.user_metadata?.display_name ??
     "Learner";
-  const cefrLevel = profileResult.data?.cefr_level ?? "B1";
+  const cefrLevel =
+    langProfileResult.data?.[0]?.cefr_level ?? profileResult.data?.cefr_level ?? "B1";
 
   const questions = language === "es" ? QUESTIONS_ES : QUESTIONS_FR;
   const flag = language === "es" ? "🇪🇸" : "🇫🇷";

@@ -200,6 +200,12 @@ See `.env.example`. Key additions since Phase 1:
 - One Gemini library story per `es`/`fr` × A1–C2 per UTC day (`src/lib/stories/daily-library.ts`)
 - Kill switch: `ENABLE_DAILY_LIBRARY_STORIES=false`
 
+### Story library progress + next recommend (done)
+
+- `story_progress` table tracks `%` read / sentence index / finished (`supabase/story-progress-migration.sql`)
+- Library cards show book `%` read + award quiz `%` when applicable
+- Free plan always surfaces a flashing “next recommended” library story (continue → quiz → unstarted at level)
+
 ---
 
 ## Git / Remote

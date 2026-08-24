@@ -4,6 +4,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createGroq } from "@ai-sdk/groq";
 import { generateObject, generateText } from "ai";
 import { z } from "zod";
+import { getSeedNews } from "@/lib/news/seed-articles";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import type { Language } from "@/lib/supabase/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -216,9 +218,14 @@ export async function fetchSummarizedNews(
   language: Language,
   cefrLevel: string,
 ): Promise<{ articles: SummarizedArticle[]; error?: string }> {
+  // Free path: preloaded graded articles (no NewsAPI / AI cost).
+  if (!isPremiumAiEnabled()) {
+    return { articles: getSeedNews(language) };
+  }
+
   try {
     const raw = await fetchHeadlines();
-    if (raw.length === 0) return { articles: [] };
+    if (raw.length === 0) return { articles: getSeedNews(language) };
 
     // Summarise in smaller batches so Groq fallback stays reliable
     const batchSize = 6;
@@ -242,6 +249,8 @@ export async function fetchSummarizedNews(
     return { articles };
   } catch (err) {
     console.error("[news]", err);
+    const seeded = getSeedNews(language);
+    if (seeded.length > 0) return { articles: seeded };
     return {
       articles: [],
       error: toFriendlyError(err),

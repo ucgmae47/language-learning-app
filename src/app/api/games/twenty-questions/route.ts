@@ -3,11 +3,16 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import {
+  pickSecret,
+  findSecret,
+  answerYesNo,
+  evaluateGuess,
+} from "@/lib/games/twenty-questions-bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import type { Language } from "@/lib/supabase/types";
 
 const LANG_NAMES: Record<Language, string> = { es: "Spanish", fr: "French" };
-
-// ── Schema: pick a secret word ────────────────────────────────────────────────
 
 const SecretSchema = z.object({
   wordInEnglish: z.string().describe("The secret word or phrase in English."),
@@ -16,8 +21,6 @@ const SecretSchema = z.object({
     "A one-sentence opening hint in the target language that sets the scene without giving it away.",
   ),
 });
-
-// ── Schema: answer a question ─────────────────────────────────────────────────
 
 const AnswerSchema = z.object({
   isCorrectLanguage: z
@@ -31,8 +34,6 @@ const AnswerSchema = z.object({
       "If isCorrectLanguage is TRUE: a brief, natural yes/no answer in the target language (1 sentence max, e.g. '¡Sí!' or 'No, no exactamente.').",
     ),
 });
-
-// ── Schema: evaluate a guess ──────────────────────────────────────────────────
 
 const GuessSchema = z.object({
   correct: z.boolean(),
@@ -57,12 +58,21 @@ export async function POST(request: Request) {
   const language = (body.language as Language) ?? "es";
   const cefrLevel = (body.cefrLevel as string) ?? "B1";
   const langName = LANG_NAMES[language];
+  const useAi = isPremiumAiEnabled() && Boolean(process.env.GEMINI_API_KEY);
 
-  const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-  // ── START: pick a secret word ───────────────────────────────────────────────
+  // ── START ───────────────────────────────────────────────────────────────────
   if (action === "start") {
+    if (!useAi) {
+      const secret = pickSecret(language);
+      return NextResponse.json({
+        wordInEnglish: secret.wordInEnglish,
+        wordInTargetLanguage: secret.wordInTargetLanguage,
+        openingHint: secret.openingHint,
+      });
+    }
+
     try {
+      const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
       const { object } = await generateObject({
         model: google("gemini-2.5-flash-lite"),
         schema: SecretSchema,
@@ -75,16 +85,36 @@ The opening hint must be in ${langName} and must NOT reveal what the thing is �
       return NextResponse.json(object);
     } catch (err) {
       console.error("[20q/start]", err);
-      return NextResponse.json({ error: "Failed to start game." }, { status: 500 });
+      const secret = pickSecret(language);
+      return NextResponse.json({
+        wordInEnglish: secret.wordInEnglish,
+        wordInTargetLanguage: secret.wordInTargetLanguage,
+        openingHint: secret.openingHint,
+      });
     }
   }
 
-  // ── ASK: answer a yes/no question ──────────────────────────────────────────
+  // ── ASK ─────────────────────────────────────────────────────────────────────
   if (action === "ask") {
     const secretWord = body.secretWord as string;
     const question = body.question as string;
 
+    if (!useAi) {
+      const secret = findSecret(language, secretWord);
+      if (!secret) {
+        return NextResponse.json({
+          isCorrectLanguage: true,
+          responseText:
+            language === "fr"
+              ? "Je ne peux pas répondre à cette question."
+              : "No puedo responder a esa pregunta.",
+        });
+      }
+      return NextResponse.json(answerYesNo(secret, question, language));
+    }
+
     try {
+      const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
       const { object } = await generateObject({
         model: google("gemini-2.5-flash-lite"),
         schema: AnswerSchema,
@@ -109,13 +139,33 @@ You MUST always provide responseText.`,
     }
   }
 
-  // ── GUESS: evaluate the player's final guess ───────────────────────────────
+  // ── GUESS ───────────────────────────────────────────────────────────────────
   if (action === "guess") {
     const secretWord = body.secretWord as string;
     const secretInTargetLang = body.secretInTargetLanguage as string;
     const guess = body.guess as string;
 
+    if (!useAi) {
+      const secret = findSecret(language, secretWord) ?? {
+        wordInEnglish: secretWord,
+        wordInTargetLanguage: secretInTargetLang,
+        openingHint: "",
+        attributes: {
+          isAnimal: false,
+          isFood: false,
+          isPlace: false,
+          isJob: false,
+          isObject: false,
+          isAlive: false,
+          largerThanBreadbox: false,
+          foundIndoors: false,
+        },
+      };
+      return NextResponse.json(evaluateGuess(secret, guess));
+    }
+
     try {
+      const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
       const { object } = await generateObject({
         model: google("gemini-2.5-flash-lite"),
         schema: GuessSchema,

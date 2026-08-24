@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { buildWeeklyPlan } from "@/lib/planner/templates";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PlannerSchema = z.object({
@@ -36,6 +38,20 @@ export async function POST(request: NextRequest) {
 
     const { language, cefrLevel, weakAreas = [], interests = [], availableMinutes = 30 } = body;
 
+    const seeded = buildWeeklyPlan({
+      language,
+      cefrLevel,
+      weakAreas,
+      interests,
+      availableMinutes,
+    });
+
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      return NextResponse.json(seeded, {
+        headers: { "X-Planner-Source": "static" },
+      });
+    }
+
     const langName = language === "es" ? "Spanish" : "French";
 
     const prompt = `You are a personalized language learning coach. Create a 7-day study plan for a ${langName} learner.
@@ -53,9 +69,10 @@ Available learning features to use in activities:
 - Music (listening comprehension)
 - Phrasebook (practical phrases)
 - Pronunciation Coach (speaking practice)
-- Journal (writing practice)
-- Chat (conversation practice)
+- Explore (culture)
 - Recipe Explorer (cultural vocabulary)
+- Crossword
+- Game Room
 
 Create a balanced, engaging 7-day plan that:
 1. Addresses weak areas while incorporating interests
@@ -80,7 +97,9 @@ Total activity duration per day should not exceed ${availableMinutes} minutes.`;
       prompt,
     });
 
-    return NextResponse.json(object);
+    return NextResponse.json(object, {
+      headers: { "X-Planner-Source": "gemini" },
+    });
   } catch (err) {
     console.error("[planner]", err);
     return NextResponse.json({ error: "Failed to generate plan" }, { status: 500 });

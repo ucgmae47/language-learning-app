@@ -16,9 +16,18 @@ type Props = {
   translations: Translations | null;
   storyId: string;
   attemptScore: number | null;
+  initialSentenceIndex?: number;
+  initialFinished?: boolean;
 };
 
 /** Thin server wrapper — all UI lives in StoryReaderClient → StoryReader. */
 export function StoryPageShell(props: Props) {
-  return <StoryReaderClient {...props} initialTranslations={props.translations} />;
+  return (
+    <StoryReaderClient
+      {...props}
+      initialTranslations={props.translations}
+      initialSentenceIndex={props.initialSentenceIndex}
+      initialFinished={props.initialFinished}
+    />
+  );
 }

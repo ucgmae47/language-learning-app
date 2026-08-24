@@ -356,8 +356,9 @@ export function SpinWheel({ storiesOnlyPreview = true }: Props) {
     <div className="flex w-full flex-col items-center gap-8 sm:gap-10">
       {storiesOnlyPreview && (
         <p className="max-w-md px-2 text-center text-xs text-slate-500 sm:text-sm">
-          Soft launch: only <span className="font-semibold text-violet-300">Story</span> is
-          open for now. Other activities are locked to keep costs down.
+          Free practice is open.{" "}
+          <span className="font-semibold text-cyan-300">Chat</span> and{" "}
+          <span className="font-semibold text-indigo-300">Journal</span> stay Premium for now.
         </p>
       )}
 
@@ -426,7 +427,7 @@ export function SpinWheel({ storiesOnlyPreview = true }: Props) {
                   <p className="text-sm font-medium leading-snug text-white/70">
                     {unlocked
                       ? feature.description
-                      : "Coming soon — temporarily locked during soft launch."}
+                      : "Premium for now — AI tutor features coming with a paid plan."}
                   </p>
                 </div>
 
@@ -452,7 +453,7 @@ export function SpinWheel({ storiesOnlyPreview = true }: Props) {
                 {isActive && hasLanded && !isSpinning && !unlocked && (
                   <div className="relative z-30 flex w-full items-center justify-center gap-2 rounded-2xl bg-white/15 py-3 text-sm font-bold text-white/90 backdrop-blur-sm">
                     <Lock className="h-4 w-4" aria-hidden="true" />
-                    Locked for now
+                    Premium
                   </div>
                 )}
 
@@ -468,7 +469,7 @@ export function SpinWheel({ storiesOnlyPreview = true }: Props) {
                 {isActive && !hasLanded && !isSpinning && !unlocked && (
                   <div className="relative z-30 flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 bg-black/30 py-3 text-sm font-bold text-white/70">
                     <Lock className="h-4 w-4" aria-hidden="true" />
-                    Coming soon
+                    Premium
                   </div>
                 )}
               </div>

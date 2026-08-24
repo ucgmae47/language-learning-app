@@ -36,7 +36,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Soft-launch: block gated feature pages (Stories remains open).
+  // Soft-launch: block Tier 3 AI pages (Chat tutor, Journal). Free features stay open.
   if (user && isPathLockedInPreview(pathname)) {
     const dash = new URL("/dashboard", request.url);
     dash.searchParams.set("preview", "locked");

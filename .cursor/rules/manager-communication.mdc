@@ -26,8 +26,9 @@ The user is the **product/business decision-maker**, not the engineer. Agents ar
 
 ## When a feature is ready to try
 
-Prefer the **practice machine**: ask them to take over the Cloud desktop and click through the running app. Include a short “what to click” checklist.  
-Only offer a Vercel preview link if they ask for a normal browser link or the practice machine can’t cover the test.  
+**Default: local Mac testing.** Start the app on This Mac and tell them to open it in their browser and click through. Include a short “what to click” checklist; keep the app running while they test.  
+Do **not** steer toward Cursor Cloud / “practice machine” / Cloud desktop takeover — Cloud credits are limited and often unavailable.  
+Only offer a Vercel preview link if they ask for a normal shareable browser link, or if local Mac testing can’t cover the case (e.g. real email delivery, production-only hosting).  
 Ask: “Does this feel right?” / “Want any changes before we save it to the shared project?”
 
 ## When you need approval

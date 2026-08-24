@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { getCalendarEvents, type CalendarEvent } from "@/lib/calendar/events-bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const CalendarSchema = z.object({
@@ -13,14 +15,7 @@ const CalendarSchema = z.object({
   ),
 });
 
-export type CalendarEvent = {
-  date: string;
-  name: string;
-  country: string;
-  emoji: string;
-  description: string;
-  type: "holiday" | "festival" | "cultural";
-};
+export type { CalendarEvent };
 
 export async function GET(request: NextRequest) {
   const authed = await requireUser();
@@ -28,9 +23,20 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const language = searchParams.get("language") ?? "es";
+    const language = (searchParams.get("language") ?? "es") as "es" | "fr";
     const year = parseInt(searchParams.get("year") ?? String(new Date().getFullYear()), 10);
     const month = parseInt(searchParams.get("month") ?? String(new Date().getMonth() + 1), 10);
+
+    const seeded = getCalendarEvents(language === "fr" ? "fr" : "es", year, month);
+
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      return NextResponse.json(seeded, {
+        headers: {
+          "Cache-Control": "s-maxage=86400, stale-while-revalidate",
+          "X-Calendar-Source": "static",
+        },
+      });
+    }
 
     const langName = language === "es" ? "Spanish" : "French";
     const monthName = new Date(year, month - 1, 1).toLocaleString("en-US", { month: "long" });
@@ -61,12 +67,17 @@ Return as a JSON array string. Include the month_note as a separate interesting 
     try {
       events = JSON.parse(object.events) as CalendarEvent[];
     } catch {
-      events = [];
+      events = seeded.events;
     }
 
     return NextResponse.json(
       { events, month_note: object.month_note },
-      { headers: { "Cache-Control": "s-maxage=86400, stale-while-revalidate" } },
+      {
+        headers: {
+          "Cache-Control": "s-maxage=86400, stale-while-revalidate",
+          "X-Calendar-Source": "gemini",
+        },
+      },
     );
   } catch (err) {
     console.error("[calendar/events]", err);
