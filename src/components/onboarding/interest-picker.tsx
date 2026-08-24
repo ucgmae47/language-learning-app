@@ -47,7 +47,6 @@ export function InterestPicker() {
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Topic grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
         {INTEREST_TOPICS.map((topic) => {
           const isSelected = selected.has(topic.id);
@@ -59,8 +58,8 @@ export function InterestPicker() {
               disabled={isPending}
               className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-5 text-sm font-medium transition disabled:opacity-50 ${
                 isSelected
-                  ? "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm ring-2 ring-emerald-500/20"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-slate-50"
+                  ? "border-emerald-500 bg-emerald-500/15 text-emerald-300 shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-500/25"
+                  : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-500/40 hover:bg-white/8 hover:text-white"
               }`}
             >
               <span className="text-3xl" role="img" aria-label={topic.label}>
@@ -72,27 +71,24 @@ export function InterestPicker() {
         })}
       </div>
 
-      {/* Selected count */}
       <p className="text-center text-sm text-slate-500">
         {selected.size === 0
           ? "Select everything that interests you"
           : `${selected.size} topic${selected.size > 1 ? "s" : ""} selected`}
       </p>
 
-      {/* Error */}
       {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-2.5 text-center text-sm text-red-700">
+        <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-center text-sm text-red-300">
           {error}
         </p>
       )}
 
-      {/* Actions */}
       <div className="flex flex-col gap-3">
         <button
           type="button"
           onClick={handleContinue}
           disabled={isPending || selected.size === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-40"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-emerald-600 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-500 disabled:opacity-40"
         >
           {isPending ? (
             <>
@@ -108,7 +104,7 @@ export function InterestPicker() {
           type="button"
           onClick={handleSkip}
           disabled={isPending}
-          className="text-sm text-slate-400 transition hover:text-slate-600 disabled:opacity-50"
+          className="text-sm text-slate-500 transition hover:text-slate-300 disabled:opacity-50"
         >
           Skip for now
         </button>

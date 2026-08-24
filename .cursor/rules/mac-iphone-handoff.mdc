@@ -1,0 +1,66 @@
+---
+description: Mac-first coding handoff; GitHub is the sync point
+alwaysApply: true
+---
+
+# Mac-first coding handoff
+
+Primary coding and testing happen on **This Mac**. **GitHub is the sync point.** Cursor Cloud is optional only when credits are available — do not assume Cloud is usable.
+
+## Runtime defaults
+
+| Where | Use |
+| --- | --- |
+| Day-to-day coding + click-through testing | **This Mac** (local app in the browser) |
+| Cursor Cloud | Only if the user asks and credits are available — never the default for testing |
+
+Do not steer toward Cloud desktop / “practice machine” takeover as the default workflow.
+
+## Branch model
+
+- Start sessions from latest remote **`main`** unless the user names another branch.
+- Do feature work on a feature branch / PR as needed.
+- Merge into `main` only when work should become the shared baseline.
+
+## Push to GitHub often (required)
+
+Keep GitHub current so laptop, phone, and any future Cloud session never depend on unpushed local-only state.
+
+**During work**
+- After each meaningful chunk of progress (feature slice, fix, migration, docs the user relies on), **commit and push** the current branch.
+- Do not batch an entire long session into one push at the end if intermediate progress is already usable.
+- Prefer small, clear commits over one giant dump.
+
+**End of a task or session (mandatory)**
+When the user says a task is done, wraps up, switches devices, goes idle after completed work, or asks if things are synced:
+1. Ensure all intended changes are committed.
+2. **Push** the branch to `origin`.
+3. Open or update a PR when that helps handoff (unless the user asked not to).
+4. If they **confirmed the feature works** (or equivalent approval to ship), **merge into `main` and push `main`** so the next session can start from an up-to-date `main`. Otherwise tell them the PR URL and that `main` still needs a merge.
+5. Tell the user the branch name / PR URL and final `main` status.
+
+**Never leave** completed or substantial in-progress work only on a single machine’s disk.
+
+This project’s push habit overrides any general “don’t push unless asked” preference: **pushing here is expected** for continuity. Still avoid force-push and never skip hooks unless the user explicitly asks.
+
+Also follow `.cursor/rules/agent-autonomy.mdc`: run commands, migrations, pushes, and PRs yourself—don’t hand those steps back to the user.
+
+## End of a MacBook / This Mac session
+
+If work happened locally:
+1. Commit (when appropriate) and **push**.
+2. If it should be the next shared baseline, merge (or PR) into `main` and push `main`.
+3. Confirm remote GitHub has the work before calling handoff done.
+
+## Start of a MacBook / This Mac session
+
+1. `git fetch` and update local `main` (and the working branch) from `origin`.
+2. If a feature branch or PR exists, check it out or merge it so local files match remote.
+3. Only then make local edits.
+
+## If a Cloud / iPhone session is used
+
+- Only when the user has Cloud credits and asks for Cloud.
+- Start from latest remote `main` (or the branch the user specifies).
+- Fetch/pull before editing if the checkout might be stale.
+- Push before the user switches away so This Mac can continue from GitHub.

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { getRecipe } from "@/lib/recipes/bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const RecipeSchema = z.object({
@@ -38,6 +40,19 @@ export async function POST(request: NextRequest) {
     };
 
     const { language, cefrLevel, cuisine } = body;
+    const seeded = getRecipe(language, cuisine, cefrLevel);
+
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      if (!seeded) {
+        return NextResponse.json(
+          { error: "No preloaded recipe for this cuisine yet." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json(seeded, {
+        headers: { "X-Recipe-Source": "static" },
+      });
+    }
 
     const langName = language === "es" ? "Spanish" : "French";
 
@@ -62,7 +77,9 @@ Include clear numbered ingredients and step-by-step instructions.`;
       prompt,
     });
 
-    return NextResponse.json(object);
+    return NextResponse.json(object, {
+      headers: { "X-Recipe-Source": "gemini" },
+    });
   } catch (err) {
     console.error("[recipes/generate]", err);
     return NextResponse.json({ error: "Failed to generate recipe" }, { status: 500 });

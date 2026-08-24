@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { buildChatSystemPrompt } from "@/lib/chat/system-prompt";
 import { getUserContext } from "@/lib/user-context";
 import { analyzeAndStorePersonality } from "@/lib/chat/personality-analyzer";
+import { isStoriesOnlyPreview } from "@/lib/features/preview-gate";
 import type { CefrLevel, Language, PersonalityTraits } from "@/lib/supabase/types";
 
 function getModel() {
@@ -28,6 +29,16 @@ export async function POST(request: Request) {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Tier 3: AI Chat stays Premium during soft launch.
+  if (isStoriesOnlyPreview()) {
+    return new Response(
+      JSON.stringify({
+        error: "AI Chat is a Premium feature and isn’t available in free preview yet.",
+      }),
+      { status: 403, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   const { messages } = (await request.json()) as {

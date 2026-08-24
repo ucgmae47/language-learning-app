@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { evaluatePronunciation } from "@/lib/pronunciation/heuristic";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
 const PronunciationEvalSchema = z.object({
@@ -33,6 +35,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "target and transcript are required" }, { status: 400 });
     }
 
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      return NextResponse.json(evaluatePronunciation(target, transcript, language), {
+        headers: { "X-Pronunciation-Source": "heuristic" },
+      });
+    }
+
     const langName = language === "es" ? "Spanish" : "French";
 
     const prompt = `You are a ${langName} pronunciation coach. Evaluate how well the learner pronounced a phrase.
@@ -59,7 +67,9 @@ Provide specific, actionable feedback.`;
       prompt,
     });
 
-    return NextResponse.json(object);
+    return NextResponse.json(object, {
+      headers: { "X-Pronunciation-Source": "gemini" },
+    });
   } catch (err) {
     console.error("[pronunciation/evaluate]", err);
     return NextResponse.json({ error: "Failed to evaluate pronunciation" }, { status: 500 });

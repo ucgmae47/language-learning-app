@@ -20,6 +20,8 @@ type Props = {
   body: string;
   initialTranslations: Translations | null;
   attemptScore: number | null;
+  initialSentenceIndex?: number;
+  initialFinished?: boolean;
 };
 
 function hasMissingWordTranslations(
@@ -40,6 +42,8 @@ export function StoryReaderClient({
   body,
   initialTranslations,
   attemptScore,
+  initialSentenceIndex = 0,
+  initialFinished = false,
 }: Props) {
   const [translations, setTranslations] = useState<Translations | null>(
     initialTranslations,
@@ -98,6 +102,8 @@ export function StoryReaderClient({
       translationError={null}
       storyId={storyId}
       attemptScore={attemptScore}
+      initialSentenceIndex={initialSentenceIndex}
+      initialFinished={initialFinished}
     />
   );
 }

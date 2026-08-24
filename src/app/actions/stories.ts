@@ -15,6 +15,46 @@ export type AttemptResult = {
   error?: string;
 };
 
+export type ProgressResult = {
+  error?: string;
+};
+
+/**
+ * Upserts reading progress so the library can show % read and recommend a next story.
+ */
+export async function saveStoryProgress(
+  storyId: string,
+  percentRead: number,
+  sentenceIndex: number,
+  finished: boolean,
+): Promise<ProgressResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "Not authenticated." };
+
+  const percent = Math.max(0, Math.min(100, Math.round(percentRead)));
+  const index = Math.max(0, Math.floor(sentenceIndex));
+
+  const { error } = await supabase.from("story_progress").upsert(
+    {
+      user_id: user.id,
+      story_id: storyId,
+      percent_read: percent,
+      sentence_index: index,
+      finished,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id,story_id", ignoreDuplicates: false },
+  );
+
+  if (error) return { error: error.message };
+  return {};
+}
+
 export async function saveStoryAttempt(
   storyId: string,
   score: number,

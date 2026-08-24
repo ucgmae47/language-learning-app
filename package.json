@@ -10,7 +10,8 @@
     "generate:crosswords": "npx tsx scripts/generate-crosswords.ts",
     "build:crosswords": "npx tsx scripts/build-crossword-seeds.ts",
     "seed:story-library": "npx tsx scripts/seed-story-library.ts",
-    "generate:story-library": "npx tsx scripts/generate-library-stories.ts"
+    "generate:story-library": "npx tsx scripts/generate-library-stories.ts",
+    "db:apply": "bash scripts/apply-sql.sh"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.1",

@@ -3,6 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { pickSentence } from "@/lib/sentence-builder/bank";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import type { Language, CefrLevel } from "@/lib/supabase/types";
 
 const SentenceSchema = z.object({
@@ -61,6 +63,15 @@ export async function POST(req: Request) {
     const body = await req.json() as { language?: Language; cefrLevel?: CefrLevel; topic?: string };
     const { language = "es", cefrLevel = "A1", topic } = body;
 
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      const picked = pickSentence(language, cefrLevel, topic);
+      const { english, target, words, distractors, hint, allWords } = picked;
+      return NextResponse.json(
+        { english, target, words, distractors, hint, allWords } satisfies GeneratedSentence,
+        { headers: { "X-Sentence-Source": "static" } },
+      );
+    }
+
     const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY! });
 
     const guidance = CEFR_GUIDANCE[cefrLevel] ?? CEFR_GUIDANCE.A1;
@@ -90,10 +101,12 @@ distractors: ["come", "mucho", "la", "siempre"]
 hint: "'bebe' = drinks (liquids); 'come' = eats."`,
     });
 
-    // Shuffle AFTER receiving the correctly-ordered words so the server controls order
     const allWords = fisherYates([...object.words, ...object.distractors]);
 
-    return NextResponse.json({ ...object, allWords } satisfies GeneratedSentence);
+    return NextResponse.json(
+      { ...object, allWords } satisfies GeneratedSentence,
+      { headers: { "X-Sentence-Source": "gemini" } },
+    );
   } catch (err) {
     console.error("[sentence-builder/generate]", err);
     return NextResponse.json(

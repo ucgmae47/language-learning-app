@@ -3,6 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getCountryByAlpha2 } from "@/lib/explore/country-data";
+import { getCountryFacts } from "@/lib/explore/country-facts";
+import { isPremiumAiEnabled } from "@/lib/features/premium-ai";
 import type { Language } from "@/lib/supabase/types";
 import { requireUser, isUnauthorized } from "@/lib/auth/require-user";
 
@@ -63,12 +65,13 @@ function staticFallback(
   language: Language,
 ): RestCountry {
   const entry = getCountryByAlpha2(alpha2, language);
+  const facts = getCountryFacts(alpha2, language);
   return {
     name: entry?.name ?? name,
-    capital: "—",
-    population: 0,
-    region: "—",
-    subregion: "—",
+    capital: facts?.capital ?? "—",
+    population: facts?.population ?? 0,
+    region: facts?.region ?? "—",
+    subregion: facts?.subregion ?? "—",
     flag: entry?.flag ?? "",
     alpha2,
   };
@@ -108,10 +111,10 @@ async function fetchRestCountry(
 
     return {
       name: item.names?.common ?? fallback.name,
-      capital: item.capital?.[0] ?? "—",
-      population: item.population ?? 0,
-      region: item.region ?? "—",
-      subregion: item.subregion ?? "—",
+      capital: item.capital?.[0] ?? fallback.capital,
+      population: item.population ?? fallback.population,
+      region: item.region ?? fallback.region,
+      subregion: item.subregion ?? fallback.subregion,
       flag: item.flag?.emoji ?? fallback.flag,
       alpha2: item.codes?.alpha_2 ?? alpha2,
     };
@@ -119,6 +122,17 @@ async function fetchRestCountry(
     console.warn("[explore/country] REST Countries fetch failed:", err);
     return fallback;
   }
+}
+
+function toResponseFacts(facts: ReturnType<typeof getCountryFacts>): CountryFacts | null {
+  if (!facts) return null;
+  return {
+    fun_facts: facts.fun_facts,
+    cultural_note: facts.cultural_note,
+    language_note: facts.language_note,
+    famous_for: facts.famous_for,
+    must_know_phrase: facts.must_know_phrase,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -136,6 +150,26 @@ export async function GET(request: NextRequest) {
 
   try {
     const restCountry = await fetchRestCountry(alpha2, name, language);
+    const seeded = toResponseFacts(getCountryFacts(alpha2, language));
+
+    // Free path: preloaded facts (default). Premium AI only when explicitly enabled.
+    if (!isPremiumAiEnabled() || !process.env.GEMINI_API_KEY) {
+      if (!seeded) {
+        return NextResponse.json(
+          { error: "No preloaded facts for this country yet." },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json(
+        { country: restCountry, facts: seeded } satisfies CountryInfoResponse,
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+            "X-Explore-Source": "static",
+          },
+        },
+      );
+    }
 
     const langName = language === "es" ? "Spanish" : "French";
     const prompt = `You are a cultural guide writing for language learners.
@@ -155,10 +189,22 @@ The "must_know_phrase" should be a real phrase used in this country in ${langNam
     });
 
     return NextResponse.json({ country: restCountry, facts } satisfies CountryInfoResponse, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600" },
+      headers: {
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=3600",
+        "X-Explore-Source": "gemini",
+      },
     });
   } catch (err) {
     console.error("[explore/country]", err);
+    // Fall back to seed if AI fails
+    const seeded = toResponseFacts(getCountryFacts(alpha2, language));
+    if (seeded) {
+      const restCountry = staticFallback(alpha2, name, language);
+      return NextResponse.json(
+        { country: restCountry, facts: seeded } satisfies CountryInfoResponse,
+        { headers: { "X-Explore-Source": "static-fallback" } },
+      );
+    }
     return NextResponse.json({ error: "Failed to load country info" }, { status: 500 });
   }
 }

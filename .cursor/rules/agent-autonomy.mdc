@@ -1,0 +1,61 @@
+---
+description: Agents execute end-to-end without handing work back to the user
+alwaysApply: true
+---
+
+# Do the work yourself (Mac-first testing)
+
+The user vibe-codes and almost never runs terminal commands, git, GitHub, or SQL by hand. **Prefer action over instructions.**
+
+## Default: execute, don’t delegate
+
+When a task needs any of the following, **do it yourself** in this session (request permissions if needed). Do not stop with “run this yourself” or a copy-paste checklist unless something truly blocks you (missing secret, explicit user refusal, or no access).
+
+- Shell / package / build / lint / test / dev-server commands
+- Git commit, **push**, fetch, pull, branch management
+- Opening or updating **pull requests** (`gh pr create` / update) when work is ready for review or handoff
+- Applying **database / schema** changes (see “Database updates” below)
+- Seeding or one-off data scripts already in the repo (`npm run …`)
+- Installing deps, starting Docker / `supabase start`, fixing broken env setup required for the task
+- CI-oriented follow-ups you can fix from the repo (failing checks caused by your change)
+
+## Database updates
+
+Never tell the user to open the Supabase SQL editor. Apply SQL yourself with:
+
+```bash
+npm run db:apply -- supabase/<migration-file>.sql          # practice (default; always)
+npm run db:apply -- supabase/<migration-file>.sql --live   # live (only with approval)
+```
+
+There are two databases. Treat them differently:
+
+1. **Practice database (local Supabase on This Mac)** — always update this yourself whenever a feature needs schema/data changes. Use `npm run db:apply` (no `--live`). Ensure Docker/`supabase start` is up first. Seed if needed, then verify the app. Do not ask the user to run SQL for the practice DB.
+2. **Live / production Supabase** — **do not** change it unless the user clearly asks to put the feature in production / update the live app / update the live database. Then run the same file with `--live` (needs `SUPABASE_DB_URL` secret). If that secret is missing, say in plain language that only the practice copy was updated and ask them to add the live database connection string in Cursor Secrets.
+
+When speaking to the user, call these the “practice database” and “live database,” not Docker/psql jargon.
+
+## How to behave
+
+1. **Act first.** If you can run it, run it.
+2. **Close the loop.** After code changes: typecheck/lint/tests that fit the change, apply needed migrations, commit, push, open/update a PR when appropriate.
+3. **When it’s ready to try — default to This Mac.** Start Docker/`supabase start`/`npm run dev` as needed, apply practice-DB migrations, then tell the user to open the running app in their browser and click through. Give a plain-language “what to try” checklist; keep the app running while they test; fix issues they report.  
+   - Do **not** default to Cursor Cloud desktop / “practice machine” takeover (Cloud credits are often unavailable).  
+   - Do **not** default to a Vercel preview link. Only offer a Vercel preview if they ask for a normal shareable browser link, or if local testing can’t cover the case (e.g. real email delivery, production-only hosting behavior).  
+   - Live DB updates still require their explicit approval.
+4. **When the user confirms it works — land on `main`.** If they say the feature works, looks good, approve it, ship it, merge it, or otherwise confirm success: merge the PR (or merge the feature branch) into `main`, push `main`, and report the result. Do not leave a confirmed-good feature sitting only on a side branch unless they explicitly ask to keep the PR open.
+5. **Report outcomes**, not homework. Say what you ran, what passed/failed, branch/PR links, merge status, and any migration you applied.
+6. **Ask only for true blockers:** missing API keys/secrets, destructive production decisions, or ambiguous product choices—not for routine commands.
+7. **Don’t dump runbooks** as the deliverable. If the user must click something only they can (e.g. add a dashboard secret, merge with admin rights you lack), give the single blocked step after you’ve done everything else.
+
+## Safety still applies
+
+- No force-push to `main`/`master`; no destructive git resets unless the user explicitly asks.
+- No skipping hooks unless explicitly asked.
+- Don’t put secrets into the repo; use existing env/Secrets.
+- Prefer idempotent migrations; don’t drop user data unless asked.
+- Follow “Database updates” above: practice DB always; live DB only after explicit go-ahead.
+
+## Conflict with cautious defaults
+
+If a general habit says “ask before pushing/committing/running,” **this project overrides it**: commit, push, PR, migrate, and run commands by default so the user never has to. The handoff rule still governs when/how often to push.

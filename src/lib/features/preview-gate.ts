@@ -1,36 +1,18 @@
 /**
- * Temporary soft-launch gate: only Stories (library) is open.
- * Set FREE_PREVIEW_STORIES_ONLY=false to unlock the full wheel again.
+ * Soft-launch gate: Tier 1 + Tier 2 free features are open; Tier 3 AI stays locked.
+ * Set FREE_PREVIEW_STORIES_ONLY=false to unlock the full wheel (including Chat / Journal).
  */
 
 import { PREVIEW_UNLOCKED_FEATURE_IDS } from "@/lib/features/unlocked";
 
 /**
- * Locked feature page prefixes (direct URL access redirects to dashboard).
- * Sub-routes like /gameroom/wordle are covered by prefix match.
+ * Tier 3 pages locked during soft launch (direct URL → dashboard).
+ * Sub-routes like /chat/... are covered by prefix match.
+ * Note: /chat does NOT lock /chat-room (peer chat is Tier 1).
  */
 export const PREVIEW_LOCKED_PAGE_PREFIXES = [
-  "/news",
-  "/dictionary",
-  "/vocabulary",
-  "/flashcards",
-  "/phrasebook",
-  "/crossword",
-  "/gameroom",
-  "/sentence-builder",
-  "/drills",
   "/journal",
-  "/pronunciation",
   "/chat",
-  "/chat-room",
-  "/music",
-  "/explore",
-  "/calendar",
-  "/recipes",
-  "/planner",
-  "/progress",
-  "/achievements",
-  "/leaderboard",
 ] as const;
 
 export function isStoriesOnlyPreview(): boolean {
@@ -45,7 +27,8 @@ export function isFeatureUnlocked(featureId: string): boolean {
 
 export function isPathLockedInPreview(pathname: string): boolean {
   if (!isStoriesOnlyPreview()) return false;
-  return PREVIEW_LOCKED_PAGE_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
-  );
+  // /chat must not lock /chat-room (peer chat is free Tier 1).
+  if (pathname === "/chat" || pathname.startsWith("/chat/")) return true;
+  if (pathname === "/journal" || pathname.startsWith("/journal/")) return true;
+  return false;
 }
