@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { StoryPageShell } from "@/components/stories/story-page-shell";
+import { applyFunctionWordGlosses } from "@/lib/stories/complete-word-translations";
 import type { Story, StoryAttempt, StoryProgress } from "@/lib/supabase/types";
 
 type Props = { params: Promise<{ id: string }> };
@@ -64,11 +65,18 @@ export default async function StoryPage({ params }: Props) {
     ? Math.max(1, Math.round(story.word_count / 180))
     : null;
 
+  const language = story.language ?? "es";
+  const words = applyFunctionWordGlosses(
+    story.body,
+    story.word_translations ?? {},
+    language,
+  );
+
   return (
     <StoryPageShell
       title={story.title}
       cefrLevel={story.cefr_level}
-      language={story.language ?? "es"}
+      language={language}
       topics={story.topics}
       readingMins={readingMins}
       body={story.body}
@@ -76,7 +84,7 @@ export default async function StoryPage({ params }: Props) {
         story.sentence_translations?.length
           ? {
               sentences: story.sentence_translations,
-              words: story.word_translations ?? {},
+              words,
             }
           : null
       }

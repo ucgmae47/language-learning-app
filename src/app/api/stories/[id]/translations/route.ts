@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
 import { createClient } from "@/lib/supabase/server";
-import { extractContentWords } from "@/lib/stories/utils";
+import {
+  applyFunctionWordGlosses,
+  ensureCompleteWordTranslations,
+  missingWordTranslations,
+} from "@/lib/stories/complete-word-translations";
 import type { Language } from "@/lib/supabase/types";
 
 type Params = { params: Promise<{ id: string }> };
@@ -54,6 +56,9 @@ export async function GET(_request: Request, { params }: Params) {
  *
  * Fills in any missing word translations (including short words like articles)
  * and merges them into the existing map without regenerating sentences.
+ *
+ * Library stories: apply free closed-class glosses only (no Gemini spend).
+ * Personal stories: closed-class glosses + Gemini fill for anything left.
  */
 export async function POST(_request: Request, { params }: Params) {
   const { id } = await params;
@@ -76,22 +81,50 @@ export async function POST(_request: Request, { params }: Params) {
   if (error || !story) {
     return NextResponse.json({ error: "Story not found" }, { status: 404 });
   }
-  // Library stories are fully pre-translated — never spend AI filling glosses.
-  if (story.is_library) {
-    return NextResponse.json({
-      sentences: story.sentence_translations ?? null,
-      words: story.word_translations ?? {},
-    });
-  }
-  if (story.user_id !== user.id) {
+  if (!story.is_library && story.user_id !== user.id) {
     return NextResponse.json({ error: "Story not found" }, { status: 404 });
   }
 
+  const language: Language = story.language ?? "es";
   const existingWords = story.word_translations ?? {};
-  const allWords = extractContentWords(story.body);
-  const missing = allWords.filter((w) => !existingWords[w]);
 
-  if (missing.length === 0) {
+  // Shared library: never call Gemini from the reader path (cost gate).
+  // Closed-class glosses are free and fix the most common seed gaps.
+  if (story.is_library) {
+    const merged = applyFunctionWordGlosses(
+      story.body,
+      existingWords,
+      language,
+    );
+    const changed =
+      Object.keys(merged).length !== Object.keys(existingWords).length ||
+      missingWordTranslations(story.body, existingWords).length >
+        missingWordTranslations(story.body, merged).length;
+
+    if (changed) {
+      const { error: updateError } = await supabase
+        .from("stories")
+        .update({ word_translations: merged })
+        .eq("id", id)
+        .eq("is_library", true);
+
+      if (updateError) {
+        // Still return the merged map even if persistence fails.
+        console.error(
+          `[stories/${id}/translations] Library gloss persist failed:`,
+          updateError.message,
+        );
+      }
+    }
+
+    return NextResponse.json({
+      sentences: story.sentence_translations ?? null,
+      words: merged,
+      updated: changed,
+    });
+  }
+
+  if (missingWordTranslations(story.body, existingWords).length === 0) {
     return NextResponse.json({
       sentences: story.sentence_translations ?? null,
       words: existingWords,
@@ -99,51 +132,13 @@ export async function POST(_request: Request, { params }: Params) {
     });
   }
 
-  const language: Language = story.language ?? "es";
-  const langName = language === "es" ? "Spanish" : "French";
-
-  const google = createGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY ?? "",
-  });
-
   try {
-    const prompt = `You are a professional ${langName}-to-English translator.
-
-Return ONLY a valid JSON object — no markdown fences, no extra text, nothing else.
-
-The JSON must have exactly this structure:
-{
-  "words": {
-    "word1": "1-3 word meaning",
-    "word2": "1-3 word meaning"
-  }
-}
-
-Rules:
-- Include EVERY word listed below, including short words and articles (el, la, un, a, y, de, etc.).
-- "words" keys must be lowercase with no punctuation, matching the list exactly.
-- Word meanings must be 1-3 words, lowercase.
-
-Words to translate:
-${missing.join(", ")}`;
-
-    const { text: raw } = await generateText({
-      model: google("gemini-2.5-flash-lite"),
-      prompt,
-      maxOutputTokens: 4096,
-      maxRetries: 0,
-    });
-
-    const cleaned = raw
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```\s*$/i, "")
-      .trim();
-
-    const parsed = JSON.parse(cleaned) as { words?: Record<string, string> };
-    const filled =
-      parsed.words && typeof parsed.words === "object" ? parsed.words : {};
-
-    const merged = { ...existingWords, ...filled };
+    const { words: merged } = await ensureCompleteWordTranslations(
+      story.body,
+      existingWords,
+      language,
+      { label: `stories/${id}/translations` },
+    );
 
     const { error: updateError } = await supabase
       .from("stories")

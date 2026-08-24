@@ -36,6 +36,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
 npm run seed:story-library      # seed free shared stories into Supabase
+npm run seed:story-library -- --update-translations  # patch word glosses on existing library rows
 npm run generate:story-library  # batch-generate more library stories (needs GEMINI_API_KEY)
 npm run generate:crosswords     # offline crossword bank generation
 ```
