@@ -39,7 +39,7 @@ export default async function StoryQuizPage({ params }: Props) {
   if (attempt) redirect(`/stories/${id}`);
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col overflow-y-auto bg-[#08080e] px-4 py-8 sm:px-6">
+    <div className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-[#08080e] px-4 py-8 sm:px-6">
       <div className="mx-auto w-full max-w-xl">
         <Link
           href={`/stories/${id}`}
