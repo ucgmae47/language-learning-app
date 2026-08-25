@@ -42,14 +42,23 @@ export default async function StoriesPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("language, cefr_level")
-    .eq("id", user.id)
-    .single<{ language: Language; cefr_level: CefrLevel }>();
+  const [{ data: profile }, { data: langProfiles }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("language, cefr_level")
+      .eq("id", user.id)
+      .single<{ language: Language; cefr_level: CefrLevel }>(),
+    supabase
+      .from("language_profiles")
+      .select("cefr_level")
+      .eq("user_id", user.id)
+      .limit(1)
+      .returns<{ cefr_level: CefrLevel }[]>(),
+  ]);
 
   const language: Language = profile?.language ?? "es";
-  const cefrLevel: CefrLevel = profile?.cefr_level ?? "B1";
+  const cefrLevel: CefrLevel =
+    langProfiles?.[0]?.cefr_level ?? profile?.cefr_level ?? "B1";
 
   const { data: libraryStories } = await supabase
     .from("stories")
@@ -66,7 +75,7 @@ export default async function StoriesPage() {
   const libraryRows = libraryStories ?? [];
   const storyIds = libraryRows.map((s) => s.id);
 
-  const [progressRes, attemptsRes] = storyIds.length
+  const [progressRes, attemptsRes, genreRes] = storyIds.length
     ? await Promise.all([
         supabase
           .from("story_progress")
@@ -85,8 +94,18 @@ export default async function StoriesPage() {
           .eq("user_id", user.id)
           .in("story_id", storyIds)
           .returns<Pick<StoryAttempt, "story_id" | "score">[]>(),
+        supabase
+          .from("genre_interests")
+          .select("genre, weight")
+          .eq("user_id", user.id)
+          .eq("language", language)
+          .returns<{ genre: string; weight: number }[]>(),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: [] }];
+
+  const genreWeights = new Map(
+    (genreRes.data ?? []).map((g) => [g.genre, g.weight]),
+  );
 
   const progressByStory = new Map(
     (progressRes.data ?? []).map((p) => [p.story_id, p]),
@@ -114,6 +133,7 @@ export default async function StoriesPage() {
     progressByStory,
     attemptByStory,
     cefrLevel,
+    genreWeights,
   );
 
   let queuedReady: QueuedStory | null = null;

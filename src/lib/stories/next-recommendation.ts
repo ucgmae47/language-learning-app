@@ -1,5 +1,21 @@
 import type { CefrLevel } from "@/lib/supabase/types";
 
+const CEFR_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+function levelDistance(a: CefrLevel, b: CefrLevel): number {
+  return Math.abs(CEFR_ORDER.indexOf(a) - CEFR_ORDER.indexOf(b));
+}
+
+function interestScore(
+  topics: string[],
+  genreWeights: Map<string, number>,
+): number {
+  return topics.reduce(
+    (max, topic) => Math.max(max, genreWeights.get(topic) ?? 0),
+    0,
+  );
+}
+
 export type StoryProgressSummary = {
   story_id: string;
   percent_read: number;
@@ -35,6 +51,7 @@ export function pickNextRecommendedStory(
   progressByStory: Map<string, StoryProgressSummary>,
   attemptByStory: Map<string, StoryAttemptSummary>,
   userCefrLevel: CefrLevel,
+  genreWeights: Map<string, number> = new Map(),
 ): RecommendedStory | null {
   if (stories.length === 0) return null;
 
@@ -85,9 +102,25 @@ export function pickNextRecommendedStory(
 
   if (unstarted.length === 0) return null;
 
-  const atLevel = unstarted.filter((s) => s.cefr_level === userCefrLevel);
-  const pool = atLevel.length > 0 ? atLevel : unstarted;
-  const pick = pool[0]!;
+  // Prefer the learner's exact level; if nothing is unstarted there, fall
+  // back to the *closest* level rather than array order (which would
+  // otherwise always land on A1, the lowest level, whenever the exact
+  // level is empty). Within a tier, rank by interest weight so genre
+  // preferences break ties before recency does.
+  const minDistance = Math.min(
+    ...unstarted.map((s) => levelDistance(s.cefr_level, userCefrLevel)),
+  );
+  const closest = unstarted.filter(
+    (s) => levelDistance(s.cefr_level, userCefrLevel) === minDistance,
+  );
+
+  const pick = [...closest].sort((a, b) => {
+    const interestDiff =
+      interestScore(b.topics, genreWeights) -
+      interestScore(a.topics, genreWeights);
+    if (interestDiff !== 0) return interestDiff;
+    return b.created_at.localeCompare(a.created_at);
+  })[0]!;
 
   return {
     ...pick,
