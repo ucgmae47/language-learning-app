@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { RefreshCw, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Language } from "@/lib/supabase/types";
@@ -80,13 +80,13 @@ export function HangmanGame({ initialWord, wordList, language }: Props) {
   }, [wordList, initialWord]);
 
   // Keyboard support
-  useState(() => {
+  useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (/^[a-zA-Z]$/.test(e.key)) guess(e.key.toUpperCase());
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  });
+  }, [guess]);
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-[#07070f]">
