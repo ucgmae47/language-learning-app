@@ -4,11 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
+  Check,
   ChevronLeft,
   ChevronRight,
   Clock,
   Eye,
   EyeOff,
+  Plus,
   RotateCcw,
   ClipboardList,
   Languages,
@@ -19,6 +21,7 @@ import {
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import { useTts } from "@/hooks/use-tts";
 import { saveStoryProgress } from "@/app/actions/stories";
+import { saveWord } from "@/app/actions/vocabulary";
 import { allSentences, cleanWord } from "@/lib/stories/utils";
 import type { Language } from "@/lib/supabase/types";
 
@@ -60,15 +63,23 @@ const NAV_COOLDOWN_MS = 400;
 function StoryWord({
   token,
   wordKey,
+  word,
   meaning,
   activeKey,
   onActivate,
+  isSaved,
+  isSaving,
+  onSave,
 }: {
   token: string;
   wordKey: string;
+  word: string;
   meaning: string | undefined;
   activeKey: string | null;
   onActivate: (key: string | null) => void;
+  isSaved: boolean;
+  isSaving: boolean;
+  onSave: (word: string, meaning: string) => void;
 }) {
   if (/^\s+$/.test(token)) return <>{token}</>;
 
@@ -79,10 +90,29 @@ function StoryWord({
     <span className="relative inline" data-word-span="true">
       {isActive && meaning && (
         <span
-          className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-amber-400 px-3 py-1.5 text-sm font-medium text-slate-900 shadow-lg"
+          className="absolute bottom-full left-1/2 z-20 mb-2 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-400 py-1.5 pl-3 pr-1.5 text-sm font-medium text-slate-900 shadow-lg"
           role="tooltip"
         >
           {meaning}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isSaved && !isSaving) onSave(word, meaning);
+            }}
+            disabled={isSaved || isSaving}
+            aria-label={isSaved ? "Saved to vocabulary" : "Save to vocabulary"}
+            title={isSaved ? "Saved to vocabulary" : "Save to vocabulary"}
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-900/10 text-slate-900 transition hover:bg-slate-900/20 disabled:cursor-default"
+          >
+            {isSaving ? (
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            ) : isSaved ? (
+              <Check className="h-3 w-3" aria-hidden="true" />
+            ) : (
+              <Plus className="h-3 w-3" aria-hidden="true" />
+            )}
+          </button>
         </span>
       )}
       <span
@@ -142,6 +172,8 @@ export function StoryReader({
   const [finished, setFinished] = useState(Boolean(initialFinished) && total > 0);
   const [showEnglish, setShowEnglish] = useState(true);
   const [activeWord, setActiveWord] = useState<string | null>(null);
+  const [savedWords, setSavedWords] = useState<Set<string>>(new Set());
+  const [savingWord, setSavingWord] = useState<string | null>(null);
   const [slideKey, setSlideKey] = useState(0);
 
   const lockRef = useRef(false);
@@ -254,6 +286,15 @@ export function StoryReader({
       return;
     }
     void speak(sentence);
+  }
+
+  async function handleSaveWord(word: string, meaning: string) {
+    setSavingWord(word);
+    const { error } = await saveWord(word, meaning, sentence, "story");
+    setSavingWord(null);
+    if (!error) {
+      setSavedWords((prev) => new Set(prev).add(word));
+    }
   }
 
   useEffect(() => {
@@ -432,11 +473,15 @@ export function StoryReader({
                           key={ti}
                           token={token}
                           wordKey={`${index}-${ti}`}
+                          word={clean}
                           meaning={
                             clean.length >= 1 ? translations.words[clean] : undefined
                           }
                           activeKey={activeWord}
                           onActivate={setActiveWord}
+                          isSaved={savedWords.has(clean)}
+                          isSaving={savingWord === clean}
+                          onSave={handleSaveWord}
                         />
                       );
                     })
