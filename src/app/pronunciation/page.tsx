@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PronunciationClient } from "@/components/pronunciation/pronunciation-client";
+import { isTtsEnabled } from "@/lib/features/tts";
 import type { Language, Profile, LanguageProfile } from "@/lib/supabase/types";
 
 export default async function PronunciationPage() {
@@ -61,7 +62,11 @@ export default async function PronunciationPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <PronunciationClient language={language} cefrLevel={cefrLevel} />
+        <PronunciationClient
+          language={language}
+          cefrLevel={cefrLevel}
+          ttsEnabled={isTtsEnabled()}
+        />
       </main>
     </div>
   );

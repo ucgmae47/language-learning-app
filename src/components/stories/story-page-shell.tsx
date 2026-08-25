@@ -1,4 +1,5 @@
 import { StoryReaderClient } from "@/components/stories/story-reader-client";
+import { isTtsEnabled } from "@/lib/features/tts";
 import type { Language } from "@/lib/supabase/types";
 
 type Translations = {
@@ -28,6 +29,7 @@ export function StoryPageShell(props: Props) {
       initialTranslations={props.translations}
       initialSentenceIndex={props.initialSentenceIndex}
       initialFinished={props.initialFinished}
+      ttsEnabled={isTtsEnabled()}
     />
   );
 }

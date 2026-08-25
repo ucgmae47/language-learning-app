@@ -45,6 +45,7 @@ type Props = {
   initialSentenceIndex?: number;
   /** Whether the reader previously reached the end screen. */
   initialFinished?: boolean;
+  ttsEnabled: boolean;
 };
 
 const VOICE_LANG: Record<Language, string> = {
@@ -125,6 +126,7 @@ export function StoryReader({
   attemptScore,
   initialSentenceIndex = 0,
   initialFinished = false,
+  ttsEnabled,
 }: Props) {
   useScrollLock();
 
@@ -442,35 +444,37 @@ export function StoryReader({
               </p>
 
               <div className="mt-8 flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSpeakToggle}
-                  disabled={!sentence.trim()}
-                  className={`flex h-12 w-12 items-center justify-center rounded-full border transition ${
-                    isSpeaking || ttsLoading
-                      ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
-                      : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/30 hover:bg-emerald-500/10 hover:text-emerald-300"
-                  } disabled:cursor-not-allowed disabled:opacity-40`}
-                  aria-label={
-                    isSpeaking || ttsLoading
-                      ? "Stop reading aloud"
-                      : "Read this sentence aloud"
-                  }
-                  title={
-                    isSpeaking || ttsLoading
-                      ? "Stop"
-                      : "Listen to this sentence"
-                  }
-                >
-                  {ttsLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-                  ) : isSpeaking ? (
-                    <VolumeX className="h-5 w-5" aria-hidden="true" />
-                  ) : (
-                    <Volume2 className="h-5 w-5" aria-hidden="true" />
-                  )}
-                </button>
-                {ttsError && (
+                {ttsEnabled && (
+                  <button
+                    type="button"
+                    onClick={handleSpeakToggle}
+                    disabled={!sentence.trim()}
+                    className={`flex h-12 w-12 items-center justify-center rounded-full border transition ${
+                      isSpeaking || ttsLoading
+                        ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
+                        : "border-white/10 bg-white/5 text-slate-300 hover:border-emerald-400/30 hover:bg-emerald-500/10 hover:text-emerald-300"
+                    } disabled:cursor-not-allowed disabled:opacity-40`}
+                    aria-label={
+                      isSpeaking || ttsLoading
+                        ? "Stop reading aloud"
+                        : "Read this sentence aloud"
+                    }
+                    title={
+                      isSpeaking || ttsLoading
+                        ? "Stop"
+                        : "Listen to this sentence"
+                    }
+                  >
+                    {ttsLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                    ) : isSpeaking ? (
+                      <VolumeX className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <Volume2 className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                )}
+                {ttsEnabled && ttsError && (
                   <div className="flex max-w-sm items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-left text-xs text-amber-200">
                     <p className="flex-1">{ttsError}</p>
                     <button

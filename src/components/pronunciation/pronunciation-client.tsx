@@ -16,6 +16,7 @@ type PronunciationEval = {
 type Props = {
   language: Language;
   cefrLevel: string;
+  ttsEnabled: boolean;
 };
 
 const PRESET_PHRASES: Record<Language, string[]> = {
@@ -85,7 +86,7 @@ function scoreColor(score: number) {
   return "from-red-500 to-rose-600";
 }
 
-export function PronunciationClient({ language }: Props) {
+export function PronunciationClient({ language, ttsEnabled }: Props) {
   const presets = PRESET_PHRASES[language];
   const voiceLang = LANG_VOICE[language];
   const {
@@ -235,24 +236,26 @@ export function PronunciationClient({ language }: Props) {
       {targetPhrase && (
         <div className="rounded-2xl border border-white/8 bg-white/4 px-5 py-4 flex items-center justify-between gap-4">
           <p className="text-lg font-bold text-white leading-snug">{targetPhrase}</p>
-          <button
-            type="button"
-            onClick={hearPhrase}
-            aria-label="Hear phrase"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
-          >
-            {ttsLoading ? (
-              <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-            ) : isSpeaking ? (
-              <VolumeX className="h-5 w-5" aria-hidden="true" />
-            ) : (
-              <Volume2 className="h-5 w-5" aria-hidden="true" />
-            )}
-          </button>
+          {ttsEnabled && (
+            <button
+              type="button"
+              onClick={hearPhrase}
+              aria-label="Hear phrase"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            >
+              {ttsLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+              ) : isSpeaking ? (
+                <VolumeX className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                <Volume2 className="h-5 w-5" aria-hidden="true" />
+              )}
+            </button>
+          )}
         </div>
       )}
 
-      {ttsError && (
+      {ttsEnabled && ttsError && (
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
           <p>{ttsError}</p>
           <button

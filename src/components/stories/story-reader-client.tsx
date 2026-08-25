@@ -22,6 +22,7 @@ type Props = {
   attemptScore: number | null;
   initialSentenceIndex?: number;
   initialFinished?: boolean;
+  ttsEnabled: boolean;
 };
 
 function hasMissingWordTranslations(
@@ -44,6 +45,7 @@ export function StoryReaderClient({
   attemptScore,
   initialSentenceIndex = 0,
   initialFinished = false,
+  ttsEnabled,
 }: Props) {
   const [translations, setTranslations] = useState<Translations | null>(
     initialTranslations,
@@ -104,6 +106,7 @@ export function StoryReaderClient({
       attemptScore={attemptScore}
       initialSentenceIndex={initialSentenceIndex}
       initialFinished={initialFinished}
+      ttsEnabled={ttsEnabled}
     />
   );
 }

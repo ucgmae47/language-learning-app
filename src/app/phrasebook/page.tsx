@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PhrasebookClient } from "@/components/phrasebook/phrasebook-client";
+import { isTtsEnabled } from "@/lib/features/tts";
 import type { Language, Profile, LanguageProfile } from "@/lib/supabase/types";
 
 export default async function PhrasebookPage() {
@@ -61,7 +62,11 @@ export default async function PhrasebookPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <PhrasebookClient language={language} cefrLevel={cefrLevel} />
+        <PhrasebookClient
+          language={language}
+          cefrLevel={cefrLevel}
+          ttsEnabled={isTtsEnabled()}
+        />
       </main>
     </div>
   );

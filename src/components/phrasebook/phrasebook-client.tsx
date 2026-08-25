@@ -33,6 +33,7 @@ type PhrasebookData = {
 type Props = {
   language: Language;
   cefrLevel: string;
+  ttsEnabled: boolean;
 };
 
 const LANG_VOICE: Record<Language, string> = {
@@ -54,7 +55,7 @@ function PhraseSkeleton() {
   );
 }
 
-export function PhrasebookClient({ language, cefrLevel }: Props) {
+export function PhrasebookClient({ language, cefrLevel, ttsEnabled }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [cache, setCache] = useState<Record<string, PhrasebookData>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +138,7 @@ export function PhrasebookClient({ language, cefrLevel }: Props) {
             </div>
           )}
 
-          {ttsError && (
+          {ttsEnabled && ttsError && (
             <div className="flex items-start justify-between gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
               <p>{ttsError}</p>
               <button
@@ -178,20 +179,22 @@ export function PhrasebookClient({ language, cefrLevel }: Props) {
                         {phrase.context}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleSpeak(phrase.native)}
-                      aria-label="Hear pronunciation"
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
-                    >
-                      {ttsLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                      ) : isSpeaking ? (
-                        <VolumeX className="h-4 w-4" aria-hidden="true" />
-                      ) : (
-                        <Volume2 className="h-4 w-4" aria-hidden="true" />
-                      )}
-                    </button>
+                    {ttsEnabled && (
+                      <button
+                        type="button"
+                        onClick={() => handleSpeak(phrase.native)}
+                        aria-label="Hear pronunciation"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+                      >
+                        {ttsLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : isSpeaking ? (
+                          <VolumeX className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                          <Volume2 className="h-4 w-4" aria-hidden="true" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
