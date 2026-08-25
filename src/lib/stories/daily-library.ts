@@ -132,7 +132,9 @@ export async function generateDailyLibraryStories(
   const languages = options.languages ?? LIBRARY_LANGUAGES;
   const levels = options.levels ?? LIBRARY_CEFR_LEVELS;
   const skipExistingToday = options.skipExistingToday ?? true;
-  const paceMs = options.paceMs ?? 1500;
+  // Gemini's free tier caps requests per minute; each combo makes 2+ calls
+  // (story + translation), so this pace must stay well under that per-call.
+  const paceMs = options.paceMs ?? 4000;
   const startedAt = Date.now();
   const date = utcDateString();
 
@@ -148,117 +150,132 @@ export async function generateDailyLibraryStories(
   });
   const supabase = createServiceClient();
 
-  for (const language of languages) {
-    for (const cefrLevel of levels) {
-      if (
-        options.timeBudgetMs != null &&
-        Date.now() - startedAt > options.timeBudgetMs
-      ) {
-        result.skipped.push({
+  // Rotate which combo goes first each day so the same language/level pair
+  // isn't always last in line (and first to lose out) if the shared Gemini
+  // rate limit runs out partway through the run.
+  const allCombos = languages.flatMap((language) =>
+    levels.map((cefrLevel) => ({ language, cefrLevel })),
+  );
+  const dayNum = Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
+  const rotation = allCombos.length > 0 ? dayNum % allCombos.length : 0;
+  const combos = [
+    ...allCombos.slice(rotation),
+    ...allCombos.slice(0, rotation),
+  ];
+
+  for (const { language, cefrLevel } of combos) {
+    if (
+      options.timeBudgetMs != null &&
+      Date.now() - startedAt > options.timeBudgetMs
+    ) {
+      result.skipped.push({
+        language,
+        cefr_level: cefrLevel,
+        reason: "time_budget",
+      });
+      continue;
+    }
+
+    if (skipExistingToday) {
+      const { data: existing, error: existingError } = await supabase
+        .from("stories")
+        .select("id")
+        .eq("is_library", true)
+        .eq("language", language)
+        .eq("cefr_level", cefrLevel)
+        .gte("created_at", utcDayStartIso(date))
+        .limit(1)
+        .maybeSingle();
+
+      if (existingError) {
+        result.failed.push({
           language,
           cefr_level: cefrLevel,
-          reason: "time_budget",
+          error: existingError.message,
         });
         continue;
       }
 
-      if (skipExistingToday) {
-        const { data: existing, error: existingError } = await supabase
-          .from("stories")
-          .select("id")
-          .eq("is_library", true)
-          .eq("language", language)
-          .eq("cefr_level", cefrLevel)
-          .gte("created_at", utcDayStartIso(date))
-          .limit(1)
-          .maybeSingle();
-
-        if (existingError) {
-          result.failed.push({
-            language,
-            cefr_level: cefrLevel,
-            error: existingError.message,
-          });
-          continue;
-        }
-
-        if (existing) {
-          result.skipped.push({
-            language,
-            cefr_level: cefrLevel,
-            reason: "already_created_today",
-          });
-          continue;
-        }
+      if (existing) {
+        result.skipped.push({
+          language,
+          cefr_level: cefrLevel,
+          reason: "already_created_today",
+        });
+        continue;
       }
+    }
 
-      const topic = topicFor(date, language, cefrLevel);
+    const topic = topicFor(date, language, cefrLevel);
 
-      try {
-        const { object } = await withAiRetries(
-          () =>
-            generateObject({
-              model: google("gemini-2.5-flash-lite"),
-              schema: GeneratedStorySchema,
-              prompt: buildLibraryPrompt(language, cefrLevel, topic),
-            }),
-          { label: `daily-library/${language}/${cefrLevel}` },
-        );
+    try {
+      const { object } = await withAiRetries(
+        () =>
+          generateObject({
+            model: google("gemini-2.5-flash-lite"),
+            schema: GeneratedStorySchema,
+            prompt: buildLibraryPrompt(language, cefrLevel, topic),
+          }),
+        { label: `daily-library/${language}/${cefrLevel}` },
+      );
 
-        const translations = await generateStoryTranslations(
-          object.body,
-          language,
-          `daily-library/${language}/${cefrLevel}`,
-        );
+      // Space out the two calls this combo makes so a single combo doesn't
+      // burst past the shared per-minute Gemini rate limit on its own.
+      await delay(paceMs);
 
-        if (allSentences(object.body).length !== translations.sentences.length) {
-          result.failed.push({
-            language,
-            cefr_level: cefrLevel,
-            error: "sentence_translation_mismatch",
-          });
-          continue;
-        }
+      const translations = await generateStoryTranslations(
+        object.body,
+        language,
+        `daily-library/${language}/${cefrLevel}`,
+      );
 
-        const { error: insertError } = await supabase.from("stories").insert({
-          user_id: null,
-          is_library: true,
-          is_queued: false,
-          language,
-          cefr_level: cefrLevel,
-          title: object.title,
-          topics: [topic],
-          body: object.body,
-          word_count: object.body.split(/\s+/).filter(Boolean).length,
-          quiz: object.quiz,
-          sentence_translations: translations.sentences,
-          word_translations: translations.words,
-        });
-
-        if (insertError) {
-          result.failed.push({
-            language,
-            cefr_level: cefrLevel,
-            error: insertError.message,
-          });
-          continue;
-        }
-
-        result.created.push({
-          language,
-          cefr_level: cefrLevel,
-          title: object.title,
-        });
-      } catch (err) {
+      if (allSentences(object.body).length !== translations.sentences.length) {
         result.failed.push({
           language,
           cefr_level: cefrLevel,
-          error: err instanceof Error ? err.message : String(err),
+          error: "sentence_translation_mismatch",
         });
+        continue;
       }
 
-      await delay(paceMs);
+      const { error: insertError } = await supabase.from("stories").insert({
+        user_id: null,
+        is_library: true,
+        is_queued: false,
+        language,
+        cefr_level: cefrLevel,
+        title: object.title,
+        topics: [topic],
+        body: object.body,
+        word_count: object.body.split(/\s+/).filter(Boolean).length,
+        quiz: object.quiz,
+        sentence_translations: translations.sentences,
+        word_translations: translations.words,
+      });
+
+      if (insertError) {
+        result.failed.push({
+          language,
+          cefr_level: cefrLevel,
+          error: insertError.message,
+        });
+        continue;
+      }
+
+      result.created.push({
+        language,
+        cefr_level: cefrLevel,
+        title: object.title,
+      });
+    } catch (err) {
+      result.failed.push({
+        language,
+        cefr_level: cefrLevel,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
+
+    await delay(paceMs);
   }
 
   return result;
