@@ -10,9 +10,13 @@ import {
   StoryLibraryClient,
   type LibraryStoryCard,
 } from "@/components/stories/story-library-client";
+import { StoryFocusView } from "@/components/stories/story-focus-view";
 import { generateQueuedStory } from "@/lib/stories/queue";
 import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enabled";
-import { pickNextRecommendedStory } from "@/lib/stories/next-recommendation";
+import {
+  pickNextRecommendedStory,
+  rankUnstartedStories,
+} from "@/lib/stories/next-recommendation";
 import type {
   CefrLevel,
   Language,
@@ -135,6 +139,13 @@ export default async function StoriesPage() {
     cefrLevel,
     genreWeights,
   );
+  const rankedNext = rankUnstartedStories(
+    libraryRows,
+    progressByStory,
+    attemptByStory,
+    cefrLevel,
+    genreWeights,
+  );
 
   let queuedReady: QueuedStory | null = null;
   let isPreparingNext = false;
@@ -201,8 +212,7 @@ export default async function StoriesPage() {
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-black text-white sm:text-3xl">📖 Story Library</h1>
           <p className="mb-4 mt-1 text-sm text-slate-400 sm:mb-6">
-            Graded reading passages — filter by CEFR level. Defaults to your level (
-            {cefrLevel}).
+            Graded reading passages, personalized to your level ({cefrLevel}).
           </p>
           {personalQueue ? (
             <StoryGenerator
@@ -213,18 +223,27 @@ export default async function StoriesPage() {
             <div className="flex items-start gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/10 px-4 py-3 text-sm text-violet-200">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>
-                Personalized AI stories are coming with Premium. Browse the shared library
-                for now — tap <span className="font-semibold">All</span> to see every level.
+                Personalized AI stories are coming with Premium. For now, we&apos;ll pick
+                one from the shared library for you — or browse the full library yourself.
               </p>
             </div>
           )}
         </div>
 
-        <StoryLibraryClient
-          stories={stories}
-          userCefrLevel={cefrLevel}
-          recommended={showLibraryRecommend ? recommended : null}
-        />
+        {personalQueue || !showLibraryRecommend ? (
+          <StoryLibraryClient
+            stories={stories}
+            userCefrLevel={cefrLevel}
+            recommended={showLibraryRecommend ? recommended : null}
+          />
+        ) : (
+          <StoryFocusView
+            stories={stories}
+            userCefrLevel={cefrLevel}
+            recommended={recommended}
+            rankedNext={rankedNext}
+          />
+        )}
       </div>
     </div>
   );

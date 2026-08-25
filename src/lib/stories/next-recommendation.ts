@@ -92,7 +92,38 @@ export function pickNextRecommendedStory(
     };
   }
 
-  // 3. Unstarted at the learner's CEFR level, then any unstarted.
+  // 3. Unstarted stories, ranked closest-level-first then by interest.
+  const ranked = rankUnstartedStories(
+    stories,
+    progressByStory,
+    attemptByStory,
+    userCefrLevel,
+    genreWeights,
+  );
+  const pick = ranked[0];
+  if (!pick) return null;
+
+  return {
+    ...pick,
+    reason: "next",
+    percent_read: 0,
+  };
+}
+
+/**
+ * Full queue of unstarted stories, best match first: closest CEFR level to
+ * the learner, then highest interest-genre weight, then most recent. Used
+ * both for pickNextRecommendedStory's step 3 and for "skip to next" in the
+ * story-first focus view, so skipping cycles through real alternatives
+ * instead of jumping back to array order (which always lands on A1).
+ */
+export function rankUnstartedStories(
+  stories: RecommendableStory[],
+  progressByStory: Map<string, StoryProgressSummary>,
+  attemptByStory: Map<string, StoryAttemptSummary>,
+  userCefrLevel: CefrLevel,
+  genreWeights: Map<string, number> = new Map(),
+): RecommendableStory[] {
   const unstarted = stories.filter((s) => {
     const progress = progressByStory.get(s.id);
     if (progress && (progress.finished || progress.percent_read > 0)) return false;
@@ -100,31 +131,17 @@ export function pickNextRecommendedStory(
     return true;
   });
 
-  if (unstarted.length === 0) return null;
+  return [...unstarted].sort((a, b) => {
+    const distDiff =
+      levelDistance(a.cefr_level, userCefrLevel) -
+      levelDistance(b.cefr_level, userCefrLevel);
+    if (distDiff !== 0) return distDiff;
 
-  // Prefer the learner's exact level; if nothing is unstarted there, fall
-  // back to the *closest* level rather than array order (which would
-  // otherwise always land on A1, the lowest level, whenever the exact
-  // level is empty). Within a tier, rank by interest weight so genre
-  // preferences break ties before recency does.
-  const minDistance = Math.min(
-    ...unstarted.map((s) => levelDistance(s.cefr_level, userCefrLevel)),
-  );
-  const closest = unstarted.filter(
-    (s) => levelDistance(s.cefr_level, userCefrLevel) === minDistance,
-  );
-
-  const pick = [...closest].sort((a, b) => {
     const interestDiff =
       interestScore(b.topics, genreWeights) -
       interestScore(a.topics, genreWeights);
     if (interestDiff !== 0) return interestDiff;
-    return b.created_at.localeCompare(a.created_at);
-  })[0]!;
 
-  return {
-    ...pick,
-    reason: "next",
-    percent_read: 0,
-  };
+    return b.created_at.localeCompare(a.created_at);
+  });
 }
