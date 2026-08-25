@@ -1,21 +1,22 @@
 /**
- * Soft-launch gate: Tier 1 + Tier 2 free features are open; Tier 3 AI stays locked.
- * Set FREE_PREVIEW_STORIES_ONLY=false to unlock the full wheel (including Chat / Journal).
+ * Soft-launch gate: only Story is open. Everything else on the wheel is
+ * locked while it gets stabilized — see the note in unlocked.ts.
+ * Set FREE_PREVIEW_STORIES_ONLY=false to unlock the full wheel (including
+ * Chat / Journal).
  */
 
 import { PREVIEW_UNLOCKED_FEATURE_IDS } from "@/lib/features/unlocked";
 
 /**
- * Pages locked during soft launch (direct URL → dashboard).
- * Sub-routes like /chat/... are covered by prefix match.
- * Note: /chat does NOT lock /chat-room (peer chat is Tier 1).
- * /news is here (not just excluded from the wheel) because its free-tier
- * content is placeholder/fictional articles — misleading if reachable at all.
+ * Pages that stay reachable during soft launch regardless of the feature
+ * wheel: core navigation/account pages, plus Story itself. Everything else
+ * in proxy.ts's PROTECTED_PREFIXES redirects to the dashboard.
  */
-export const PREVIEW_LOCKED_PAGE_PREFIXES = [
-  "/journal",
-  "/chat",
-  "/news",
+export const PREVIEW_ALWAYS_OPEN_PREFIXES = [
+  "/dashboard",
+  "/onboarding",
+  "/settings",
+  "/stories",
 ] as const;
 
 export function isStoriesOnlyPreview(): boolean {
@@ -30,7 +31,8 @@ export function isFeatureUnlocked(featureId: string): boolean {
 
 export function isPathLockedInPreview(pathname: string): boolean {
   if (!isStoriesOnlyPreview()) return false;
-  return PREVIEW_LOCKED_PAGE_PREFIXES.some(
+  const isOpen = PREVIEW_ALWAYS_OPEN_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
+  return !isOpen;
 }
