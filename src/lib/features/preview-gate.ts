@@ -6,13 +6,16 @@
 import { PREVIEW_UNLOCKED_FEATURE_IDS } from "@/lib/features/unlocked";
 
 /**
- * Tier 3 pages locked during soft launch (direct URL → dashboard).
+ * Pages locked during soft launch (direct URL → dashboard).
  * Sub-routes like /chat/... are covered by prefix match.
  * Note: /chat does NOT lock /chat-room (peer chat is Tier 1).
+ * /news is here (not just excluded from the wheel) because its free-tier
+ * content is placeholder/fictional articles — misleading if reachable at all.
  */
 export const PREVIEW_LOCKED_PAGE_PREFIXES = [
   "/journal",
   "/chat",
+  "/news",
 ] as const;
 
 export function isStoriesOnlyPreview(): boolean {
@@ -27,8 +30,7 @@ export function isFeatureUnlocked(featureId: string): boolean {
 
 export function isPathLockedInPreview(pathname: string): boolean {
   if (!isStoriesOnlyPreview()) return false;
-  // /chat must not lock /chat-room (peer chat is free Tier 1).
-  if (pathname === "/chat" || pathname.startsWith("/chat/")) return true;
-  if (pathname === "/journal" || pathname.startsWith("/journal/")) return true;
-  return false;
+  return PREVIEW_LOCKED_PAGE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
