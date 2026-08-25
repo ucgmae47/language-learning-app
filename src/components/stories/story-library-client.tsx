@@ -43,15 +43,20 @@ export function StoryLibraryClient({
   userCefrLevel,
   recommended,
 }: Props) {
-  const [mode, setMode] = useState<FilterMode>("levels");
-  const [selectedLevels, setSelectedLevels] = useState<Set<CefrLevel>>(
-    () => new Set([userCefrLevel]),
-  );
-
   const availableLevels = useMemo(() => {
     const present = new Set(stories.map((s) => s.cefr_level));
     return CEFR_LEVELS.filter((l) => present.has(l));
   }, [stories]);
+
+  // Default to the user's level only when it actually has stories — otherwise
+  // a chip would start both "selected" and disabled, with no way to clear it.
+  const userLevelHasStories = availableLevels.includes(userCefrLevel);
+  const [mode, setMode] = useState<FilterMode>(
+    userLevelHasStories ? "levels" : "all",
+  );
+  const [selectedLevels, setSelectedLevels] = useState<Set<CefrLevel>>(
+    () => (userLevelHasStories ? new Set([userCefrLevel]) : new Set()),
+  );
 
   const filtered = useMemo(() => {
     if (mode === "all") return stories;
