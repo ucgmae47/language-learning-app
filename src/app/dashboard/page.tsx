@@ -7,6 +7,7 @@ import { WordOfTheDay } from "@/components/dashboard/word-of-the-day";
 import { CefrAdaptBanner } from "@/components/dashboard/cefr-adapt-banner";
 import { SpinWheel } from "@/components/dashboard/spin-wheel";
 import { getWordForDate } from "@/lib/word-of-the-day/bank";
+import { getStreakStatus } from "@/lib/streak/track";
 import { isStoriesOnlyPreview } from "@/lib/features/preview-gate";
 import type { Language, Profile } from "@/lib/supabase/types";
 
@@ -24,9 +25,12 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [profileResult, cefrSuggestion] = await Promise.all([
+  const [profileResult, cefrSuggestion, streakStatus] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single<Profile>(),
     getCefrAdaptationSuggestion(),
+    // Derived from session_metrics rather than profiles.streak_count so a
+    // lapsed streak drops to 0 the moment it lapses.
+    getStreakStatus(supabase, user.id),
   ]);
 
   const profile = profileResult.data;
@@ -51,8 +55,10 @@ export default async function DashboardPage() {
             <div className="min-w-0">
               <p className="text-xs font-medium text-orange-300/70">Current streak</p>
               <p className="text-xl font-black text-white sm:text-2xl">
-                {profile?.streak_count ?? 0}
-                <span className="ml-1 text-sm font-medium text-orange-300/70">days</span>
+                {streakStatus.streak}
+                <span className="ml-1 text-sm font-medium text-orange-300/70">
+                  {streakStatus.streak === 1 ? "day" : "days"}
+                </span>
               </p>
             </div>
           </div>
