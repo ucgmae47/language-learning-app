@@ -54,12 +54,17 @@ export async function saveStoryProgress(
 
   if (error) return { error: error.message };
 
-  // Reading a story counts as activity for the daily streak. This action runs
-  // on a 400ms debounce per sentence, so the bookkeeping goes after the
-  // response — it must never add latency to the reader.
-  after(async () => {
-    await markDailyActivity(supabase, user.id);
-  });
+  // Reading counts as activity for the daily streak — but this action also
+  // fires on mount, so opening a story and immediately backing out must not
+  // mark the day. Require at least one sentence advance (or a finish).
+  //
+  // The bookkeeping goes after the response: this runs on a 400ms debounce per
+  // sentence and must never add latency to the reader.
+  if (index > 0 || finished) {
+    after(async () => {
+      await markDailyActivity(supabase, user.id);
+    });
+  }
 
   return {};
 }

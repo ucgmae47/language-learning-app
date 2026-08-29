@@ -14,12 +14,15 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, SessionMetric } from "@/lib/supabase/types";
+import type { Database, Profile, SessionMetric } from "@/lib/supabase/types";
 import { computeStreak, utcToday } from "./compute";
 
-/** How far back to read the activity calendar. Comfortably longer than any
- *  streak we display, and bounded so the query stays a cheap index range scan. */
-const LOOKBACK_DAYS = 60;
+/** How far back to read the activity calendar. This is a hard ceiling on the
+ *  streak we can measure — an inclusive `.gte` over N days can only ever yield
+ *  N+1 distinct days — so it is set well beyond any streak a learner is likely
+ *  to reach rather than merely beyond what we display. Still one index range
+ *  scan over a handful of tiny rows. */
+const LOOKBACK_DAYS = 400;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -31,15 +34,14 @@ export type StreakStatus = {
 };
 
 /**
- * Reads the last ~60 days of activity for a user and derives their streak.
- * Also reports whether today is already counted, so a page can render both the
- * number and the "read today?" nudge from a single query.
+ * Reads the user's recent activity calendar as `YYYY-MM-DD` strings, newest
+ * first. Returns null when the query failed, so callers can tell "no activity
+ * on record" apart from "we could not find out".
  */
-export async function getStreakStatus(
+async function fetchActivityDates(
   supabase: SupabaseClient<Database>,
   userId: string,
-): Promise<StreakStatus> {
-  const today = utcToday();
+): Promise<string[] | null> {
   const since = new Date(Date.now() - LOOKBACK_DAYS * DAY_MS)
     .toISOString()
     .slice(0, 10);
@@ -54,23 +56,54 @@ export async function getStreakStatus(
 
   if (error) {
     console.error("[streak] fetch session_metrics failed:", error.message);
-    return { streak: 0, activeToday: false };
+    return null;
   }
 
-  const dates = (data ?? []).map((row) => row.date);
+  return (data ?? []).map((row) => row.date);
+}
 
-  return {
-    streak: computeStreak(dates, today),
-    activeToday: dates.includes(today),
-  };
+/**
+ * Derives a user's streak from their activity calendar. Also reports whether
+ * today is already counted, so a page can render both the number and the
+ * "read today?" nudge from a single query.
+ *
+ * Never throws — this is called during render from Server Components and the
+ * app has no `error.tsx` to catch it.
+ */
+export async function getStreakStatus(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<StreakStatus> {
+  try {
+    const dates = await fetchActivityDates(supabase, userId);
+    if (dates === null) return { streak: 0, activeToday: false };
+
+    const today = utcToday();
+
+    return {
+      streak: computeStreak(dates, today),
+      activeToday: dates.includes(today),
+    };
+  } catch (err) {
+    console.error("[streak] getStreakStatus threw:", err);
+    return { streak: 0, activeToday: false };
+  }
 }
 
 /**
  * Marks today as active and refreshes the stored `profiles.streak_count`.
  *
+ * On return (barring a logged failure) both of these hold: today has a
+ * `session_metrics` row, AND `profiles.streak_count` equals the derived streak.
+ * The two are checked independently — "today is already marked" does not imply
+ * the profile column was ever refreshed for today, which matters because
+ * `saveStoryAttempt` writes today's row itself before this ever runs.
+ *
  * Called from the story progress autosave, which fires per sentence on a 400ms
- * debounce, so the common path (already active today) costs exactly one indexed
- * lookup on (user_id, date) and nothing else.
+ * debounce. It runs inside `after()`, off the response path, and the steady
+ * state costs two small indexed reads issued in parallel and no writes at all:
+ * the insert is skipped when today is already on the calendar, and the profile
+ * update is skipped when the stored count already matches.
  *
  * Never throws — reading must not fail because the streak bookkeeping did.
  */
@@ -81,42 +114,57 @@ export async function markDailyActivity(
   try {
     const today = utcToday();
 
-    // ── Cheap guard: the overwhelmingly common case is "already counted". ──
-    const { data: existing, error: lookupError } = await supabase
-      .from("session_metrics")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("date", today)
-      .maybeSingle<Pick<SessionMetric, "id">>();
+    const [dates, storedResult] = await Promise.all([
+      fetchActivityDates(supabase, userId),
+      supabase
+        .from("profiles")
+        .select("streak_count")
+        .eq("id", userId)
+        .maybeSingle<Pick<Profile, "streak_count">>(),
+    ]);
 
-    if (lookupError) {
-      console.error("[streak] today lookup failed:", lookupError.message);
-      return;
+    if (dates === null) return; // already logged
+
+    // ── Write 1: put today on the calendar, only if it isn't there yet. ──
+    if (!dates.includes(today)) {
+      // `ignoreDuplicates` keeps this safe against a race with
+      // saveStoryAttempt's own upsert — reading is not a completed story, so
+      // this row must never clobber the counters that action owns.
+      const { error: insertError } = await supabase
+        .from("session_metrics")
+        .upsert(
+          {
+            user_id: userId,
+            date: today,
+            stories_read: 0,
+            quiz_score_avg: null,
+            drills_completed: 0,
+            chat_turns: 0,
+            minutes_active: 0,
+          },
+          { onConflict: "user_id,date", ignoreDuplicates: true },
+        );
+
+      if (insertError) {
+        console.error("[streak] mark today active failed:", insertError.message);
+        return;
+      }
     }
-    if (existing) return;
 
-    // First activity of the day. `ignoreDuplicates` keeps this safe against a
-    // race with saveStoryAttempt's own upsert — reading is not a completed
-    // story, so this row must never clobber the counters that action owns.
-    const { error: insertError } = await supabase.from("session_metrics").upsert(
-      {
-        user_id: userId,
-        date: today,
-        stories_read: 0,
-        quiz_score_avg: null,
-        drills_completed: 0,
-        chat_turns: 0,
-        minutes_active: 0,
-      },
-      { onConflict: "user_id,date", ignoreDuplicates: true },
-    );
+    // Today is on the calendar now either way, so count it in. computeStreak
+    // dedupes, so appending it when it was already there is harmless.
+    const streak = computeStreak([...dates, today], today);
 
-    if (insertError) {
-      console.error("[streak] mark today active failed:", insertError.message);
-      return;
+    if (storedResult.error) {
+      console.error(
+        "[streak] read stored streak_count failed:",
+        storedResult.error.message,
+      );
+      // Fall through and write anyway — a stale column is worse than a
+      // redundant update.
+    } else if (storedResult.data?.streak_count === streak) {
+      return; // ── Write 2 skipped: already correct. ──
     }
-
-    const { streak } = await getStreakStatus(supabase, userId);
 
     const { error: profileError } = await supabase
       .from("profiles")
