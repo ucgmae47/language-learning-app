@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { after } from "next/server";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Flame, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { StoryGenerator } from "@/components/stories/story-generator";
@@ -13,6 +13,7 @@ import {
 import { StoryFocusView } from "@/components/stories/story-focus-view";
 import { generateQueuedStory } from "@/lib/stories/queue";
 import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enabled";
+import { getStreakStatus } from "@/lib/streak/track";
 import {
   pickNextRecommendedStory,
   rankUnstartedStories,
@@ -46,19 +47,28 @@ export default async function StoriesPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: langProfiles }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("language, cefr_level")
-      .eq("id", user.id)
-      .single<{ language: Language; cefr_level: CefrLevel }>(),
-    supabase
-      .from("language_profiles")
-      .select("cefr_level")
-      .eq("user_id", user.id)
-      .limit(1)
-      .returns<{ cefr_level: CefrLevel }[]>(),
-  ]);
+  const [{ data: profile }, { data: langProfiles }, streakStatus] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("language, cefr_level")
+        .eq("id", user.id)
+        .single<{ language: Language; cefr_level: CefrLevel }>(),
+      supabase
+        .from("language_profiles")
+        .select("cefr_level")
+        .eq("user_id", user.id)
+        .limit(1)
+        .returns<{ cefr_level: CefrLevel }[]>(),
+      getStreakStatus(supabase, user.id),
+    ]);
+
+  // One read of the activity calendar drives both the count and the nudge.
+  const streakNudge = streakStatus.activeToday
+    ? "Read today — streak safe."
+    : streakStatus.streak > 0
+      ? `Read one story today to keep your ${streakStatus.streak}-day streak.`
+      : "Read today to start a streak.";
 
   const language: Language = profile?.language ?? "es";
   const cefrLevel: CefrLevel =
@@ -211,9 +221,23 @@ export default async function StoriesPage() {
 
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-black text-white sm:text-3xl">📖 Story Library</h1>
-          <p className="mb-4 mt-1 text-sm text-slate-400 sm:mb-6">
+          <p className="mb-4 mt-1 text-sm text-slate-400">
             Graded reading passages, personalized to your level ({cefrLevel}).
           </p>
+
+          {/* ── Daily reading streak ───────────────────────────────────── */}
+          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/20 to-red-500/10 px-4 py-3 shadow-lg shadow-orange-500/10 sm:mb-6">
+            <Flame className="h-5 w-5 shrink-0 text-orange-400" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="text-sm font-black text-white">
+                {streakStatus.streak > 0
+                  ? `${streakStatus.streak}-day streak`
+                  : "No streak yet"}
+              </p>
+              <p className="mt-0.5 text-xs text-orange-200/70">{streakNudge}</p>
+            </div>
+          </div>
+
           {personalQueue ? (
             <StoryGenerator
               queuedStory={queuedReady}

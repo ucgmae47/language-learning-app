@@ -9,6 +9,7 @@ import { isPersonalStoryQueueEnabled } from "@/lib/stories/personal-queue-enable
 import { insertEvent } from "@/lib/events/log-event";
 import { normalizeStoryGenre, WEIGHTS } from "@/lib/events/taxonomy";
 import { aggregateTopicScores } from "@/lib/events/aggregate";
+import { markDailyActivity } from "@/lib/streak/track";
 import type { CefrLevel, Language } from "@/lib/supabase/types";
 
 export type AttemptResult = {
@@ -52,6 +53,14 @@ export async function saveStoryProgress(
   );
 
   if (error) return { error: error.message };
+
+  // Reading a story counts as activity for the daily streak. This action runs
+  // on a 400ms debounce per sentence, so the bookkeeping goes after the
+  // response — it must never add latency to the reader.
+  after(async () => {
+    await markDailyActivity(supabase, user.id);
+  });
+
   return {};
 }
 
@@ -130,6 +139,12 @@ export async function saveStoryAttempt(
       weight: WEIGHTS.STORY_QUIZ_COMPLETED + bonusPoints,
     });
   }
+
+  // Finishing a quiz is activity too. Kept as its own `after()` callback so it
+  // is independent of the topic-score aggregation below.
+  after(async () => {
+    await markDailyActivity(supabase, user.id);
+  });
 
   after(async () => {
     await aggregateTopicScores(user.id, language);
